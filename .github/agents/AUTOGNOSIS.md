@@ -1,3 +1,8 @@
+---
+name: Autognosis
+description: Hierarchical Self-Image Building System
+---
+
 # Autognosis - Hierarchical Self-Image Building System
 
 ## Overview
