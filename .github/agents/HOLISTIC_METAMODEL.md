@@ -1,3 +1,8 @@
+---
+name: Holistic Metamodel
+description: Eric Schwarz's Organizational Systems Theory
+---
+
 # Holistic Metamodel - Eric Schwarz's Organizational Systems Theory
 
 ## Overview
