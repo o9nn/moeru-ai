@@ -12,3 +12,4 @@ export {
   ECHO_COGNITIVE_INSTRUCTIONS,
   ECHO_REFLECTION_TEMPLATE,
 } from './prompts'
+export type { EchoWebSocketEvents, EchoEvent } from './types'
