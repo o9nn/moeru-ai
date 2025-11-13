@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    paths:
+      - velin/**
+      - .github/workflows/velin-ci.yml
+    branches:
+      - main
+
+  pull_request:
+    paths:
+      - velin/**
+      - .github/workflows/velin-ci.yml
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+          cache-dependency-path: velin/pnpm-lock.yaml
+      - name: Install
+        run: pnpm install
+          working-directory: velin
+
+      - name: Lint
+        run: pnpm run lint
+          working-directory: velin
+
+  build-test:
+    name: Build Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+          cache-dependency-path: velin/pnpm-lock.yaml
+      - name: Install
+        run: pnpm install
+          working-directory: velin
+
+      - name: Build
+        run: |
+          working-directory: velin
+          pnpm run build
+          pnpm run attw:packages
+
+  unit-test:
+    name: Unit Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+          cache-dependency-path: velin/pnpm-lock.yaml
+      - name: Install
+        run: pnpm install
+          working-directory: velin
+
+      - name: Build
+        run: |
+          working-directory: velin
+          pnpm run build
+
+      - name: Unit Test
+        run: pnpm run test:run
+          working-directory: velin
+
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+          cache-dependency-path: velin/pnpm-lock.yaml
+      - name: Install
+        run: pnpm install
+          working-directory: velin
+
+      - name: Build
+        run: pnpm run build:packages
+          working-directory: velin
+
+      - name: Typecheck
+        run: pnpm run typecheck
+          working-directory: velin

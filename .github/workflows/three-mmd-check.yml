@@ -1,0 +1,32 @@
+name: check
+
+on:
+  pull_request:
+    paths:
+      - three-mmd/**
+      - .github/workflows/three-mmd-check.yml
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          cache: pnpm
+          node-version: latest
+          registry-url: https://registry.npmjs.org
+
+          cache-dependency-path: three-mmd/pnpm-lock.yaml
+      - run: pnpm install
+        working-directory: three-mmd
+      - run: pnpm lint
+        working-directory: three-mmd
+      # - run: pnpm test
+        working-directory: three-mmd
+      - run: pnpm build
+        working-directory: three-mmd
