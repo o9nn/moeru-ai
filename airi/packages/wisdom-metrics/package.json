@@ -1,0 +1,34 @@
+{
+  "name": "@proj-airi/wisdom-metrics",
+  "version": "0.1.0",
+  "description": "Wisdom cultivation metrics and tracking for AIRI - measuring morality, meaning, and mastery",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch"
+  },
+  "keywords": [
+    "wisdom",
+    "metrics",
+    "cultivation",
+    "morality",
+    "meaning",
+    "mastery",
+    "agi"
+  ],
+  "author": "Moeru AI Project AIRI Team",
+  "license": "MIT",
+  "devDependencies": {
+    "tsdown": "latest",
+    "typescript": "latest"
+  }
+}
