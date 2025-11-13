@@ -1,0 +1,35 @@
+name: check
+
+on:
+  pull_request:
+    paths:
+      - xsai-transformers/**
+      - .github/workflows/xsai-transformers-check.yml
+  workflow_dispatch:
+  push:
+    paths:
+      - xsai-transformers/**
+      - .github/workflows/xsai-transformers-check.yml
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v5
+        with:
+          cache: pnpm
+          node-version: latest
+          registry-url: https://registry.npmjs.org
+          cache-dependency-path: xsai-transformers/pnpm-lock.yaml
+      - run: pnpm i
+        working-directory: xsai-transformers
+      - run: pnpm -r build
+        working-directory: xsai-transformers
+      - run: pnpm lint
+        working-directory: xsai-transformers
+      - run: pnpm typecheck
+        working-directory: xsai-transformers

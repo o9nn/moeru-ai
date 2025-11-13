@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    paths:
+      - hfup/**
+      - .github/workflows/hfup-ci.yml
+    branches:
+      - main
+
+  pull_request:
+    paths:
+      - hfup/**
+      - .github/workflows/hfup-ci.yml
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+          cache-dependency-path: hfup/pnpm-lock.yaml
+      - name: Install
+        run: pnpm install
+          working-directory: hfup
+
+      - name: Lint
+        run: pnpm run lint
+          working-directory: hfup
+
+  build-test:
+    name: Build Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+          cache-dependency-path: hfup/pnpm-lock.yaml
+      - name: Install
+        run: pnpm install
+          working-directory: hfup
+
+      - name: Build
+        run: |
+          working-directory: hfup
+          pnpm run build
+
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+          cache-dependency-path: hfup/pnpm-lock.yaml
+      - name: Install
+        run: pnpm install
+          working-directory: hfup
+
+      - name: Typecheck
+        run: pnpm run typecheck
+          working-directory: hfup

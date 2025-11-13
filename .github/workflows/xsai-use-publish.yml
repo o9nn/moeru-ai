@@ -1,0 +1,45 @@
+name: publish
+
+on:
+  push:
+    paths:
+      - xsai-use/**
+      - .github/workflows/xsai-use-publish.yml
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          cache: pnpm
+          node-version: latest
+          registry-url: https://registry.npmjs.org
+          cache-dependency-path: xsai-use/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        working-directory: xsai-use
+      - run: pnpm dlx changelogithub
+        working-directory: xsai-use
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: pnpm -r build
+        working-directory: xsai-use
+      - run: pnpm -r publish --no-git-checks --access public
+        working-directory: xsai-use
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
