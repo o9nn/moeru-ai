@@ -17,6 +17,7 @@
     ".": "./src/index.ts",
     "./async-iterator": "./src/async-iterator/index.ts",
     "./base64": "./src/base64/index.ts",
+    "./deep-tree-echo": "./src/deep-tree-echo/index.ts",
     "./error": "./src/error/index.ts",
     "./merge": "./src/merge/index.ts",
     "./set-interval": "./src/set-interval/index.ts",
@@ -40,6 +41,10 @@
       "./base64": {
         "types": "./dist/base64/index.d.ts",
         "default": "./dist/base64/index.js"
+      },
+      "./deep-tree-echo": {
+        "types": "./dist/deep-tree-echo/index.d.ts",
+        "default": "./dist/deep-tree-echo/index.js"
       },
       "./error": {
         "types": "./dist/error/index.d.ts",
