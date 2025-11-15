@@ -131,7 +131,9 @@ export class GestaltSystem {
     
     return {
       totalPatterns: allGestalts.length,
-      avgCoherence: allGestalts.reduce((sum, g) => sum + g.coherence, 0) / allGestalts.length,
+      avgCoherence: allGestalts.length > 0 
+        ? allGestalts.reduce((sum, g) => sum + g.coherence, 0) / allGestalts.length 
+        : 0,
       corePatterns: allGestalts.filter(g => g.identityRole === 'core').length,
       emergingPatterns: allGestalts.filter(g => g.coherence < 0.7).length,
       dominantThemes: allGestalts

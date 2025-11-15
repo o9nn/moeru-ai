@@ -295,7 +295,9 @@ export class MetaphysicsCoordinator {
     const activeEchoes = this.echoSystem.getActiveEchoes()
     
     // Higher coherence and more active echoes = deeper presence
-    return (coherence.overall * 0.6 + (activeEchoes.length / 10) * 0.4)
+    // Ensure we don't get NaN if coherence is NaN
+    const coherenceScore = isNaN(coherence.overall) ? 0.5 : coherence.overall
+    return (coherenceScore * 0.6 + (activeEchoes.length / 10) * 0.4)
   }
   
   private determineTrajectory(): 'stable' | 'evolving' | 'transforming' | 'integrating' {
