@@ -75,7 +75,7 @@ jobs:
 
       - name: Build App
         run: ${{ matrix.command }}
-          working-directory: airi
+        working-directory: airi
 
   typecheck:
     name: Type Check
@@ -113,4 +113,4 @@ jobs:
         #   fail-on-downgrade: true       # optional, default: true
       - name: Print result
         run: "echo 'Downgraded: ${{ steps.check.outputs.downgraded }}'"
-          working-directory: airi
+        working-directory: airi
