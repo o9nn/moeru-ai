@@ -28,8 +28,8 @@
   "author": "Moeru AI Project AIRI Team",
   "license": "MIT",
   "devDependencies": {
-    "tsdown": "latest",
-    "typescript": "latest"
+    "tsdown": "^0.16.0",
+    "typescript": "^5.7.0"
   },
   "dependencies": {
     "pixi-live2d-display": "^0.4.0"

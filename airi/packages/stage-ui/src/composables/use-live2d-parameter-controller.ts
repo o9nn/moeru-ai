@@ -126,7 +126,7 @@ export function useLive2DParameterController(
    * Reset to neutral emotion
    */
   function reset(duration: number = defaultDuration): void {
-    setEmotion(Emotion.Neutral as Emotion, EmotionIntensity.Strong, duration)
+    setEmotion(Emotion.Neutral, EmotionIntensity.Strong, duration)
   }
   
   /**

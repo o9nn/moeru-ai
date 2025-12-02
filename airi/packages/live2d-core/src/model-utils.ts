@@ -98,6 +98,14 @@ export function mergeParameters(
 }
 
 /**
+ * Parameter categories for range validation
+ */
+const EYE_OPEN_PARAMETERS = new Set([
+  'leftEyeOpen',
+  'rightEyeOpen',
+])
+
+/**
  * Clamp parameter values to valid ranges
  */
 export function clampParameters(params: PartialLive2DParameters): PartialLive2DParameters {
@@ -105,12 +113,12 @@ export function clampParameters(params: PartialLive2DParameters): PartialLive2DP
   
   for (const [key, value] of Object.entries(params)) {
     if (typeof value === 'number') {
-      // Most parameters are in range [-1, 1] or [0, 1]
-      // Eye open values should be [0, 1]
-      if (key.includes('EyeOpen')) {
-        clamped[key as keyof Live2DModelParameters] = Math.max(0, Math.min(1, value))
+      const paramKey = key as keyof Live2DModelParameters
+      // Eye open values should be [0, 1], other parameters are typically [-1, 1]
+      if (EYE_OPEN_PARAMETERS.has(paramKey)) {
+        clamped[paramKey] = Math.max(0, Math.min(1, value))
       } else {
-        clamped[key as keyof Live2DModelParameters] = Math.max(-1, Math.min(1, value))
+        clamped[paramKey] = Math.max(-1, Math.min(1, value))
       }
     }
   }

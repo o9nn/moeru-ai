@@ -10,6 +10,23 @@ import type { EasingFunction, Live2DModelParameters, ParameterAnimation, Partial
 /**
  * Standard easing functions
  */
+
+// Helper function for bounce easing (defined first to avoid circular dependency)
+function bounceOut(t: number): number {
+  const n1 = 7.5625
+  const d1 = 2.75
+  
+  if (t < 1 / d1) {
+    return n1 * t * t
+  } else if (t < 2 / d1) {
+    return n1 * (t -= 1.5 / d1) * t + 0.75
+  } else if (t < 2.5 / d1) {
+    return n1 * (t -= 2.25 / d1) * t + 0.9375
+  } else {
+    return n1 * (t -= 2.625 / d1) * t + 0.984375
+  }
+}
+
 export const Easing = {
   linear: (t: number): number => t,
   
@@ -46,21 +63,8 @@ export const Easing = {
     return t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1
   },
   
-  easeInBounce: (t: number): number => 1 - Easing.easeOutBounce(1 - t),
-  easeOutBounce: (t: number): number => {
-    const n1 = 7.5625
-    const d1 = 2.75
-    
-    if (t < 1 / d1) {
-      return n1 * t * t
-    } else if (t < 2 / d1) {
-      return n1 * (t -= 1.5 / d1) * t + 0.75
-    } else if (t < 2.5 / d1) {
-      return n1 * (t -= 2.25 / d1) * t + 0.9375
-    } else {
-      return n1 * (t -= 2.625 / d1) * t + 0.984375
-    }
-  },
+  easeInBounce: (t: number): number => 1 - bounceOut(1 - t),
+  easeOutBounce: bounceOut,
 } as const
 
 /**
