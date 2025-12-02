@@ -19,11 +19,14 @@ function bounceOut(t: number): number {
   if (t < 1 / d1) {
     return n1 * t * t
   } else if (t < 2 / d1) {
-    return n1 * (t -= 1.5 / d1) * t + 0.75
+    const adjusted = t - (1.5 / d1)
+    return n1 * adjusted * adjusted + 0.75
   } else if (t < 2.5 / d1) {
-    return n1 * (t -= 2.25 / d1) * t + 0.9375
+    const adjusted = t - (2.25 / d1)
+    return n1 * adjusted * adjusted + 0.9375
   } else {
-    return n1 * (t -= 2.625 / d1) * t + 0.984375
+    const adjusted = t - (2.625 / d1)
+    return n1 * adjusted * adjusted + 0.984375
   }
 }
 
@@ -35,12 +38,30 @@ export const Easing = {
   easeInOutQuad: (t: number): number => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t,
   
   easeInCubic: (t: number): number => t * t * t,
-  easeOutCubic: (t: number): number => (--t) * t * t + 1,
-  easeInOutCubic: (t: number): number => t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1,
+  easeOutCubic: (t: number): number => {
+    const adjusted = t - 1
+    return adjusted * adjusted * adjusted + 1
+  },
+  easeInOutCubic: (t: number): number => {
+    if (t < 0.5) {
+      return 4 * t * t * t
+    }
+    const adjusted = t - 1
+    return adjusted * (2 * adjusted - 2) * (2 * adjusted - 2) + 1
+  },
   
   easeInQuart: (t: number): number => t * t * t * t,
-  easeOutQuart: (t: number): number => 1 - (--t) * t * t * t,
-  easeInOutQuart: (t: number): number => t < 0.5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t,
+  easeOutQuart: (t: number): number => {
+    const adjusted = t - 1
+    return 1 - adjusted * adjusted * adjusted * adjusted
+  },
+  easeInOutQuart: (t: number): number => {
+    if (t < 0.5) {
+      return 8 * t * t * t * t
+    }
+    const adjusted = t - 1
+    return 1 - 8 * adjusted * adjusted * adjusted * adjusted
+  },
   
   easeInSine: (t: number): number => 1 - Math.cos((t * Math.PI) / 2),
   easeOutSine: (t: number): number => Math.sin((t * Math.PI) / 2),
