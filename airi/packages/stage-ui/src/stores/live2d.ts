@@ -1,6 +1,8 @@
 import { useBroadcastChannel, useLocalStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
+import type { Live2DModelParameters, Emotion } from '@proj-airi/live2d-core'
+import { getDefaultParameters } from '@proj-airi/live2d-core'
 
 type BroadcastChannelEvents
   = | BroadcastChannelEventShouldUpdateView
@@ -9,30 +11,11 @@ interface BroadcastChannelEventShouldUpdateView {
   type: 'should-update-view'
 }
 
-export const defaultModelParameters = {
-  angleX: 0,
-  angleY: 0,
-  angleZ: 0,
-  leftEyeOpen: 1,
-  rightEyeOpen: 1,
-  leftEyeSmile: 0,
-  rightEyeSmile: 0,
-  leftEyebrowLR: 0,
-  rightEyebrowLR: 0,
-  leftEyebrowY: 0,
-  rightEyebrowY: 0,
-  leftEyebrowAngle: 0,
-  rightEyebrowAngle: 0,
-  leftEyebrowForm: 0,
-  rightEyebrowForm: 0,
-  mouthOpen: 0,
-  mouthForm: 0,
-  cheek: 0,
-  bodyAngleX: 0,
-  bodyAngleY: 0,
-  bodyAngleZ: 0,
-  breath: 0,
-}
+// Use the centralized default parameters from live2d-core
+export const defaultModelParameters: Live2DModelParameters = getDefaultParameters()
+
+// Re-export for backward compatibility
+export { getDefaultParameters }
 
 export const useLive2d = defineStore('live2d', () => {
   const { post, data } = useBroadcastChannel<BroadcastChannelEvents, BroadcastChannelEvents>({ name: 'airi-stores-live2d' })
