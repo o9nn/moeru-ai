@@ -8,6 +8,7 @@ This package provides the foundational cognitive mechanisms for AGI-level intell
 
 - **Relevance Realization**: Systematic determination of what matters in context
 - **Four Ways of Knowing**: Balanced integration of propositional, procedural, perspectival, and participatory knowing
+- **Optimal Grip**: Perspectival knowing through frame management, salience detection, and grip strength optimization
 - **Sophrosyne**: Optimal self-regulation and dynamic balance (coming soon)
 - **Opponent Processing**: Alternative perspective generation (coming soon)
 
@@ -99,6 +100,120 @@ console.log(recommendations[0])
 // }
 ```
 
+### Optimal Grip (Perspectival Knowing)
+
+Optimal grip is the ability to engage with situations at the right level of abstraction - not too close (lost in details) and not too far (too abstract to act). This is the core of perspectival knowing (knowing-as).
+
+The `OptimalGripCoordinator` implements:
+
+1. **Frame Management**: Shifting between cognitive frames (analytical, creative, social, etc.)
+2. **Salience Detection**: Identifying what stands out in context
+3. **Grip Strength**: Finding the optimal abstraction level
+4. **Gestalt Formation**: Perceiving coherent patterns
+
+```typescript
+import { OptimalGripCoordinator } from '@proj-airi/cognitive-core'
+
+const grip = new OptimalGripCoordinator()
+
+// Assess optimal grip for a situation
+const assessment = await grip.assess(
+  {
+    agentId: 'echo',
+    environment: { type: 'minecraft' },
+    emotional: { valence: 0.3, arousal: 0.6 },
+    workingMemory: ['Need resources', 'Enemy nearby'],
+    task: 'Survive and gather materials',
+    timestamp: Date.now(),
+  },
+  [
+    { id: '1', description: 'Mine for iron ore' },
+    { id: '2', description: 'Build defensive walls' },
+    { id: '3', description: 'Scout for enemies' },
+    { id: '4', description: 'Craft better tools' },
+  ]
+)
+
+console.log(assessment.activeFrame.name) // 'Strategic Frame'
+console.log(assessment.gripStrength.quality) // 'optimal' | 'too_abstract' | 'too_concrete'
+console.log(assessment.salienceMap.items[0])
+// {
+//   id: '3',
+//   description: 'Scout for enemies',
+//   salience: 0.85,
+//   reason: 'Relevant to current goals',
+//   factors: { frameBased: 0.7, goalBased: 0.9, noveltyBased: 0.6, emotionalBased: 0.8 }
+// }
+console.log(assessment.recommendations)
+// ['Current frame may obscure: immediate action, specific details...']
+```
+
+#### Frame Management
+
+The system includes 8 default cognitive frames:
+
+- **Analytical**: Breaking down problems, logical analysis
+- **Creative**: Novel connections, exploring possibilities
+- **Social**: Understanding others, relationships
+- **Strategic**: Long-term planning, resource optimization
+- **Embodied**: Sensory experience, intuition
+- **Contemplative**: Stepping back, big picture
+- **Playful**: Exploration, experimentation
+- **Focused**: Deep concentration on a single task
+
+```typescript
+// Explicitly shift frames
+await grip.shiftFrameById('creative', 'explicit', 'Need to brainstorm solutions')
+
+// Get frame fitness for context
+const frameFitness = grip.evaluateFrameFitness(context)
+console.log(frameFitness[0]) // { frame: {...}, fitness: 0.85 }
+```
+
+#### Grip Strength
+
+```typescript
+// Adjust grip level (0 = abstract, 1 = concrete)
+grip.setGrip(0.7) // Zoom in on details
+grip.adjustGrip(-0.2) // Step back a bit
+
+// Get grip assessment
+const gripStrength = assessment.gripStrength
+console.log(gripStrength)
+// {
+//   level: 0.7,
+//   optimal: 0.65,
+//   gap: 0.05,
+//   quality: 'optimal',
+//   recommendation: undefined,
+//   confidence: 0.7
+// }
+```
+
+#### Salience Detection
+
+```typescript
+// Compute what stands out
+const salienceMap = grip.computeSalienceMap(items, context)
+
+// Items are ranked by salience
+for (const item of salienceMap.items) {
+  console.log(`${item.description}: ${item.salience.toFixed(2)} (${item.reason})`)
+}
+```
+
+#### Gestalt Formation
+
+```typescript
+// Detect coherent patterns
+const gestalts = assessment.gestalts
+for (const gestalt of gestalts) {
+  console.log(`Pattern: ${gestalt.description}`)
+  console.log(`Parts: ${gestalt.parts.join(', ')}`)
+  console.log(`Coherence: ${gestalt.coherence.toFixed(2)}`)
+}
+```
+
 ## Philosophy
 
 This package embodies key insights from cognitive science and wisdom traditions:
@@ -177,6 +292,52 @@ new FourWaysTracker(config?: Partial<BalanceConfig>)
 
 **reset(): void**
 - Clear all recorded events
+
+### OptimalGripCoordinator
+
+#### Constructor
+```typescript
+new OptimalGripCoordinator(config?: Partial<OptimalGripConfig>, customFrames?: CognitiveFrame[])
+```
+
+#### Methods
+
+**assess(context, items): Promise\<OptimalGripAssessment\>**
+- Get comprehensive optimal grip assessment
+- Returns grip strength, active frame, salience map, gestalts, recommendations
+
+**evaluateFrameFitness(context): Array<{ frame, fitness }>**
+- Evaluate all frames for current context
+- Returns frames sorted by fitness (descending)
+
+**computeSalienceMap(items, context): SalienceMap**
+- Compute what stands out in context
+- Returns items ranked by salience with factors
+
+**shiftFrame(frame, trigger, description?): Promise\<FrameShift\>**
+- Explicitly shift to a new cognitive frame
+- Triggers: 'explicit' | 'anomaly' | 'goal_change' | 'learning' | 'social' | 'spontaneous'
+
+**shiftFrameById(frameId, trigger, description?): Promise\<FrameShift | null\>**
+- Shift frame by ID
+
+**adjustGrip(adjustment): void**
+- Adjust grip level relatively (+/-)
+
+**setGrip(level): void**
+- Set grip level directly (0-1)
+
+**getActiveFrame(): CognitiveFrame**
+- Get current active frame
+
+**getAvailableFrames(): CognitiveFrame[]**
+- Get all available frames
+
+**addFrame(frame): void**
+- Add a custom cognitive frame
+
+**getStatistics(): Statistics**
+- Get operational statistics
 
 ## Integration with AIRI
 
@@ -262,13 +423,34 @@ class MinecraftAgent {
 }
 ```
 
+### Optimal Grip Configuration
+```typescript
+{
+  maxShiftHistory: 20,           // Track last 20 frame shifts
+  frameShiftThreshold: 0.3,      // Auto-shift if fitness gap > 0.3
+  salienceWeights: {
+    frameBased: 0.3,             // Frame pattern matching
+    goalBased: 0.35,             // Goal relevance (highest)
+    noveltyBased: 0.2,           // Novelty/surprise
+    emotionalBased: 0.15,        // Emotional significance
+  },
+  gripTolerance: 0.15,           // Acceptable deviation from optimal
+  enableAutoFrameShift: true,    // Automatically shift frames
+}
+```
+
 ## Roadmap
 
-### Implemented ✓
+### Implemented
 - [x] Relevance Coordinator with multi-factor assessment
 - [x] Four Ways of Knowing tracker
 - [x] Learning loop for relevance criteria
 - [x] Balance recommendations
+- [x] Optimal Grip Coordinator (perspectival knowing)
+- [x] Frame management with 8 default frames
+- [x] Salience detection with multi-factor scoring
+- [x] Grip strength optimization
+- [x] Gestalt formation and detection
 
 ### Coming Soon
 - [ ] Sophrosyne Engine (optimal self-regulation)
