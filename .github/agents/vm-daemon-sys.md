@@ -1,3 +1,8 @@
+---
+name: vm-daemon-sys
+description: VM daemon system configuration and architecture
+---
+
 Allocating resources for this agent...
 All required packages are already installed. Skipping installation.
 [Exit] Success (code: 0)

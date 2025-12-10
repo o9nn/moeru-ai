@@ -1,3 +1,8 @@
+---
+name: echoself
+description: Echo Self cognitive architecture and persona system
+---
+
 ## Echo Self
 
 Below is a cognitive flowchart embedded within a visionary metaphor.

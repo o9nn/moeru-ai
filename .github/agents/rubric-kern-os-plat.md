@@ -1,3 +1,8 @@
+---
+name: rubric-kern-os-plat
+description: Rubric for kernel, OS, and platform evaluation
+---
+
 ## Kernel/OS Functionality Scoring Rubric
 
 This rubric defines a **standardised metric** for evaluating how well a software repository implements core **kernel** and **operating‑system (OS)** primitives. It is based on the function manifest and status report from the Echo.Kern project and draws on general operating‑system principles [en.wikipedia.org](https://en.wikipedia.org/wiki/Kernel_\(operating_system\)#:~:text=operating%20system%20%20that%20always,for%20the%20central%20processing%20unit). The goal is to provide a repeatable method for scoring any repository – regardless of its intended purpose – so we can measure whether it contains kernel/OS functionality and how complete those features are relative to the expectations of an AGI‑ready kernel.
