@@ -378,12 +378,13 @@ export class OpponentProcessor {
   private findCommonGround(thesis: Frame, antithesis: Frame): string[] {
     const common: string[] = []
     
-    // Find shared assumptions
+    // Find shared assumptions using Set for efficiency
+    const antithesisSet = new Set(antithesis.assumptions)
     for (const thesisAssumption of thesis.assumptions) {
-      for (const antithesisAssumption of antithesis.assumptions) {
-        if (this.areSimilar(thesisAssumption, antithesisAssumption)) {
-          common.push(thesisAssumption)
-        }
+      // Direct match or similarity check
+      if (antithesisSet.has(thesisAssumption) || 
+          antithesis.assumptions.some(a => this.areSimilar(thesisAssumption, a))) {
+        common.push(thesisAssumption)
       }
     }
     
@@ -460,7 +461,8 @@ Synthesis:
     const supportingEvidence = reasoning.evidence.filter(e => e.supportsConclusion)
     const opposingEvidence = reasoning.evidence.filter(e => !e.supportsConclusion)
     
-    const ratio = supportingEvidence.length / (opposingEvidence.length || 1)
+    const MIN_EVIDENCE_COUNT = 1  // Avoid division by zero
+    const ratio = supportingEvidence.length / (opposingEvidence.length || MIN_EVIDENCE_COUNT)
     
     return {
       present: ratio > 5,  // More than 5:1 supporting
@@ -511,7 +513,7 @@ class Agent {
     )
     
     // Make decision informed by multiple perspectives
-    return this.decideBased OnSynthesis(synthesis, analyses)
+    return this.decideBasedOnSynthesis(synthesis, analyses)
   }
 }
 ```

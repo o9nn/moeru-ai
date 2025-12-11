@@ -93,6 +93,8 @@ The Sophrosyne Engine implements **dynamic optimal self-regulation** - the abili
 
 export interface Spectrum {
   name: string
+  // NOTE: 0.0 and 1.0 are normalized bounds for all spectra (design choice for consistency)
+  // All spectrum calculations work in normalized 0-1 space, then interpret contextually
   min: { name: string; value: 0.0 }
   max: { name: string; value: 1.0 }
   currentPosition: number  // 0.0 to 1.0
@@ -329,6 +331,8 @@ export class SophrosyneEngine {
     return this.clamp(position, 0, 1)
   }
   
+  // NOTE: Clamp is duplicated here for documentation completeness
+  // In actual implementation, extract to shared utils (e.g., @proj-airi/cognitive-core/utils)
   private clamp(value: number, min: number, max: number): number {
     return Math.max(min, Math.min(max, value))
   }
