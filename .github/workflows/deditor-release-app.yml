@@ -117,15 +117,15 @@ jobs:
       # ---------
       - name: Get Name of Artifacts (Nightly + Windows Only)
         if: ${{ github.event_name == 'schedule' && matrix.os == 'windows-latest' }}
-        run: |
         working-directory: deditor
+        run: |
           pnpm -F @deditor-app/deditor name-of-artifacts ${{ matrix.target }} --out bundle_name
           echo "BUNDLE_NAME=$(node -p "require('node:fs').readFileSync(require('node:path').join('apps', 'deditor', 'bundle_name')).toString('utf-8')")" >> $env:GITHUB_ENV
 
       - name: Get Name of Artifacts (Nightly)
         if: ${{ github.event_name == 'schedule' && matrix.os != 'windows-latest' }}
-        run: |
         working-directory: deditor
+        run: |
           pnpm -F @deditor-app/deditor name-of-artifacts ${{ matrix.target }} --out bundle_name
           echo "BUNDLE_NAME=$(node -p "require('node:fs').readFileSync(require('node:path').join('apps', 'deditor', 'bundle_name')).toString('utf-8')")" >> $GITHUB_ENV
 
@@ -146,22 +146,22 @@ jobs:
 
       - name: Get Name of Artifacts (Manual + Windows Only)
         if: ${{ github.event_name == 'workflow_dispatch' && matrix.os == 'windows-latest' }}
-        run: |
         working-directory: deditor
+        run: |
           pnpm -F @deditor-app/deditor name-of-artifacts ${{ matrix.target }} --out bundle_name --release ${{ !inputs.build_only && !inputs.artifacts_only }} --tag ${{ inputs.tag }} --auto-tag ${{ !inputs.build_only }}
           echo "BUNDLE_NAME=$(node -p "require('node:fs').readFileSync(require('node:path').join('apps', 'deditor', 'bundle_name')).toString('utf-8')")" >> $env:GITHUB_ENV
 
       - name: Get Name of Artifacts (Manual)
         if: ${{ github.event_name == 'workflow_dispatch' && matrix.os != 'windows-latest' }}
-        run: |
         working-directory: deditor
+        run: |
           pnpm -F @deditor-app/deditor name-of-artifacts ${{ matrix.target }} --out bundle_name --release ${{ !inputs.build_only && !inputs.artifacts_only }} --tag ${{ inputs.tag }} --auto-tag ${{ !inputs.build_only }}
           echo "BUNDLE_NAME=$(node -p "require('node:fs').readFileSync(require('node:path').join('apps', 'deditor', 'bundle_name')).toString('utf-8')")" >> $GITHUB_ENV
 
       - name: Rename Artifacts (Manual)
         if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: |
         working-directory: deditor
+        run: |
           pnpm run -F @deditor-app/deditor rename-artifacts ${{ matrix.target }} --release ${{ !inputs.build_only && !inputs.artifacts_only }} --tag ${{ inputs.tag }} --auto-tag ${{ !inputs.build_only }}
 
       - name: Upload Artifacts (Manual + Non-Release)
@@ -185,8 +185,8 @@ jobs:
 
       - name: Rename Artifacts (Automatic)
         if: ${{ github.event_name == 'release' }}
-        run: |
         working-directory: deditor
+        run: |
           pnpm run -F @deditor-app/deditor rename-artifacts ${{ matrix.target }} --release --auto-tag
 
       - name: Upload To GitHub Releases (Automatic)

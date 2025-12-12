@@ -80,17 +80,15 @@ jobs:
           - project: airi
             space: moeru-ai/airi
             build-cmd: pnpm build
-            build-env: |
-              TARGET_HUGGINGFACE_SPACE=true
-              VITE_APP_TARGET_HUGGINGFACE_SPACE=true
+            target-hf-space: true
           - project: airi-factorio
             space: moeru-ai/airi-factorio
             build-cmd: pnpm build
-            build-env: ""
+            target-hf-space: false
           - project: hf-inspector
             space: moeru-ai/hf-inspector
             build-cmd: pnpm build
-            build-env: ""
+            target-hf-space: false
     name: Deploy ${{ matrix.project }} to HF Spaces
     steps:
       - uses: actions/checkout@v5
@@ -121,7 +119,9 @@ jobs:
       - name: Build
         run: ${{ matrix.build-cmd }}
         working-directory: ${{ matrix.project }}
-        env: ${{ matrix.build-env }}
+        env:
+          TARGET_HUGGINGFACE_SPACE: ${{ matrix.target-hf-space }}
+          VITE_APP_TARGET_HUGGINGFACE_SPACE: ${{ matrix.target-hf-space }}
 
       - name: Check for changes
         id: diff
