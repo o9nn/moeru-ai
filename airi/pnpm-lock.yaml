@@ -1090,6 +1090,9 @@ importers:
       '@mdit/plugin-tasklist':
         specifier: ^0.22.2
         version: 0.22.2(markdown-it@14.1.0)
+      '@proj-airi/live2d-core':
+        specifier: workspace:^
+        version: link:../packages/live2d-core
       '@proj-airi/stage-ui':
         specifier: workspace:^
         version: link:../packages/stage-ui
