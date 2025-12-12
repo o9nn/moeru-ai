@@ -27,3 +27,27 @@ export {
   defaultFrames,
 } from './optimal-grip'
 export type { OptimalGripConfig } from './optimal-grip'
+
+// Sophrosyne Engine (Self-Regulation)
+export { SophrosyneEngine } from './sophrosyne-engine'
+export type {
+  RegulationContext,
+  Spectrum,
+  ContextFactor,
+  OptimalPoint,
+  RegulationDecision,
+  HistoricalOutcome,
+} from './sophrosyne-engine'
+
+// Opponent Processor (Alternative Perspectives)
+export { OpponentProcessor } from './opponent-processor'
+export type {
+  Position,
+  Argument,
+  AlternativeFrame as OpponentAlternativeFrame,
+  SteelManResult,
+  Synthesis,
+  DetectedBias,
+  BiasAssessment,
+  AlternativeType,
+} from './opponent-processor'

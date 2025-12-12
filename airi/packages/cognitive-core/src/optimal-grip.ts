@@ -514,7 +514,7 @@ export class OptimalGripCoordinator {
   /**
    * Assess current grip strength
    */
-  assessGripStrength(context: CognitiveContext, salienceMap: SalienceMap): GripStrength {
+  assessGripStrength(context: CognitiveContext, _salienceMap: SalienceMap): GripStrength {
     // Determine optimal grip based on context
     let optimalGrip = 0.5 // Default balanced
 
@@ -591,7 +591,7 @@ export class OptimalGripCoordinator {
   /**
    * Detect gestalts (coherent patterns) in salient items
    */
-  detectGestalts(salienceMap: SalienceMap, context: CognitiveContext): Gestalt[] {
+  detectGestalts(salienceMap: SalienceMap, _context: CognitiveContext): Gestalt[] {
     const gestalts: Gestalt[] = []
     const topItems = salienceMap.items.slice(0, 10) // Consider top 10
 
