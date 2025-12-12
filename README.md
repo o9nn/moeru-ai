@@ -1,82 +1,153 @@
-# Moeru AI Monorepo
+actionlint
+==========
+[![CI Badge][]][CI]
+[![API Document][api-badge]][apidoc]
 
-This is the unified monorepo for all Moeru AI projects. All individual repositories have been integrated here to create a coherent whole.
+[actionlint][repo] is a static checker for GitHub Actions workflow files. [Try it online!][playground]
 
-## 📦 Included Projects
+Features:
 
-### Core Projects
+- **Syntax check for workflow files** to check unexpected or missing keys following [workflow syntax][syntax-doc]
+- **Strong type check for `${{ }}` expressions** to catch several semantic errors like access to not existing property,
+  type mismatches, ...
+- **Actions usage check** to check that inputs at `with:` and outputs in `steps.{id}.outputs` are correct
+- **Reusable workflow check** to check inputs/outputs/secrets of reusable workflows and workflow calls
+- **[shellcheck][] and [pyflakes][] integrations** for scripts at `run:`
+- **Security checks**; [script injection][script-injection-doc] by untrusted inputs, hard-coded credentials
+- **Other several useful checks**; [glob syntax][filter-pattern-doc] validation, dependencies check for `needs:`,
+  runner label validation, cron syntax validation, ...
 
-- **[airi](./airi)** - 💖🧸 Self hosted, you owned Grok Companion, a container of souls of waifu, cyber livings to bring them into our worlds, wishing to achieve Neuro-sama's altitude. Capable of realtime voice chat, Minecraft, Factorio playing. Web / macOS / Windows supported.
-- **[xsai](./xsai)** - 🤖💬 extra-small AI SDK.
-- **[std](./std)** - ⚖️📚 Standard for Moeru AI.
+See [the full list](docs/checks.md) of checks done by actionlint.
 
-### Infrastructure & Tools
+<img src="https://github.com/rhysd/ss/blob/master/actionlint/main.gif?raw=true" alt="actionlint reports 7 errors" width="806" height="492"/>
 
-- **[ortts](./ortts)** - 𖣘🔊 Simple and Easy-to-use local TTS inference server, Powered by ONNX Runtime
-- **[eventa](./eventa)** - 🫵 Events are all you need. Truly type-safe event driven toolbox, define it everywhere, use it anywhere, best for Web Worker/WebSocket/Electron IPC/RPC.
-- **[inventory](./inventory)** - 🧠🃏 Your universal model catalog, everything, everywhere, all at once.
-- **[unspeech](./unspeech)** - 🗣️🔊 Your Text-to-Speech Services, All-in-One.
-- **[demodel](./demodel)** - 🚀🛸 Easily boost the speed of pulling your models and datasets from various of inference runtimes. (e.g. 🤗 HuggingFace, 🐫 Ollama, vLLM, and more!)
-- **[mcp-launcher](./mcp-launcher)** - 🐳🧩 Easy to use MCP builder & launcher for all possible MCP servers, just like Ollama for models!
+**Example of broken workflow:**
 
-### AI Integrations & Extensions
+```yaml
+on:
+  push:
+    branch: main
+    tags:
+      - 'v\d+'
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [macos-latest, linux-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - run: echo "Checking commit '${{ github.event.head_commit.message }}'"
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node_version: 16.x
+      - uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
+        if: ${{ github.repository.permissions.admin == true }}
+      - run: npm install && npm test
+```
 
-- **[xsai-transformers](./xsai-transformers)** - 🤗💬 Transformers.js provider for xsAI. Running Embedding, Whisper, and LLMs right in your browser!
-- **[xsai-use](./xsai-use)** - 👾💬 Framework bindings for xsAI. Integrate with your React / Vue / Svelte / ... apps!
-- **[xsmcp](./xsmcp)** - 🤖📎 extra-small MCP SDK. (archived)
+**actionlint reports 7 errors:**
 
-### Game Integrations
+```
+test.yaml:3:5: unexpected key "branch" for "push" section. expected one of "branches", "branches-ignore", "paths", "paths-ignore", "tags", "tags-ignore", "types", "workflows" [syntax-check]
+  |
+3 |     branch: main
+  |     ^~~~~~~
+test.yaml:5:11: character '\' is invalid for branch and tag names. only special characters [, ?, +, *, \ ! can be escaped with \. see `man git-check-ref-format` for more details. note that regular expression is unavailable. note: filter pattern syntax is explained at https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet [glob]
+  |
+5 |       - 'v\d+'
+  |           ^~~~
+test.yaml:10:28: label "linux-latest" is unknown. available labels are "windows-latest", "windows-2022", "windows-2019", "windows-2016", "ubuntu-latest", "ubuntu-22.04", "ubuntu-20.04", "ubuntu-18.04", "macos-latest", "macos-12", "macos-12.0", "macos-11", "macos-11.0", "macos-10.15", "self-hosted", "x64", "arm", "arm64", "linux", "macos", "windows". if it is a custom label for self-hosted runner, set list of labels in actionlint.yaml config file [runner-label]
+   |
+10 |         os: [macos-latest, linux-latest]
+   |                            ^~~~~~~~~~~~~
+test.yaml:13:41: "github.event.head_commit.message" is potentially untrusted. avoid using it directly in inline scripts. instead, pass it through an environment variable. see https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions for more details [expression]
+   |
+13 |       - run: echo "Checking commit '${{ github.event.head_commit.message }}'"
+   |                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+test.yaml:17:11: input "node_version" is not defined in action "actions/setup-node@v3". available inputs are "always-auth", "architecture", "cache", "cache-dependency-path", "check-latest", "node-version", "node-version-file", "registry-url", "scope", "token" [action]
+   |
+17 |           node_version: 16.x
+   |           ^~~~~~~~~~~~~
+test.yaml:21:20: property "platform" is not defined in object type {os: string} [expression]
+   |
+21 |           key: ${{ matrix.platform }}-node-${{ hashFiles('**/package-lock.json') }}
+   |                    ^~~~~~~~~~~~~~~
+test.yaml:22:17: receiver of object dereference "permissions" must be type of object but got "string" [expression]
+   |
+22 |         if: ${{ github.repository.permissions.admin == true }}
+   |                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 
-- **[airi-factorio](./airi-factorio)** - 🎮 AI plays the game Factorio with CV & LLM combined. Powered by YOLO / LLM.
-- **[airi-minecraft](./airi-minecraft)** - ⛏️ An intelligent Minecraft bot powered by LLM. (archived - merged into Airi)
+## Why?
 
-### UI & Visualization
+- **Running a workflow is time consuming.** You need to push the changes and wait until the workflow runs on GitHub even if
+  it contains some trivial mistakes. [act][] is useful to debug the workflow locally. But it is not suitable for CI and still
+  time consuming when your workflow gets larger.
+- **Checks of workflow files by GitHub are very loose.** It reports no error even if unexpected keys are in mappings
+  (meant that some typos in keys). And also it reports no error when accessing to property which is actually not existing.
+  For example `matrix.foo` when no `foo` is defined in `matrix:` section, it is evaluated to `null` and causes no error.
+- **Some mistakes silently break a workflow.** Most common case I saw is specifying missing property to cache key. In the
+  case cache silently does not work properly but a workflow itself runs without error. So you might not notice the mistake
+  forever.
 
-- **[chat](./chat)** - 🥽🖼️ WebXR Voice Call UI, Make AI-Powered characters appear to you.
-- **[deditor](./deditor)** - 📊🔧 Opinionated Datasets Editor for managing, labelling, processing massive scale of data and be able to visulize them.
-- **[hf-inspector](./hf-inspector)** - 🤗🧐 Where are my HuggingFace downloaded models? What are they? Use this Web based tool to find out!
-- **[three-mmd](./three-mmd)** - 🥬💃 Use MMD on Three.js
+## Quick start
 
-### Development Tools
+Install `actionlint` command by downloading [the released binary][releases] or by Homebrew or by `go install`. See
+[the installation document](docs/install.md) for more details like how to manage the command with several package managers
+or run via Docker container.
 
-- **[velin](./velin)** - 👩‍💻✍️ Prompt orchestration with stacks you familiar with, such as Vue.
-- **[hfup](./hfup)** - 🤗🧑‍🚀 A collection of tools to help you deploy, bundle HuggingFace Spaces and related assets with ease.
-- **[gpuu](./gpuu)** - 👁️🧰 A set of utility tools to work with WebGPU.
-- **[cosine-similarity](./cosine-similarity)** - 〰🆚 Measures the similarity between two non-zero vectors, fast and small.
+```sh
+go install github.com/rhysd/actionlint/cmd/actionlint@latest
+```
 
-### Other Projects
+Basically all you need to do is run the `actionlint` command in your repository. actionlint automatically detects workflows and
+checks errors. actionlint focuses on finding out mistakes. It tries to catch errors as much as possible and make false positives
+as minimal as possible.
 
-- **[arpk](./arpk)** - 🌐🦙 LLM as your translator, with DeepLX-compatible API.
-- **[talk](./talk)** - 🚧 (In development)
-- **[deck](./deck)** - 🃏 Moeru AI's Character Card Deck.
-- **[blog](./blog)** - 📃✍️ Moeru AI Blog
-- **[moeru-ai.github.io](./moeru-ai.github.io)** - Homepage
-- **[L3.1-Moe](./L3.1-Moe)** - Mixture of Experts (MoE) made with mergekit-moe.
-- **[easiest](./easiest)** - Easy-to-use SillyTavern Starter, based on Docker Compose.
-- **[reproduction-ort-session-segmentation-fault](./reproduction-ort-session-segmentation-fault)** - (archived)
+```sh
+actionlint
+```
 
-## 🏗️ Structure
+Another option to try actionlint is [the online playground][playground]. Your browser can run actionlint through WebAssembly.
 
-Each project maintains its original structure and can be developed independently. The monorepo structure allows for:
+See [the usage document](docs/usage.md) for more details.
 
-- Unified version control
-- Cross-project dependencies management
-- Coordinated releases
-- Shared tooling and configurations
+## Documents
 
-## 📚 Documentation
+- [Checks](docs/checks.md): Full list of all checks done by actionlint with example inputs, outputs, and playground links.
+- [Installation](docs/install.md): Installation instructions. Prebuilt binaries, Homebrew package, a Docker image, building from
+  source, a download script (for CI) are available.
+- [Usage](docs/usage.md): How to use `actionlint` command locally or on GitHub Actions, the online playground, an official Docker
+  image, and integrations with reviewdog, Problem Matchers, super-linter, pre-commit, VS Code.
+- [Configuration](docs/config.md): How to configure actionlint behavior. Currently only labels of self-hosted runners can be
+  configured.
+- [Go API](docs/api.md): How to use actionlint as Go library.
+- [References](docs/reference.md): Links to resources.
 
-For detailed documentation on each project, please refer to the README.md file in each project's directory.
+## Bug reporting
 
-## 🤝 Contributing
+When you see some bugs or false positives, it is helpful to [file a new issue][issue-form] with a minimal example
+of input. Giving me some feedbacks like feature requests or ideas of additional checks is also welcome.
 
-Each project may have its own contribution guidelines. Please check the individual project directories for specific contribution instructions.
+## License
 
-## 📄 License
+actionlint is distributed under [the MIT license](./LICENSE.txt).
 
-Each project maintains its own license. Please refer to the LICENSE file in each project directory for specific licensing information.
-
-## 🔗 Links
-
-- Organization: [github.com/moeru-ai](https://github.com/moeru-ai)
-- Website: [moeru-ai.github.io](https://moeru-ai.github.io)
+[CI Badge]: https://github.com/rhysd/actionlint/workflows/CI/badge.svg?branch=main&event=push
+[CI]: https://github.com/rhysd/actionlint/actions?query=workflow%3ACI+branch%3Amain
+[api-badge]: https://pkg.go.dev/badge/github.com/rhysd/actionlint.svg
+[apidoc]: https://pkg.go.dev/github.com/rhysd/actionlint
+[repo]: https://github.com/rhysd/actionlint
+[playground]: https://rhysd.github.io/actionlint/
+[shellcheck]: https://github.com/koalaman/shellcheck
+[pyflakes]: https://github.com/PyCQA/pyflakes
+[act]: https://github.com/nektos/act
+[syntax-doc]: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+[filter-pattern-doc]: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet
+[script-injection-doc]: https://docs.github.com/en/actions/learn-github-actions/security-hardening-for-github-actions#understanding-the-risk-of-script-injections
+[issue-form]: https://github.com/rhysd/actionlint/issues/new
+[releases]: https://github.com/rhysd/actionlint/releases
