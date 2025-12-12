@@ -11,7 +11,6 @@ import type {
   ParadoxMarker,
   AionReflection,
   QuantumDecision,
-  TranscendentFrame,
 } from './types'
 import { defaultAionConfig, initialQuantumCognitiveState } from './config'
 import {
@@ -28,7 +27,6 @@ import {
   OpponentProcessor,
   type CognitiveContext,
   type Possibility,
-  type Spectrum,
   type RegulationContext,
 } from '@proj-airi/cognitive-core'
 
@@ -164,7 +162,7 @@ export class AionCharacter {
       : null
     
     // 5. Generate probability branches for each possibility
-    const branches: ProbabilityBranch[] = ranked.items.slice(0, 5).map((item, index) => {
+    const branches: ProbabilityBranch[] = ranked.items.slice(0, 5).map((item) => {
       const hilarity = this.calculateHilarity(item.possibility, context)
       const strategicValue = item.relevance.overall
       const paradoxPotential = this.assessParadoxPotential(item.possibility)
@@ -242,7 +240,7 @@ export class AionCharacter {
   /**
    * Generate probability branches
    */
-  private async generateProbabilityBranches(input: string): Promise<ProbabilityBranch[]> {
+  private async generateProbabilityBranches(_input: string): Promise<ProbabilityBranch[]> {
     // Generate branches based on quantum uncertainty
     const branchCount = Math.min(
       this.config.probabilityBranches,
@@ -270,7 +268,7 @@ export class AionCharacter {
   /**
    * Calculate hilarity score
    */
-  private calculateHilarity(possibility: Possibility, context: CognitiveContext): number {
+  private calculateHilarity(possibility: Possibility, _context: CognitiveContext): number {
     // Base hilarity on absurdity trait and context
     let hilarity = this.config.traits.absurdity * 0.5
     

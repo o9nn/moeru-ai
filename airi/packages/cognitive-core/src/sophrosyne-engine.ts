@@ -208,7 +208,7 @@ export class SophrosyneEngine {
    */
   decide(
     spectrum: Spectrum,
-    context: RegulationContext,
+    _context: RegulationContext,
     optimal: OptimalPoint
   ): RegulationDecision {
     const gap = Math.abs(spectrum.currentPosition - optimal.position)
@@ -572,7 +572,6 @@ export class SophrosyneEngine {
     additionalContext?: Partial<RegulationContext>
   ): RegulationContext {
     // Derive regulation context from cognitive context
-    const emotionalIntensity = Math.abs(cognitiveContext.emotional.valence) + cognitiveContext.emotional.arousal
     const memoryLoad = cognitiveContext.workingMemory.length / 7 // 7±2 capacity
     
     return {

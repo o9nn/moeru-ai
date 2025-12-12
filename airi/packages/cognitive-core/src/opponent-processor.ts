@@ -264,7 +264,7 @@ export class OpponentProcessor {
   /**
    * Create dialectical synthesis from thesis and antithesis
    */
-  synthesize(thesis: Position, antithesis: Position, context: CognitiveContext): Synthesis {
+  synthesize(thesis: Position, antithesis: Position, _context: CognitiveContext): Synthesis {
     // Identify what's preserved from both
     const preserves = this.findCommonGround(thesis, antithesis)
     
@@ -367,7 +367,7 @@ export class OpponentProcessor {
   /**
    * Generate opposite perspective
    */
-  private generateOppositeFrame(current: CognitiveFrame, context: CognitiveContext): AlternativeFrame {
+  private generateOppositeFrame(current: CognitiveFrame, _context: CognitiveContext): AlternativeFrame {
     const oppositeFrame: CognitiveFrame = {
       id: `opposite-${current.id}`,
       name: `Anti-${current.name}`,
@@ -393,7 +393,7 @@ export class OpponentProcessor {
   /**
    * Generate orthogonal perspective (different angle, not opposite)
    */
-  private generateOrthogonalFrame(current: CognitiveFrame, context: CognitiveContext): AlternativeFrame {
+  private generateOrthogonalFrame(current: CognitiveFrame, _context: CognitiveContext): AlternativeFrame {
     const orthogonalFrame: CognitiveFrame = {
       id: `orthogonal-${current.id}`,
       name: `Alternative to ${current.name}`,
@@ -419,7 +419,7 @@ export class OpponentProcessor {
   /**
    * Generate domain transfer perspective (how would another field view this?)
    */
-  private generateDomainTransferFrame(current: CognitiveFrame, context: CognitiveContext): AlternativeFrame {
+  private generateDomainTransferFrame(current: CognitiveFrame, _context: CognitiveContext): AlternativeFrame {
     const domains = ['scientific', 'artistic', 'pragmatic', 'philosophical', 'social', 'technical']
     const otherDomain = domains.find(d => d !== current.domain) || 'alternative'
     
@@ -448,7 +448,7 @@ export class OpponentProcessor {
   /**
    * Generate scale shift perspective (micro vs macro)
    */
-  private generateScaleShiftFrame(current: CognitiveFrame, context: CognitiveContext): AlternativeFrame {
+  private generateScaleShiftFrame(current: CognitiveFrame, _context: CognitiveContext): AlternativeFrame {
     const scaleFrame: CognitiveFrame = {
       id: `scale-${current.id}`,
       name: `Scale-shifted ${current.name}`,
@@ -474,7 +474,7 @@ export class OpponentProcessor {
   /**
    * Generate temporal shift perspective (past vs future)
    */
-  private generateTemporalShiftFrame(current: CognitiveFrame, context: CognitiveContext): AlternativeFrame {
+  private generateTemporalShiftFrame(current: CognitiveFrame, _context: CognitiveContext): AlternativeFrame {
     const temporalFrame: CognitiveFrame = {
       id: `temporal-${current.id}`,
       name: `Temporal view of ${current.name}`,
@@ -557,7 +557,7 @@ export class OpponentProcessor {
   /**
    * Find stronger evidence
    */
-  private findStrongerEvidence(position: Position, context: CognitiveContext): string[] {
+  private findStrongerEvidence(position: Position, _context: CognitiveContext): string[] {
     // Simple heuristic: if evidence is weak, suggest meta-evidence
     if (position.evidence.length < 2) {
       return ['Multiple independent sources support this', 'Consistent pattern across contexts']
@@ -594,7 +594,7 @@ export class OpponentProcessor {
   /**
    * Find elements that can be transcended
    */
-  private findTranscendableElements(thesis: Position, antithesis: Position): string[] {
+  private findTranscendableElements(_thesis: Position, _antithesis: Position): string[] {
     return [
       'The either/or framing',
       'The assumption of mutual exclusivity',
@@ -606,10 +606,10 @@ export class OpponentProcessor {
    * Find emergent insights from synthesis
    */
   private findEmergentInsights(
-    thesis: Position,
-    antithesis: Position,
-    preserves: string[],
-    transcends: string[]
+    _thesis: Position,
+    _antithesis: Position,
+    _preserves: string[],
+    _transcends: string[]
   ): string[] {
     return [
       'Context determines optimal approach',
@@ -623,10 +623,10 @@ export class OpponentProcessor {
    */
   private createSynthesisClaim(
     thesis: Position,
-    antithesis: Position,
-    preserves: string[],
-    transcends: string[],
-    emergent: string[]
+    _antithesis: Position,
+    _preserves: string[],
+    _transcends: string[],
+    _emergent: string[]
   ): string {
     return `Integration of "${thesis.claim}" and its alternative reveals context-dependent truth`
   }
@@ -635,10 +635,10 @@ export class OpponentProcessor {
    * Create synthesis arguments
    */
   private createSynthesisArguments(
-    thesis: Position,
-    antithesis: Position,
-    preserves: string[],
-    emergent: string[]
+    _thesis: Position,
+    _antithesis: Position,
+    _preserves: string[],
+    _emergent: string[]
   ): Argument[] {
     return [
       {
@@ -669,9 +669,9 @@ export class OpponentProcessor {
    * Assess quality of synthesis
    */
   private assessSynthesisQuality(
-    thesis: Position,
-    antithesis: Position,
-    synthesis: Position,
+    _thesis: Position,
+    _antithesis: Position,
+    _synthesis: Position,
     preserves: string[],
     transcends: string[],
     emergent: string[]
@@ -697,7 +697,7 @@ export class OpponentProcessor {
   /**
    * Check for confirmation bias
    */
-  private checkConfirmationBias(position: Position, context: CognitiveContext): DetectedBias | null {
+  private checkConfirmationBias(position: Position, _context: CognitiveContext): DetectedBias | null {
     // Simple heuristic: if all evidence supports position, might be confirmation bias
     const allSupporting = position.evidence.every(e => !e.includes('but') && !e.includes('however'))
     
@@ -717,7 +717,7 @@ export class OpponentProcessor {
   /**
    * Check for availability bias
    */
-  private checkAvailabilityBias(position: Position, context: CognitiveContext): DetectedBias | null {
+  private checkAvailabilityBias(position: Position, _context: CognitiveContext): DetectedBias | null {
     // Check if evidence relies heavily on recent/vivid examples
     const hasRecentKeywords = position.evidence.some(e =>
       e.includes('recently') || e.includes('just') || e.includes('latest')
@@ -760,7 +760,7 @@ export class OpponentProcessor {
   /**
    * Check for recency bias
    */
-  private checkRecencyBias(position: Position, history: Position[]): DetectedBias | null {
+  private checkRecencyBias(position: Position, _history: Position[]): DetectedBias | null {
     // Check if position heavily weights recent events
     const recentEvidence = position.evidence.filter(e =>
       e.includes('recent') || e.includes('latest') || e.includes('now')
@@ -782,7 +782,7 @@ export class OpponentProcessor {
   /**
    * Check for affect heuristic (emotion-driven reasoning)
    */
-  private checkAffectHeuristic(position: Position, context: CognitiveContext): DetectedBias | null {
+  private checkAffectHeuristic(_position: Position, context: CognitiveContext): DetectedBias | null {
     // Check if high emotional arousal might be affecting reasoning
     const highArousal = context.emotional.arousal > 0.7
     const strongValence = Math.abs(context.emotional.valence) > 0.7
