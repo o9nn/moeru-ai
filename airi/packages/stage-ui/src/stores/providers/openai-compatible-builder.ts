@@ -163,7 +163,7 @@ export function buildOpenAICompatibleProvider(
               ].every(str => !model.id.includes(str)),
             ))
           if (models.length > 0)
-            detected = models[0]?.id
+            detected = models[0]?.id || undefined
         }
         catch (e) {
           logWarn(`Model auto-detection failed: ${(e as Error).message}`)

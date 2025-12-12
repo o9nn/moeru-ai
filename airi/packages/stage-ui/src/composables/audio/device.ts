@@ -10,7 +10,7 @@ export function useAudioDevice() {
 
   watch(audioInputs, () => {
     if (!selectedAudioInput.value && audioInputs.value.length > 0) {
-      selectedAudioInput.value = audioInputs.value[0]?.deviceId
+      selectedAudioInput.value = audioInputs.value[0]?.deviceId || ''
     }
   })
 
@@ -20,7 +20,7 @@ export function useAudioDevice() {
       .then(() => nextTick())
       .then(() => {
         if (audioInputs.value.length > 0 && !selectedAudioInput.value) {
-          selectedAudioInput.value = audioInputs.value.find(input => input.deviceId === 'default')?.deviceId || audioInputs.value[0]?.deviceId
+          selectedAudioInput.value = audioInputs.value.find(input => input.deviceId === 'default')?.deviceId || audioInputs.value[0]?.deviceId || ''
         }
       })
       .catch((error) => {

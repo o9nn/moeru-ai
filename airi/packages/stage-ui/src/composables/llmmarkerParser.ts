@@ -44,7 +44,7 @@ export function useLlmmarkerParser(options: {
           if (openTagIndex < 0) {
             if (buffer.length - 1 >= minLiteralEmitLength) {
               const emit = buffer.slice(0, -1)
-              buffer = buffer[buffer.length - 1]
+              buffer = buffer[buffer.length - 1] || ''
               await options.onLiteral?.(emit)
             }
             break

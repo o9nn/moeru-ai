@@ -40,6 +40,7 @@
     "@intlify/unplugin-vue-i18n": "^11.0.1",
     "@mdit/plugin-footnote": "^0.22.3",
     "@mdit/plugin-tasklist": "^0.22.2",
+    "@proj-airi/live2d-core": "workspace:^",
     "@proj-airi/stage-ui": "workspace:^",
     "@radix-ui/colors": "^3.0.0",
     "@types/hast": "^3.0.4",
