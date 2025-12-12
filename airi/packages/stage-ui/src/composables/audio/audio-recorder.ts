@@ -36,7 +36,7 @@ export function useAudioRecorder(
     const track = await getMediaStreamTrack(mediaRef.value!)
     mediaOutput.value = new Output({ format: new WavOutputFormat(), target: new BufferTarget() })
 
-    const audioSource = new MediaStreamAudioTrackSource(track, { codec: 'pcm-f32', bitrate: QUALITY_MEDIUM })
+    const audioSource = new MediaStreamAudioTrackSource(track!, { codec: 'pcm-f32', bitrate: QUALITY_MEDIUM })
     audioSource.errorPromise.catch(console.error)
     mediaOutput.value.addAudioTrack(audioSource)
 

@@ -65,7 +65,7 @@ export function useCanvasPixelIsTransparent(
   pixel: Ref<Uint8Array | number[]>,
   threshold = 10,
 ): Ref<boolean> {
-  return computed(() => pixel.value[3] < threshold)
+  return computed(() => (pixel.value[3] ?? 255) < threshold)
 }
 
 export function useCanvasPixelIsTransparentAtPoint(

@@ -88,7 +88,7 @@ export function useWhisper(url: string, options?: Partial<UseWhisperOptions>) {
         result.value = e.output[0] || ''
         // eslint-disable-next-line no-console
         console.debug('Whisper result:', result.value)
-        opts.onComplete?.(e.output[0])
+        opts.onComplete?.(e.output[0] ?? '')
         break
     }
   })

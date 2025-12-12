@@ -1873,7 +1873,7 @@ export const useProvidersStore = defineStore('providers', () => {
   function initializeProvider(providerId: string) {
     if (!providerCredentials.value[providerId]) {
       const metadata = providerMetadata[providerId]
-      const defaultOptions = metadata.defaultOptions?.() || {}
+      const defaultOptions = metadata?.defaultOptions?.() || {}
       providerCredentials.value[providerId] = {
         ...defaultOptions,
         ...(Object.prototype.hasOwnProperty.call(defaultOptions, 'baseUrl') ? {} : { baseUrl: '' }),
@@ -1965,7 +1965,7 @@ export const useProvidersStore = defineStore('providers', () => {
   // Load models for all configured providers
   async function loadModelsForConfiguredProviders() {
     for (const providerId of availableProviders.value) {
-      if (providerMetadata[providerId].capabilities.listModels) {
+      if (providerMetadata[providerId]?.capabilities.listModels) {
         await fetchModelsForProvider(providerId)
       }
     }

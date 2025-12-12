@@ -12,8 +12,8 @@ const EYE_SACCADE_INT_P = [
   [1.000, 0],
 ]
 for (let i = 1; i < EYE_SACCADE_INT_P.length; i++) {
-  EYE_SACCADE_INT_P[i][0] += EYE_SACCADE_INT_P[i - 1][0]
-  EYE_SACCADE_INT_P[i][1] = EYE_SACCADE_INT_P[i - 1][1] + EYE_SACCADE_INT_STEP
+  EYE_SACCADE_INT_P[i]![0] += EYE_SACCADE_INT_P[i - 1]![0]
+  EYE_SACCADE_INT_P[i]![1] = EYE_SACCADE_INT_P[i - 1]![1] + EYE_SACCADE_INT_STEP
 }
 
 /**
@@ -24,9 +24,9 @@ for (let i = 1; i < EYE_SACCADE_INT_P.length; i++) {
 export function randomSaccadeInterval(): number {
   const r = Math.random()
   for (let i = 0; i < EYE_SACCADE_INT_P.length; i++) {
-    if (r <= EYE_SACCADE_INT_P[i][0]) {
-      return EYE_SACCADE_INT_P[i][1] + Math.random() * EYE_SACCADE_INT_STEP
+    if (r <= EYE_SACCADE_INT_P[i]![0]) {
+      return EYE_SACCADE_INT_P[i]![1] + Math.random() * EYE_SACCADE_INT_STEP
     }
   }
-  return EYE_SACCADE_INT_P[EYE_SACCADE_INT_P.length - 1][1] + Math.random() * EYE_SACCADE_INT_STEP
+  return EYE_SACCADE_INT_P[EYE_SACCADE_INT_P.length - 1]![1] + Math.random() * EYE_SACCADE_INT_STEP
 }

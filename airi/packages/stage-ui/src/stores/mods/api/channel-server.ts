@@ -20,13 +20,13 @@ export const useModsChannelServerStore = defineStore('mods:channels:proj-airi:se
           'ui:configure',
           'module:authenticated',
         ],
-        onError: (error) => {
+        onError: (error: unknown) => {
           reject(error)
         },
       })
 
-      client.value.onEvent('module:authenticated', (event) => {
-        if (event.data.authenticated) {
+      client.value.onEvent('module:authenticated', (event: WebSocketEvent) => {
+        if (event.data && 'authenticated' in event.data && event.data.authenticated) {
           connected.value = true
           flush()
           resolve()

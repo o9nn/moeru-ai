@@ -34,7 +34,7 @@ export function useAudioAnalyzer() {
       // Calculate RMS volume level
       let sum = 0
       for (let i = 0; i < dataArray.value.length; i++) {
-        sum += dataArray.value[i] * dataArray.value[i]
+        sum += dataArray.value[i]! * dataArray.value[i]!
       }
       const rms = Math.sqrt(sum / dataArray.value.length)
       volumeLevel.value = Math.min(100, (rms / 255) * 100 * amplification) // Amplify for better visualization

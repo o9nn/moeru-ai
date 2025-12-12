@@ -318,7 +318,7 @@ export default defineConfig({
     },
     plugins: [
       // Thanks https://github.com/intlify/vue-i18n/issues/1205#issuecomment-2707075660
-      i18n({ runtimeOnly: true, compositionOnly: true, fullInstall: true, ssr: true }),
+      i18n({ runtimeOnly: true, compositionOnly: true, fullInstall: true, ssr: true }) as any,
       unocss(),
       yaml(),
       frontmatterAssets(),
