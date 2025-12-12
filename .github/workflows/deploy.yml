@@ -1,5 +1,4 @@
 name: Deploy
-
 on:
   push:
     branches:
@@ -26,6 +25,8 @@ permissions:
 jobs:
   # Detect which projects have changes
   changes:
+    # Skip if commit is from github-actions bot to prevent deployment loops
+    if: github.event.head_commit.author.name != 'github-actions[bot]'
     runs-on: ubuntu-latest
     outputs:
       airi: ${{ steps.filter.outputs.airi }}
@@ -73,6 +74,10 @@ jobs:
       needs.changes.outputs.airi-factorio == 'true' ||
       needs.changes.outputs.hf-inspector == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 60
+    concurrency:
+      group: hf-deploy-${{ matrix.project }}
+      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
@@ -99,7 +104,7 @@ jobs:
       - name: Clone HF Space
         run: |
           git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/${{ matrix.space }} \
-            --depth 1 dist
+            --depth 1 --single-branch --branch main dist 2>&1 | grep -v "warning: current Git remote contains credentials" || true
         working-directory: ${{ matrix.project }}
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -142,9 +147,9 @@ jobs:
           cd dist
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git commit -m "release: build ${{ github.sha }}"
-          git lfs push origin main --all
-          git push -f
+          git commit -m "release: build ${{ github.sha }}" 2>&1 | grep -v "warning: current Git remote contains credentials" || true
+          git lfs push origin main --all 2>&1 | grep -v "warning: current Git remote contains credentials" || true
+          git push -f 2>&1 | grep -v "warning: current Git remote contains credentials" || true
         working-directory: ${{ matrix.project }}
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
