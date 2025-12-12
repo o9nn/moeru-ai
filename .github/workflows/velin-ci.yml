@@ -53,8 +53,8 @@ jobs:
         working-directory: velin
 
       - name: Build
-        run: |
         working-directory: velin
+        run: |
           pnpm run build
           pnpm run attw:packages
 
@@ -75,9 +75,8 @@ jobs:
         working-directory: velin
 
       - name: Build
-        run: |
         working-directory: velin
-          pnpm run build
+        run: pnpm run build
 
       - name: Unit Test
         run: pnpm run test:run
