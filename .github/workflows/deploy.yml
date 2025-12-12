@@ -138,8 +138,8 @@ jobs:
         if: steps.diff.outputs.changes == 'true'
         run: |
           cd dist
-          git config --local user.email "neko@ayaka.moe"
-          git config --local user.name "Neko Ayaka"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           git commit -m "release: build ${{ github.sha }}"
           git lfs push origin main --all
           git push -f
