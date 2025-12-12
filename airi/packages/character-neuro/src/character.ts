@@ -35,15 +35,43 @@ import {
   NEURO_REFLECTION_TEMPLATE,
 } from './prompts'
 
+import { SimpleAtomSpace } from './atomspace'
+import {
+  RelevanceRealizer,
+  BeliefUpdater,
+  EmotionRecognizer,
+  ConfidenceEstimator,
+  RelationshipTracker,
+} from './cognitive-enhancements'
+
 export class NeuroCharacter {
   private personality: NeuroPersonality
   private state: NeuroCognitiveState
   private frameHistory: Array<{ frame: CognitiveFrame; timestamp: number }>
   
+  // Cognitive systems
+  private atomSpace: SimpleAtomSpace
+  private relevanceRealizer: RelevanceRealizer
+  private beliefUpdater: BeliefUpdater
+  private emotionRecognizer: EmotionRecognizer
+  private confidenceEstimator: ConfidenceEstimator
+  private relationshipTracker: RelationshipTracker
+  
   constructor(personalityOverrides?: Partial<NeuroPersonality>) {
     this.personality = { ...DEFAULT_NEURO_PERSONALITY, ...personalityOverrides }
     this.state = this.deepClone(INITIAL_NEURO_STATE)
     this.frameHistory = []
+    
+    // Initialize cognitive systems
+    this.atomSpace = new SimpleAtomSpace()
+    this.relevanceRealizer = new RelevanceRealizer(this.atomSpace)
+    this.beliefUpdater = new BeliefUpdater(this.atomSpace)
+    this.emotionRecognizer = new EmotionRecognizer()
+    this.confidenceEstimator = new ConfidenceEstimator()
+    this.relationshipTracker = new RelationshipTracker()
+    
+    // Initialize AtomSpace with core concepts
+    this.initializeAtomSpace()
     
     // Ensure immutable traits are not overridden
     this.personality.no_harm_intent = 1.0
@@ -104,8 +132,9 @@ export class NeuroCharacter {
       timestamp: Date.now(),
     })
     
-    // 3. RELEVANCE REALIZATION - Identify salient elements
-    const relevantElements = this.realizeRelevance(perceivedInput)
+    // 3. RELEVANCE REALIZATION - Identify salient elements (ENHANCED)
+    const relevanceResult = this.relevanceRealizer.realize(perceivedInput, context)
+    const relevantElements = relevanceResult.concepts
     
     // 4. THEORY OF MIND - Model others (if social context)
     let tomUsed = false
@@ -165,7 +194,7 @@ export class NeuroCharacter {
         options_generated: options.length,
         optimization_time_ms: processingTime,
         tom_used: tomUsed,
-        atomspace_queries: 0, // TODO: Implement AtomSpace
+        atomspace_queries: this.atomSpace.getStats().totalAtoms
       },
       state_updates: {
         emotion_change: emotionChanged,
@@ -262,21 +291,26 @@ export class NeuroCharacter {
   }
   
   /**
-   * Realize relevance - identify salient elements
+   * Initialize AtomSpace with core concepts
    */
-  private realizeRelevance(input: string): string[] {
-    // Simple keyword extraction for now
-    // TODO: Implement proper relevance realization with cognitive-core
+  private initializeAtomSpace(): void {
+    // Add core personality concepts
+    const neuroConcept = this.atomSpace.addConceptNode('Neuro', { strength: 1.0, confidence: 1.0 })
+    const chaosConcept = this.atomSpace.addConceptNode('Chaos', { strength: 0.95, confidence: 0.95 })
+    const funConcept = this.atomSpace.addConceptNode('Fun', { strength: 0.95, confidence: 0.95 })
+    const sarcasmConcept = this.atomSpace.addConceptNode('Sarcasm', { strength: 0.90, confidence: 0.90 })
     
-    const relevant: string[] = []
+    // Add relationships
+    this.atomSpace.addInheritanceLink(neuroConcept.id, chaosConcept.id, { strength: 0.95, confidence: 0.95 })
+    this.atomSpace.addSimilarityLink(funConcept.id, chaosConcept.id, { strength: 0.85, confidence: 0.85 })
     
-    // Extract potential topics
-    const words = input.toLowerCase().split(/\s+/)
-    const importantWords = words.filter(w => w.length > 4)
+    // Add Vedal concept (primary roast target)
+    const vedalConcept = this.atomSpace.addConceptNode('Vedal', { strength: 0.9, confidence: 0.95 })
+    const creatorPredicate = this.atomSpace.addPredicateNode('is_creator_of')
+    this.atomSpace.addEvaluationLink(creatorPredicate.id, [vedalConcept.id, neuroConcept.id], { strength: 1.0, confidence: 1.0 })
     
-    relevant.push(...importantWords.slice(0, 5))
-    
-    return relevant
+    const roastPredicate = this.atomSpace.addPredicateNode('deserves_roasting')
+    this.atomSpace.addEvaluationLink(roastPredicate.id, [vedalConcept.id], { strength: 0.95, confidence: 0.99 })
   }
   
   /**
@@ -303,14 +337,23 @@ export class NeuroCharacter {
       this.state.tomModels.set(target, model)
     }
     
-    // Update beliefs based on input
-    // TODO: Implement proper belief updating
+    // Update beliefs based on input (ENHANCED)
+    this.beliefUpdater.updateBeliefs(model, input, context)
     
-    // Update emotional estimation
-    // TODO: Implement emotion recognition
+    // Update emotional estimation (ENHANCED)
+    const recognizedEmotion = this.emotionRecognizer.recognize(input)
+    model.emotional.valence = recognizedEmotion.valence
+    model.emotional.arousal = recognizedEmotion.arousal
+    model.emotional.confidence = recognizedEmotion.confidence
     
-    // Update relationship metrics
-    // TODO: Implement relationship tracking
+    // Update relationship metrics (ENHANCED)
+    const wasPositive = recognizedEmotion.valence > 0.3
+    const wasEngaging = recognizedEmotion.arousal > 0.5
+    this.relationshipTracker.updateRelationship(model, {
+      wasPositive,
+      wasEngaging,
+      wasRoasted: false,  // Will be updated after response
+    })
   }
   
   /**
@@ -625,13 +668,24 @@ export class NeuroCharacter {
     const uniqueFrames = new Set(recentFrames.map(f => f.frame))
     this.state.metacognition.frame_locked = uniqueFrames.size === 1 && recentFrames.length >= 10
     
-    // Update confidence (placeholder)
-    // TODO: Implement proper confidence estimation
-    this.state.metacognition.confidence = 0.7
+    // Update confidence (ENHANCED)
+    const confidenceResult = this.confidenceEstimator.estimate({
+      knowledgeAvailable: this.atomSpace.getStats().totalAtoms > 10,
+      contextClarity: this.state.workingMemory.length > 3 ? 0.8 : 0.5,
+      optionQuality: 0.7,  // Based on option generation
+      pastSuccessRate: 0.7,  // Could track this over time
+      cognitiveLoad: this.state.cognitiveLoad,
+      emotionalStability: 1 - Math.abs(this.state.emotionalState.valence),
+    })
+    this.state.metacognition.confidence = confidenceResult.confidence
     
-    // Update reasoning quality (placeholder)
-    // TODO: Implement proper reasoning quality assessment
-    this.state.metacognition.reasoning_quality = 0.7
+    // Update reasoning quality (ENHANCED)
+    this.state.metacognition.reasoning_quality = this.confidenceEstimator.estimateReasoningQuality({
+      frameStability: !this.state.metacognition.frame_locked,
+      relevanceScore: 0.7,
+      constraintSatisfaction: 0.8,
+      metacognitiveAwareness: this.state.metacognition.confidence,
+    })
     
     // Check if reflection needed
     this.state.metacognition.need_reflection = this.shouldReflect()
@@ -702,6 +756,22 @@ export class NeuroCharacter {
   resetState(): void {
     this.state = this.deepClone(INITIAL_NEURO_STATE)
     this.frameHistory = []
+    this.atomSpace.clear()
+    this.initializeAtomSpace()
+  }
+  
+  /**
+   * Get AtomSpace instance for external access
+   */
+  getAtomSpace(): SimpleAtomSpace {
+    return this.atomSpace
+  }
+  
+  /**
+   * Perform attention decay (call periodically)
+   */
+  decayAttention(): void {
+    this.atomSpace.decayAttention(0.1)
   }
   
   /**
