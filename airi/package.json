@@ -89,6 +89,8 @@
     "overrides": {
       "array-flatten": "npm:@nolyfill/array-flatten@^1.0.44",
       "axios": "npm:feaxios@^0.0.23",
+      "form-data": ">=4.0.4",
+      "gh-pages": ">=5.0.0",
       "is-core-module": "npm:@nolyfill/is-core-module@^1.0.39",
       "isarray": "npm:@nolyfill/isarray@^1.0.44",
       "safe-buffer": "npm:@nolyfill/safe-buffer@^1.0.44",
