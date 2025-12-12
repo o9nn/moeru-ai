@@ -5,7 +5,8 @@
  * This addresses the TODO in the codebase about implementing an emotion mapper.
  */
 
-import type { Emotion, EmotionIntensity, EmotionParameterMap, Live2DModelParameters, PartialLive2DParameters } from './types'
+import type { EmotionIntensity, EmotionParameterMap, Live2DModelParameters, PartialLive2DParameters } from './types'
+import { Emotion } from './types'
 
 /**
  * Default emotion to parameter mappings

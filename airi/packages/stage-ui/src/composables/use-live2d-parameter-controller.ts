@@ -7,8 +7,9 @@
 
 import { ref, watch } from 'vue'
 import type { Ref } from 'vue'
-import type { Emotion, Live2DModelParameters, PartialLive2DParameters } from '@proj-airi/live2d-core'
+import type { Live2DModelParameters, PartialLive2DParameters } from '@proj-airi/live2d-core'
 import {
+  Emotion,
   createEmotionMapper,
   createParameterAnimator,
   Easing,

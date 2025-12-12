@@ -5,7 +5,7 @@
  * Includes easing functions and interpolation utilities.
  */
 
-import type { EasingFunction, Live2DModelParameters, ParameterAnimation, PartialLive2DParameters } from './types'
+import type { EasingFunction, Live2DModelParameters, PartialLive2DParameters } from './types'
 
 /**
  * Standard easing functions
