@@ -5,8 +5,8 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
     }
   },
   "files": [
@@ -14,7 +14,8 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "dev": "tsdown --watch"
+    "dev": "tsdown --watch",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "wisdom",
@@ -27,6 +28,9 @@
   ],
   "author": "Moeru AI Project AIRI Team",
   "license": "MIT",
+  "dependencies": {
+    "@proj-airi/cognitive-core": "workspace:*"
+  },
   "devDependencies": {
     "tsdown": "latest",
     "typescript": "latest"

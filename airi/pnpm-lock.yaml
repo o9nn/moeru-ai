@@ -2018,6 +2018,10 @@ importers:
         version: 66.5.4
 
   packages/wisdom-metrics:
+    dependencies:
+      '@proj-airi/cognitive-core':
+        specifier: workspace:*
+        version: link:../cognitive-core
     devDependencies:
       tsdown:
         specifier: latest
@@ -32796,7 +32800,7 @@ snapshots:
     dependencies:
       agent-base: 7.1.4
       debug: 4.4.3
-      socks: 2.8.3
+      socks: 2.8.7
     transitivePeerDependencies:
       - supports-color
     optional: true

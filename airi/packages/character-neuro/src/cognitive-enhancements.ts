@@ -6,7 +6,7 @@
  */
 
 import type { TheoryOfMindModel } from './types'
-import { SimpleAtomSpace, TruthValueHelpers } from './atomspace'
+import { SimpleAtomSpace } from './atomspace'
 
 /**
  * Enhanced relevance realization using multiple strategies
@@ -130,7 +130,7 @@ export class RelevanceRealizer {
       
       // Boost based on context match
       if (context) {
-        for (const [key, value] of Object.entries(context)) {
+        for (const [_key, value] of Object.entries(context)) {
           if (typeof value === 'string' && value.toLowerCase().includes(concept.toLowerCase())) {
             score += 0.2
           }
@@ -196,7 +196,7 @@ export class BeliefUpdater {
   /**
    * Extract beliefs from input
    */
-  private extractBeliefs(input: string, context?: Record<string, any>): {
+  private extractBeliefs(input: string, _context?: Record<string, any>): {
     aboutSelf: string[]
     aboutSituation: string[]
     expectations: string[]
@@ -244,7 +244,7 @@ export class BeliefUpdater {
     )
     
     // Store beliefs as evaluation links
-    for (const belief of beliefs.aboutSelf) {
+    for (const _belief of beliefs.aboutSelf) {
       const beliefPredicate = this.atomSpace.addPredicateNode('believes_about_self')
       this.atomSpace.addEvaluationLink(
         beliefPredicate.id,

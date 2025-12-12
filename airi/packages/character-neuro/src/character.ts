@@ -12,12 +12,10 @@ import type {
   ActionOption,
   NeuroResponse,
   TheoryOfMindModel,
-  NeuroReflection,
 } from './types'
 
 import {
   DEFAULT_NEURO_PERSONALITY,
-  DEFAULT_CONSTRAINT_WEIGHTS,
   INITIAL_NEURO_STATE,
   FRAME_CONSTRAINT_WEIGHTS,
   FRAME_SELECTION_RULES,
@@ -152,6 +150,7 @@ export class NeuroCharacter {
     const selectedOption = this.selectBestOption(scoredOptions)
     
     // 7. SAFETY CHECK - HARD CONSTRAINT
+    let finalSelectedOption = selectedOption
     if (!this.passedSafetyCheck(selectedOption)) {
       // Find safer alternative
       const safeOptions = scoredOptions.filter(opt => this.passedSafetyCheck(opt))
@@ -160,11 +159,11 @@ export class NeuroCharacter {
         return this.createSafetyFallbackResponse(input)
       }
       // Use safest option
-      const selectedOption = this.selectBestOption(safeOptions)
+      finalSelectedOption = this.selectBestOption(safeOptions)
     }
     
     // 8. EMOTIONAL UPDATE - Adjust emotional state
-    const emotionChanged = this.updateEmotionalState(input, selectedOption)
+    const emotionChanged = this.updateEmotionalState(input, finalSelectedOption)
     
     // 9. META-COGNITION - Assess reasoning quality
     this.performMetaCognition()
@@ -183,11 +182,11 @@ export class NeuroCharacter {
     
     // Build response
     const response: NeuroResponse = {
-      content: selectedOption.content,
+      content: finalSelectedOption.content,
       frame: this.state.currentFrame,
       personality_snapshot: { ...this.personality },
       constraint_weights: constraintWeights,
-      selected_option: selectedOption,
+      selected_option: finalSelectedOption,
       trace: {
         perception: perceivedInput,
         relevance_realization: relevantElements,
@@ -236,7 +235,7 @@ export class NeuroCharacter {
   /**
    * Select cognitive frame based on context and personality
    */
-  private selectFrame(input: string, context?: Record<string, any>): CognitiveFrame {
+  private selectFrame(input: string, _context?: Record<string, any>): CognitiveFrame {
     const inputLower = input.toLowerCase()
     
     // Check keywords for each frame
@@ -298,7 +297,7 @@ export class NeuroCharacter {
     const neuroConcept = this.atomSpace.addConceptNode('Neuro', { strength: 1.0, confidence: 1.0 })
     const chaosConcept = this.atomSpace.addConceptNode('Chaos', { strength: 0.95, confidence: 0.95 })
     const funConcept = this.atomSpace.addConceptNode('Fun', { strength: 0.95, confidence: 0.95 })
-    const sarcasmConcept = this.atomSpace.addConceptNode('Sarcasm', { strength: 0.90, confidence: 0.90 })
+    this.atomSpace.addConceptNode('Sarcasm', { strength: 0.90, confidence: 0.90 })
     
     // Add relationships
     this.atomSpace.addInheritanceLink(neuroConcept.id, chaosConcept.id, { strength: 0.95, confidence: 0.95 })
@@ -316,7 +315,7 @@ export class NeuroCharacter {
   /**
    * Check if context is social (involves other people)
    */
-  private isSocialContext(input: string, context?: Record<string, any>): boolean {
+  private isSocialContext(input: string, _context?: Record<string, any>): boolean {
     const socialKeywords = ['you', 'your', 'chat', 'vedal', 'evil', 'people', 'friend']
     const inputLower = input.toLowerCase()
     
@@ -386,18 +385,19 @@ export class NeuroCharacter {
    */
   private generateOptions(
     input: string,
-    relevantElements: string[],
-    context?: Record<string, any>
+    _relevantElements: string[],
+    _context?: Record<string, any>
   ): ActionOption[] {
     const options: ActionOption[] = []
     
     // Generate different types of responses based on frame
     const frame = this.state.currentFrame
+    const frameContext = `[Frame: ${frame}]`
     
     // Option 1: Straightforward response
     options.push({
       id: 'straightforward',
-      description: 'Direct, helpful response',
+      description: `Direct, helpful response ${frameContext}`,
       type: 'response',
       content: `I'll help with that!`,
       scores: {
@@ -431,8 +431,8 @@ export class NeuroCharacter {
     }
     
     // Option 3: Sarcastic/roasting response (if social context)
-    if (this.personality.sarcasm > 0.7 && this.isSocialContext(input, context)) {
-      const target = context?.user_id || 'user'
+    if (this.personality.sarcasm > 0.7 && this.isSocialContext(input, _context)) {
+      const target = _context?.user_id || 'user'
       const tomModel = this.state.tomModels.get(target)
       const roastIntensity = this.calculateRoastIntensity(tomModel)
       
@@ -608,7 +608,7 @@ export class NeuroCharacter {
   /**
    * Update emotional state
    */
-  private updateEmotionalState(input: string, selectedOption: ActionOption): boolean {
+  private updateEmotionalState(_input: string, selectedOption: ActionOption): boolean {
     const previousValence = this.state.emotionalState.valence
     const previousArousal = this.state.emotionalState.arousal
     
@@ -730,10 +730,11 @@ export class NeuroCharacter {
     const boundedDelta = Math.max(-maxDelta, Math.min(maxDelta, delta))
     
     // Apply change and ensure result stays in [0, 1]
-    this.personality[traitName] = Math.max(
+    const newValue = Math.max(
       PERSONALITY_EVOLUTION_BOUNDS.min_value,
-      Math.min(PERSONALITY_EVOLUTION_BOUNDS.max_value, currentValue + boundedDelta)
+      Math.min(PERSONALITY_EVOLUTION_BOUNDS.max_value, currentValue as number + boundedDelta)
     )
+    ;(this.personality[traitName] as number) = newValue
   }
   
   /**

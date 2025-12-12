@@ -98,22 +98,22 @@ app.whenReady().then(async () => {
   const chatWindow = injecta.provide('windows:chat', { build: () => setupChatWindowReusableFunc() })
   const mainWindow = injecta.provide('windows:main', {
     dependsOn: { settingsWindow, chatWindow },
-    build: async ({ dependsOn }) => setupMainWindow(dependsOn),
+    build: async ({ dependsOn }: any) => setupMainWindow(dependsOn),
   })
   const captionWindow = injecta.provide('windows:caption', {
     dependsOn: { mainWindow },
-    build: async ({ dependsOn }) => setupCaptionWindowManager(dependsOn),
+    build: async ({ dependsOn }: any) => setupCaptionWindowManager(dependsOn),
   })
   const tray = injecta.provide('app:tray', {
     dependsOn: { mainWindow, settingsWindow, captionWindow },
-    build: async ({ dependsOn }) => setupTray(dependsOn),
+    build: async ({ dependsOn }: any) => setupTray(dependsOn),
   })
   injecta.invoke({
     dependsOn: { mainWindow, tray, channelServerModule },
     callback: noop,
   })
 
-  injecta.start().catch(err => console.error(err))
+  injecta.start().catch((err: any) => console.error(err))
 
   // Lifecycle
   emitAppReady()

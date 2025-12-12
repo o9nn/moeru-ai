@@ -4,7 +4,7 @@
  * TypeScript type definitions for Echo-specific WebSocket events
  */
 
-import type { CognitiveState, EchoConfig, EchoReflection } from '@proj-airi/character-echo'
+import type { CognitiveState, EchoConfig, EchoReflection } from './config'
 
 /**
  * Extended WebSocket events for Echo character
