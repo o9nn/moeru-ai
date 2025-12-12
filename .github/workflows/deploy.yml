@@ -106,6 +106,8 @@ jobs:
           HF_USERNAME: ${{ secrets.HF_USERNAME }}
 
       - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: ${{ matrix.project }}/package.json
       - uses: actions/setup-node@v5
         with:
           node-version: lts/*

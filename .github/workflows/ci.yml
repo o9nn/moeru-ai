@@ -172,8 +172,12 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         if: ${{ !matrix.provenance }}
+        with:
+          package_json_file: airi/package.json
       - uses: pnpm/action-setup@v3
         if: matrix.provenance
+        with:
+          package_json_file: airi/package.json
 
       - uses: actions/setup-node@v6
         if: ${{ !matrix.provenance }}
@@ -275,6 +279,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: ${{ matrix.project }}/package.json
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
@@ -344,6 +350,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: ${{ matrix.project }}/package.json
       - uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
@@ -410,6 +418,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: ${{ matrix.project }}/package.json
       - uses: actions/setup-node@v6
         with:
           node-version: lts/*
@@ -555,6 +565,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: inventory/package.json
       - uses: actions/setup-node@v4
         with:
           node-version: 24.x

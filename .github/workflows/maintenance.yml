@@ -63,9 +63,12 @@ jobs:
         if: matrix.project == 'xsai'
         with:
           run_install: false
+          package_json_file: ${{ matrix.project }}/package.json
 
       - uses: pnpm/action-setup@v3
         if: matrix.project == 'airi'
+        with:
+          package_json_file: ${{ matrix.project }}/package.json
 
       - uses: actions/setup-node@v6
         with:
