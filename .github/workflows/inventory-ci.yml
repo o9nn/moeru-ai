@@ -71,11 +71,11 @@ jobs:
           cache-dependency-path: inventory/pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install
-          working-directory: inventory
+        working-directory: inventory
 
       - name: Lint
         run: pnpm lint
-          working-directory: inventory
+        working-directory: inventory
 
   build-ts:
     name: Build TypeScript
@@ -94,11 +94,11 @@ jobs:
           cache-dependency-path: inventory/pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install
-          working-directory: inventory
+        working-directory: inventory
 
       - name: Build
         run: pnpm build
-          working-directory: inventory
+        working-directory: inventory
 
   typecheck-ts:
     name: Typecheck TypeScript
@@ -117,11 +117,11 @@ jobs:
           cache-dependency-path: inventory/pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install
-          working-directory: inventory
+        working-directory: inventory
 
       - name: Typecheck
         run: pnpm typecheck
-          working-directory: inventory
+        working-directory: inventory
 
   test-ts:
     name: Test TypeScript
@@ -140,11 +140,11 @@ jobs:
           cache-dependency-path: inventory/pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install
-          working-directory: inventory
+        working-directory: inventory
 
       - name: Test
         run: pnpm test
-          working-directory: inventory
+        working-directory: inventory
 
   run-jem-validator:
     name: Run JEM Validator
@@ -163,11 +163,11 @@ jobs:
           cache-dependency-path: inventory/pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install
-          working-directory: inventory
+        working-directory: inventory
 
       - name: Run JEM Validator
         run: pnpm run jem-validator
-          working-directory: inventory
+        working-directory: inventory
         env:
           OPENAI_API_KEY: ${{ secrets.JEM_OPENAI_API_KEY }}
           MINIMAX_API_KEY: ${{ secrets.JEM_MINIMAX_API_KEY }}
@@ -190,6 +190,6 @@ jobs:
 
       - name: Unit tests
         run: |
-          working-directory: inventory
+        working-directory: inventory
           go test ./... -coverprofile=coverage.out -covermode=atomic -p=1
           go tool cover -func coverage.out

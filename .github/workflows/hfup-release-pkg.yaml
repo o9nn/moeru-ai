@@ -44,21 +44,21 @@ jobs:
           cache-dependency-path: hfup/pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-          working-directory: hfup
+        working-directory: hfup
 
       - name: Packages build
         run: pnpm run build
-          working-directory: hfup
+        working-directory: hfup
 
       - name: Generate changelog
         run: pnpm dlx changelogithub
-          working-directory: hfup
+        working-directory: hfup
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Packages publish
         run: pnpm publish --access public --no-git-checks
-          working-directory: hfup
+        working-directory: hfup
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           NPM_CONFIG_PROVENANCE: true

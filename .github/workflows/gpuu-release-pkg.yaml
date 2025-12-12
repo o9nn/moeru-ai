@@ -45,15 +45,15 @@ jobs:
           cache-dependency-path: gpuu/pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-          working-directory: gpuu
+        working-directory: gpuu
 
       - name: Package build
         run: pnpm run build
-          working-directory: gpuu
+        working-directory: gpuu
 
       - name: Package publish
         run: pnpm publish -r --access public --no-git-checks
-          working-directory: gpuu
+        working-directory: gpuu
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}

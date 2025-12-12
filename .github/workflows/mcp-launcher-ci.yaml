@@ -33,7 +33,7 @@ jobs:
 
       - name: Test Build
         run: go build ./...
-          working-directory: mcp-launcher
+        working-directory: mcp-launcher
 
   lint:
     name: Lint
@@ -67,6 +67,6 @@ jobs:
 
       - name: Unit tests
         run: |
-          working-directory: mcp-launcher
+        working-directory: mcp-launcher
           go test ./... -coverprofile=coverage.out -covermode=atomic -p=1
           go tool cover -func coverage.out

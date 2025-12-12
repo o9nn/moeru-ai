@@ -30,11 +30,11 @@ jobs:
           cache-dependency-path: velin/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: velin
+        working-directory: velin
 
       - name: Lint
         run: pnpm run lint
-          working-directory: velin
+        working-directory: velin
 
   build-test:
     name: Build Test
@@ -50,11 +50,11 @@ jobs:
           cache-dependency-path: velin/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: velin
+        working-directory: velin
 
       - name: Build
+        working-directory: velin
         run: |
-          working-directory: velin
           pnpm run build
           pnpm run attw:packages
 
@@ -72,16 +72,15 @@ jobs:
           cache-dependency-path: velin/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: velin
+        working-directory: velin
 
       - name: Build
-        run: |
-          working-directory: velin
-          pnpm run build
+        working-directory: velin
+        run: pnpm run build
 
       - name: Unit Test
         run: pnpm run test:run
-          working-directory: velin
+        working-directory: velin
 
   typecheck:
     name: Type Check
@@ -97,12 +96,12 @@ jobs:
           cache-dependency-path: velin/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: velin
+        working-directory: velin
 
       - name: Build
         run: pnpm run build:packages
-          working-directory: velin
+        working-directory: velin
 
       - name: Typecheck
         run: pnpm run typecheck
-          working-directory: velin
+        working-directory: velin

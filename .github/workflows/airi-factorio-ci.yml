@@ -29,11 +29,11 @@ jobs:
           cache-dependency-path: airi-factorio/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: airi-factorio
+        working-directory: airi-factorio
 
       - name: Lint
         run: pnpm run lint
-          working-directory: airi-factorio
+        working-directory: airi-factorio
 
   lint-python:
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
 
       - name: Lint
         run: pixi run lint
-          working-directory: airi-factorio
+        working-directory: airi-factorio
 
   typecheck-typescript:
     runs-on: ubuntu-latest
@@ -60,11 +60,11 @@ jobs:
           cache-dependency-path: airi-factorio/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: airi-factorio
+        working-directory: airi-factorio
 
       - name: Typecheck
         run: pnpm run build && pnpm run typecheck
-          working-directory: airi-factorio
+        working-directory: airi-factorio
 
   typecheck-python:
     runs-on: ubuntu-latest
@@ -76,4 +76,4 @@ jobs:
 
       - name: Typecheck
         run: pixi run typecheck
-          working-directory: airi-factorio
+        working-directory: airi-factorio
