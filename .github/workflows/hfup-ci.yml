@@ -33,11 +33,11 @@ jobs:
           cache-dependency-path: hfup/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: hfup
+        working-directory: hfup
 
       - name: Lint
         run: pnpm run lint
-          working-directory: hfup
+        working-directory: hfup
 
   build-test:
     name: Build Test
@@ -56,11 +56,11 @@ jobs:
           cache-dependency-path: hfup/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: hfup
+        working-directory: hfup
 
       - name: Build
         run: |
-          working-directory: hfup
+        working-directory: hfup
           pnpm run build
 
   typecheck:
@@ -80,8 +80,8 @@ jobs:
           cache-dependency-path: hfup/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: hfup
+        working-directory: hfup
 
       - name: Typecheck
         run: pnpm run typecheck
-          working-directory: hfup
+        working-directory: hfup

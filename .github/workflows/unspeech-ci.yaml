@@ -30,7 +30,7 @@ jobs:
 
       - name: Test Build
         run: go build ./...
-          working-directory: unspeech
+        working-directory: unspeech
 
   lint:
     name: Lint
@@ -64,6 +64,6 @@ jobs:
 
       - name: Unit tests
         run: |
-          working-directory: unspeech
+        working-directory: unspeech
           go test ./... -coverprofile=coverage.out -covermode=atomic -p=1
           go tool cover -func coverage.out

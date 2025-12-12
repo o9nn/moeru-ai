@@ -30,7 +30,7 @@ jobs:
 
       - name: Update Hash
         run: nix/update-assets-hash.sh
-          working-directory: airi
+        working-directory: airi
 
       - uses: stefanzweifel/git-auto-commit-action@v6
         with:

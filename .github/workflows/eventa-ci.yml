@@ -30,11 +30,11 @@ jobs:
           cache-dependency-path: eventa/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: eventa
+        working-directory: eventa
 
       - name: Lint
         run: pnpm run lint
-          working-directory: eventa
+        working-directory: eventa
 
   build-test:
     name: Build Test
@@ -50,11 +50,11 @@ jobs:
           cache-dependency-path: eventa/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: eventa
+        working-directory: eventa
 
       - name: Build
         run: |
-          working-directory: eventa
+        working-directory: eventa
           pnpm run build
 
   unit-test:
@@ -71,16 +71,16 @@ jobs:
           cache-dependency-path: eventa/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: eventa
+        working-directory: eventa
 
       - name: Build
         run: |
-          working-directory: eventa
+        working-directory: eventa
           pnpm run build
 
       - name: Unit Test
         run: pnpm run test:run
-          working-directory: eventa
+        working-directory: eventa
 
   typecheck:
     name: Type Check
@@ -96,8 +96,8 @@ jobs:
           cache-dependency-path: eventa/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: eventa
+        working-directory: eventa
 
       - name: Typecheck
         run: pnpm run typecheck
-          working-directory: eventa
+        working-directory: eventa

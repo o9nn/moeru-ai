@@ -30,11 +30,11 @@ jobs:
           cache-dependency-path: inventory/pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install
-          working-directory: inventory
+        working-directory: inventory
 
       - name: Run issues fetcher
         run: pnpm run fetch-issues
-          working-directory: inventory
+        working-directory: inventory
         env:
           ISSUE_ID: ${{ github.event.issue.number }}
           TRIGGER_ACTION: ${{ github.event.action }}

@@ -130,22 +130,22 @@ jobs:
       - name: Build (Windows Only) # Windows
         if: matrix.os == 'windows-latest'
         run: pnpm run -F @proj-airi/stage-tamagotchi build && pnpm -F @proj-airi/stage-tamagotchi exec electron-builder build ${{ matrix.builder-args }}
-          working-directory: airi
+        run: pnpm run -F @proj-airi/stage-tamagotchi build && pnpm -F @proj-airi/stage-tamagotchi exec electron-builder build ${{ matrix.builder-args }}
 
       - name: Build (macOS Only) # macOS
         if: matrix.os == 'macos-15-intel' || matrix.os == 'macos-latest'
         run: pnpm run -F @proj-airi/stage-tamagotchi build && pnpm -F @proj-airi/stage-tamagotchi exec electron-builder build ${{ matrix.builder-args }}
-          working-directory: airi
+        run: pnpm run -F @proj-airi/stage-tamagotchi build && pnpm -F @proj-airi/stage-tamagotchi exec electron-builder build ${{ matrix.builder-args }}
 
       - name: Build (Linux Only) # Linux
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'ubuntu-24.04-arm'
         run: pnpm run -F @proj-airi/stage-tamagotchi build && pnpm -F @proj-airi/stage-tamagotchi exec electron-builder build ${{ matrix.builder-args }}
-          working-directory: airi
+        run: pnpm run -F @proj-airi/stage-tamagotchi build && pnpm -F @proj-airi/stage-tamagotchi exec electron-builder build ${{ matrix.builder-args }}
 
       - name: Setup Flatpak (Linux Only)
         if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'ubuntu-24.04-arm' }}
         run: |
-          working-directory: airi
+        run: |
           sudo apt update
           sudo apt install -y flatpak flatpak-builder elfutils
           flatpak --version
@@ -153,9 +153,9 @@ jobs:
 
       - name: Build Flatpak (Linux Only) # Flatpak
         if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'ubuntu-24.04-arm' }}
-        working-directory: ./apps/stage-tamagotchi
+        working-directory: airi
         run: |
-          working-directory: airi
+        run: |
           mkdir -p dist
           # Auto-install required SDK/Platform/BaseApp from Flathub in user scope
           flatpak-builder --user --install-deps-from=flathub ./flatpak ai.moeru.airi.flatpak.yml --force-clean
@@ -171,7 +171,7 @@ jobs:
         if: ${{ github.event_name == 'schedule' && matrix.os == 'windows-latest' }}
         working-directory: ./apps/stage-tamagotchi
         run: |
-          working-directory: airi
+        run: |
           echo "BUNDLE_NAME=$(pnpm exec tsx scripts/artifacts-metadata.ts ${{ matrix.target }} --get-bundle-name)" >> $env:GITHUB_ENV
           echo "VERSION=$(pnpm exec tsx scripts/artifacts-metadata.ts ${{ matrix.target }} --get-version)" >> $env:GITHUB_ENV
 
@@ -179,27 +179,27 @@ jobs:
         if: ${{ github.event_name == 'schedule' && matrix.os != 'windows-latest' }}
         working-directory: ./apps/stage-tamagotchi
         run: |
-          working-directory: airi
+        run: |
           echo "VERSION=$(pnpm exec tsx scripts/artifacts-metadata.ts ${{ matrix.target }} --get-version)" >> $GITHUB_ENV
 
       - name: Get Artifacts Envs (Nightly + macOS Only)
         if: ${{ github.event_name == 'schedule' && (matrix.os == 'macos-latest' || matrix.os == 'macos-15-intel') }}
         working-directory: ./apps/stage-tamagotchi
         run: |
-          working-directory: airi
+        run: |
           echo "BUNDLE_NAME=$(pnpm exec tsx scripts/artifacts-metadata.ts ${{ matrix.target }} --get-bundle-name)" >> $GITHUB_ENV
 
       - name: Rename Artifacts (Nightly)
         if: ${{ github.event_name == 'schedule' }}
         run:
-          pnpm run -F @proj-airi/stage-tamagotchi rename-artifacts ${{ matrix.target }}
+        run:
 
           working-directory: airi
       - name: Get Linux Artifact Names (Nightly + Linux Only)
         if: ${{ github.event_name == 'schedule' && (matrix.os == 'ubuntu-latest' || matrix.os == 'ubuntu-24.04-arm') }}
         working-directory: ./apps/stage-tamagotchi
         run: |
-          working-directory: airi
+        run: |
           echo "DEB_BUNDLE_NAME=$(pnpm exec tsx scripts/artifacts-metadata.ts ${{ matrix.target }} --get-filename deb)" >> $GITHUB_ENV
           echo "RPM_BUNDLE_NAME=$(pnpm exec tsx scripts/artifacts-metadata.ts ${{ matrix.target }} --get-filename rpm)" >> $GITHUB_ENV
           echo "FLATPAK_BUNDLE_NAME=$(pnpm exec tsx scripts/artifacts-metadata.ts ${{ matrix.target }} --get-filename flatpak)" >> $GITHUB_ENV
@@ -240,7 +240,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && matrix.os == 'windows-latest' }}
         working-directory: ./apps/stage-tamagotchi
         run: |
-          working-directory: airi
+        run: |
           echo "BUNDLE_NAME=$(pnpm exec tsx scripts/artifacts-metadata.ts ${{ matrix.target }} --get-bundle-name --release ${{ !inputs.build_only && !inputs.artifacts_only }} --tag ${{ inputs.tag }} --auto-tag ${{ !inputs.build_only }})" >> $env:GITHUB_ENV
           echo "VERSION=$(pnpm exec tsx scripts/artifacts-metadata.ts ${{ matrix.target }} --get-version --release ${{ !inputs.build_only && !inputs.artifacts_only }} --tag ${{ inputs.tag }} --auto-tag ${{ !inputs.build_only }})" >> $env:GITHUB_ENV
 
@@ -248,27 +248,27 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && matrix.os != 'windows-latest' }}
         working-directory: ./apps/stage-tamagotchi
         run: |
-          working-directory: airi
+        run: |
           echo "VERSION=$(pnpm exec tsx scripts/artifacts-metadata.ts ${{ matrix.target }} --get-version --release ${{ !inputs.build_only && !inputs.artifacts_only }} --tag ${{ inputs.tag }} --auto-tag ${{ !inputs.build_only }})" > $GITHUB_ENV
 
       - name: Get Artifacts Envs (Manual + macOS Only)
         if: ${{ github.event_name == 'workflow_dispatch' && (matrix.os == 'macos-latest' || matrix.os == 'macos-15-intel') }}
         working-directory: ./apps/stage-tamagotchi
         run: |
-          working-directory: airi
+        run: |
           echo "BUNDLE_NAME=$(pnpm exec tsx scripts/artifacts-metadata.ts ${{ matrix.target }} --get-bundle-name --release ${{ !inputs.build_only && !inputs.artifacts_only }} --tag ${{ inputs.tag }} --auto-tag ${{ !inputs.build_only }})" > $GITHUB_ENV
 
       - name: Rename Artifacts (Manual)
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
-          working-directory: airi
+        run: |
           pnpm run -F @proj-airi/stage-tamagotchi rename-artifacts ${{ matrix.target }} --release ${{ !inputs.build_only && !inputs.artifacts_only }} --tag ${{ inputs.tag }} --auto-tag ${{ !inputs.build_only }}
 
       - name: Get Linux Artifact Names (Manual + Non-Release + Linux Only)
         if: ${{ github.event_name == 'workflow_dispatch' && !inputs.build_only && inputs.artifacts_only && (matrix.os == 'ubuntu-latest' || matrix.os == 'ubuntu-24.04-arm') }}
         working-directory: ./apps/stage-tamagotchi
         run: |
-          working-directory: airi
+        run: |
           echo "DEB_BUNDLE_NAME=$(pnpm exec tsx scripts/artifacts-metadata.ts ${{ matrix.target }} --get-filename deb --release ${{ !inputs.build_only && !inputs.artifacts_only }} --tag ${{ inputs.tag }} --auto-tag ${{ !inputs.build_only }})" >> $GITHUB_ENV
           echo "RPM_BUNDLE_NAME=$(pnpm exec tsx scripts/artifacts-metadata.ts ${{ matrix.target }} --get-filename rpm --release ${{ !inputs.build_only && !inputs.artifacts_only }} --tag ${{ inputs.tag }} --auto-tag ${{ !inputs.build_only }})" >> $GITHUB_ENV
           echo "FLATPAK_BUNDLE_NAME=$(pnpm exec tsx scripts/artifacts-metadata.ts ${{ matrix.target }} --get-filename flatpak --release ${{ !inputs.build_only && !inputs.artifacts_only }} --tag ${{ inputs.tag }} --auto-tag ${{ !inputs.build_only }})" >> $GITHUB_ENV
@@ -316,7 +316,7 @@ jobs:
       - name: Rename Artifacts (Automatic)
         if: ${{ github.event_name == 'release' }}
         run: |
-          working-directory: airi
+        run: |
           pnpm run -F @proj-airi/stage-tamagotchi rename-artifacts ${{ matrix.target }} --release --auto-tag
 
       - name: Upload To GitHub Releases (Automatic)

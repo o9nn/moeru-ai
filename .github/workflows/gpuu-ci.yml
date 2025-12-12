@@ -30,11 +30,11 @@ jobs:
           cache-dependency-path: gpuu/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: gpuu
+        working-directory: gpuu
 
       - name: Lint
         run: pnpm run lint
-          working-directory: gpuu
+        working-directory: gpuu
 
   build-test:
     name: Build Test
@@ -50,11 +50,11 @@ jobs:
           cache-dependency-path: gpuu/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: gpuu
+        working-directory: gpuu
 
       - name: Build
         run: |
-          working-directory: gpuu
+        working-directory: gpuu
           pnpm run build
 
   typecheck:
@@ -71,8 +71,8 @@ jobs:
           cache-dependency-path: gpuu/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: gpuu
+        working-directory: gpuu
 
       - name: Typecheck
         run: pnpm run typecheck
-          working-directory: gpuu
+        working-directory: gpuu

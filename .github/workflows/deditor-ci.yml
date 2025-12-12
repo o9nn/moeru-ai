@@ -30,11 +30,11 @@ jobs:
           cache-dependency-path: deditor/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: deditor
+        working-directory: deditor
 
       - name: Lint
         run: |
-          working-directory: deditor
+        working-directory: deditor
           pnpm run lint
 
   build-test:
@@ -51,11 +51,11 @@ jobs:
           cache-dependency-path: deditor/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: deditor
+        working-directory: deditor
 
       - name: Build
         run: |
-          working-directory: deditor
+        working-directory: deditor
           pnpm run build:unpack
 
   typecheck:
@@ -72,13 +72,13 @@ jobs:
           cache-dependency-path: deditor/pnpm-lock.yaml
       - name: Install
         run: pnpm install
-          working-directory: deditor
+        working-directory: deditor
 
       - name: Build
         run: |
-          working-directory: deditor
+        working-directory: deditor
           pnpm run build
 
       - name: Typecheck
         run: pnpm run typecheck
-          working-directory: deditor
+        working-directory: deditor
