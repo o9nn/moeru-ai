@@ -162,8 +162,8 @@ export function buildOpenAICompatibleProvider(
                 'models/gemini-2.5-pro',
               ].every(str => !model.id.includes(str)),
             ))
-          if (models.length > 0)
-            detected = models[0]?.id || undefined
+          if (models.length > 0 && models[0]?.id)
+            detected = models[0].id
         }
         catch (e) {
           logWarn(`Model auto-detection failed: ${(e as Error).message}`)
