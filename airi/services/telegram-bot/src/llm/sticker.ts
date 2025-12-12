@@ -79,12 +79,12 @@ export async function interpretSticker(bot: Bot, msg: Message, sticker: Sticker)
       throw new Error('No response text')
     }
 
-    // TODO: implement this for sticker searching
-    const _embedRes = await embed({
+    // Generate embedding for sticker description to enable semantic search
+    const embedRes = await embed({
       baseURL: env.EMBEDDING_API_BASE_URL!,
       apiKey: env.EMBEDDING_API_KEY!,
       model: env.EMBEDDING_MODEL!,
-      input: 'Hello, world!',
+      input: res.text, // Use the sticker description for embedding
     })
 
     await recordSticker(stickerBase64, sticker.file_id, file.file_path, res.text, sticker.set_name, sticker.emoji, sticker.set_name)

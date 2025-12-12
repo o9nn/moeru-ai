@@ -12,9 +12,10 @@ export async function generateStatusPrompt(mineflayer: Mineflayer): Promise<stri
     : inventory.map(item => `${item.name} x ${item.count}`).join(', ')
 
   // Get currently held item
-  const itemInHand = inventory.length === 0
-    ? '[Empty]'
-    : `${inventory[0].name} x ${inventory[0].count}` // TODO: mock
+  const heldItem = mineflayer.bot.heldItem
+  const itemInHand = heldItem
+    ? `${heldItem.name} x ${heldItem.count}`
+    : '[Empty]'
 
   // Build status message
   return [

@@ -136,6 +136,7 @@ jobs:
         include:
           - job: lint
           - job: typecheck
+            turbo: true
             skip-i18n: true
           - job: build-stage-web
             turbo: true

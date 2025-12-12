@@ -67,12 +67,12 @@ export async function interpretPhotos(state: BotContext, msg: Message, photos: P
         throw new Error('No response text')
       }
 
-      // TODO: implement this for photo searching
-      const _embedRes = await embed({
+      // Generate embedding for photo description to enable semantic search
+      const embedRes = await embed({
         baseURL: env.EMBEDDING_API_BASE_URL!,
         apiKey: env.EMBEDDING_API_KEY!,
         model: env.EMBEDDING_MODEL!,
-        input: 'Hello, world!',
+        input: res.text, // Use the photo description for embedding
       })
 
       await recordPhoto(base64, msg.photo[index].file_id, files[index].file_path, res.text)
