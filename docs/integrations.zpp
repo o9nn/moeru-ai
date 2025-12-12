@@ -399,13 +399,10 @@ schema FactorioRCONContract
   (* Contract Invariants *)
   command ≠ ""
   
-  (* Factorio-specific commands *)
-  command ∈ {
-    "/c game.print(...)",
-    "/c game.player.character.position",
-    "/c remote.call(...)",
-    (* and many more Lua commands *)
-  }
+  (* Factorio-specific: Lua commands via RCON *)
+  (* Commands are arbitrary Lua code prefixed with /c *)
+  isValidFactorioCommand: BOOLEAN
+  isValidFactorioCommand = (command starts with "/c " ∨ command starts with "/silent-command ")
   
   (* Response may be empty for some commands *)
   output ≠ "" ∨ true

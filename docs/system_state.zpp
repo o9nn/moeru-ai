@@ -215,10 +215,15 @@ schema ORTTSServerState
   totalRequests: ℕ
   averageLatency: ℝ
   
+  (* Concurrency Control *)
+  maxConcurrentRequests: ℕ
+  
   (* Invariants *)
   1024 ≤ listenPort ≤ 65535
+  maxConcurrentRequests > 0
   serverStatus = running ⇒ ∃ m: ONNXModelState @ 
     m ∈ loadedModels ∧ m.loaded = true
+  #activeRequests ≤ maxConcurrentRequests
   #activeRequests + #requestQueue ≤ 1000 (* Queue limit *)
   totalRequests ≥ #completedRequests
   averageLatency ≥ 0
