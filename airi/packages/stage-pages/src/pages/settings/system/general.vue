@@ -12,7 +12,7 @@ const { t } = useI18n()
 const dark = useDark()
 
 const languages = computed(() => {
-  return Object.entries(all).map(([value, label]) => ({ value, label }))
+  return Object.entries(all).map(([value, label]) => ({ value, label: String(label) }))
 })
 </script>
 

@@ -16,8 +16,8 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.mts",
-      "import": "./dist/index.mjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./locales": {
       "types": "./dist/locales/index.d.ts",
@@ -51,8 +51,8 @@
       "default": "./dist/locales/*.yaml"
     }
   },
-  "main": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "README.md",
     "dist",

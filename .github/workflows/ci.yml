@@ -213,6 +213,11 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: airi
 
+      - name: Build packages
+        if: matrix.turbo || matrix.job == 'typecheck'
+        run: pnpm run build:packages
+        working-directory: airi
+
       - name: Lint
         if: matrix.job == 'lint'
         run: pnpm run lint
@@ -221,11 +226,6 @@ jobs:
       - name: Typecheck
         if: matrix.job == 'typecheck'
         run: pnpm run typecheck
-        working-directory: airi
-
-      - name: Build packages
-        if: matrix.turbo
-        run: pnpm run build:packages
         working-directory: airi
 
       - name: Build stage-web
