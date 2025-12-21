@@ -33,7 +33,9 @@ on:
 jobs:
   build:
     name: Build
+    timeout-minutes: 60
     strategy:
+      fail-fast: false
       matrix:
         include:
 
@@ -104,6 +106,7 @@ jobs:
 
       - name: Build (macOS Only) # macOS
         if: matrix.os == 'macos-13' || matrix.os == 'macos-latest'
+        continue-on-error: ${{ matrix.os == 'macos-latest' && github.event_name == 'schedule' }}
         run: pnpm run -F @deditor-app/deditor build && pnpm -F @deditor-app/deditor exec electron-builder build ${{ matrix.builder-args }}
         working-directory: deditor
 
@@ -111,6 +114,20 @@ jobs:
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'ubuntu-24.04-arm'
         run: pnpm run -F @deditor-app/deditor build && pnpm -F @deditor-app/deditor exec electron-builder build ${{ matrix.builder-args }}
         working-directory: deditor
+
+      # ---------
+      # Error logging
+      # ---------
+      - name: Upload Build Logs on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-${{ matrix.artifact }}
+          path: |
+            deditor/apps/deditor/dist/
+            deditor/apps/deditor/bundle/
+            ~/.npm/_logs/
+          if-no-files-found: ignore
 
       # ---------
       # Nightly (schedule) builds only
