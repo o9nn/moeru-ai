@@ -1,0 +1,82 @@
+{
+  "name": "@moeru-ai/playmate-toga",
+  "version": "0.1.0",
+  "description": "Himiko Toga AI Personality with Layla features and Live2D avatar support",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./personality": {
+      "types": "./dist/personality/index.d.ts",
+      "import": "./dist/personality/index.mjs",
+      "require": "./dist/personality/index.js"
+    },
+    "./avatar": {
+      "types": "./dist/avatar/index.d.ts",
+      "import": "./dist/avatar/index.mjs",
+      "require": "./dist/avatar/index.js"
+    },
+    "./security": {
+      "types": "./dist/security/index.d.ts",
+      "import": "./dist/security/index.mjs",
+      "require": "./dist/security/index.js"
+    },
+    "./transform": {
+      "types": "./dist/transform/index.d.ts",
+      "import": "./dist/transform/index.mjs",
+      "require": "./dist/transform/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "public",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "tsdown --watch",
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "test": "vitest",
+    "test:ui": "vitest --ui"
+  },
+  "keywords": [
+    "ai",
+    "personality",
+    "toga",
+    "layla",
+    "live2d",
+    "avatar",
+    "security",
+    "cognitive-architecture"
+  ],
+  "author": "o9nn",
+  "license": "MIT",
+  "dependencies": {
+    "pixi.js": "^8.7.6",
+    "pixi-live2d-display": "^0.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.1",
+    "typescript": "^5.9.3",
+    "tsdown": "^0.15.12",
+    "vitest": "^3.2.4",
+    "eslint": "^9.37.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/o9nn/moeru-ai.git",
+    "directory": "playmate-toga"
+  },
+  "bugs": {
+    "url": "https://github.com/o9nn/moeru-ai/issues"
+  },
+  "homepage": "https://github.com/o9nn/moeru-ai/tree/main/playmate-toga#readme"
+}
