@@ -15,6 +15,9 @@
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
@@ -28,6 +31,7 @@
   "license": "MIT",
   "devDependencies": {
     "tsdown": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "vitest": "^2.1.0"
   }
 }

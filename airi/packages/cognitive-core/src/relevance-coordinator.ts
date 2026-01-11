@@ -1,6 +1,6 @@
 /**
  * Relevance Coordinator
- * 
+ *
  * Core system for relevance realization - determining what matters
  * Based on John Vervaeke's cognitive science framework
  */
@@ -11,6 +11,29 @@ import type {
   RelevanceScore,
   RankedPossibilities,
 } from './types'
+
+/**
+ * Confidence calibration result
+ */
+export interface ConfidenceCalibration {
+  /** Calibrated confidence value (0-1) */
+  confidence: number
+
+  /** Factors contributing to confidence */
+  factors: {
+    /** Component agreement (low variance = high confidence) */
+    componentAgreement: number
+    /** Historical accuracy */
+    historicalAccuracy: number
+    /** Data sufficiency */
+    dataSufficiency: number
+    /** Context clarity */
+    contextClarity: number
+  }
+
+  /** Reasoning for confidence level */
+  reasoning: string
+}
 
 /**
  * Configuration for relevance calculation
@@ -48,21 +71,252 @@ export const defaultRelevanceConfig: RelevanceConfig = {
 }
 
 /**
+ * Confidence Calibrator
+ *
+ * Implements dynamic confidence calibration for relevance assessments.
+ * Instead of hardcoded confidence values, this calculates confidence
+ * based on multiple factors including component variance, historical
+ * accuracy, and context clarity.
+ */
+export class ConfidenceCalibrator {
+  private historicalPredictions: Array<{
+    predictedRelevance: number
+    actualOutcome: number
+    components: RelevanceScore['components']
+    timestamp: number
+  }> = []
+
+  private readonly historyLimit = 50
+
+  /**
+   * Calculate calibrated confidence for a relevance assessment
+   */
+  calibrate(
+    components: RelevanceScore['components'],
+    context: CognitiveContext
+  ): ConfidenceCalibration {
+    const factors = {
+      componentAgreement: this.calculateComponentAgreement(components),
+      historicalAccuracy: this.calculateHistoricalAccuracy(),
+      dataSufficiency: this.calculateDataSufficiency(context),
+      contextClarity: this.calculateContextClarity(context),
+    }
+
+    // Weighted combination of factors
+    const weights = {
+      componentAgreement: 0.35,
+      historicalAccuracy: 0.25,
+      dataSufficiency: 0.2,
+      contextClarity: 0.2,
+    }
+
+    const confidence
+      = factors.componentAgreement * weights.componentAgreement
+      + factors.historicalAccuracy * weights.historicalAccuracy
+      + factors.dataSufficiency * weights.dataSufficiency
+      + factors.contextClarity * weights.contextClarity
+
+    const reasoning = this.generateConfidenceReasoning(factors, confidence)
+
+    return {
+      confidence: Math.min(0.95, Math.max(0.1, confidence)),
+      factors,
+      reasoning,
+    }
+  }
+
+  /**
+   * Record an outcome for learning-based calibration
+   */
+  recordOutcome(
+    predictedRelevance: number,
+    components: RelevanceScore['components'],
+    actualOutcome: number
+  ): void {
+    this.historicalPredictions.push({
+      predictedRelevance,
+      actualOutcome,
+      components,
+      timestamp: Date.now(),
+    })
+
+    if (this.historicalPredictions.length > this.historyLimit) {
+      this.historicalPredictions = this.historicalPredictions.slice(-this.historyLimit)
+    }
+  }
+
+  /**
+   * Calculate component agreement (low variance = high confidence)
+   */
+  private calculateComponentAgreement(components: RelevanceScore['components']): number {
+    const values = Object.values(components)
+    if (values.length === 0) return 0.5
+
+    const mean = values.reduce((sum, v) => sum + v, 0) / values.length
+    const variance = values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length
+
+    // Max variance is 0.25 (when all values are either 0 or 1)
+    // Low variance = high agreement = high confidence
+    return Math.max(0.1, 1 - variance * 4)
+  }
+
+  /**
+   * Calculate historical accuracy of predictions
+   */
+  private calculateHistoricalAccuracy(): number {
+    if (this.historicalPredictions.length < 5) {
+      return 0.5 // Not enough data, return neutral confidence
+    }
+
+    const recent = this.historicalPredictions.slice(-20)
+    const errors = recent.map(p =>
+      Math.abs(p.predictedRelevance - p.actualOutcome)
+    )
+    const meanError = errors.reduce((sum, e) => sum + e, 0) / errors.length
+
+    // Lower error = higher confidence
+    return Math.max(0.1, 1 - meanError)
+  }
+
+  /**
+   * Calculate data sufficiency from context
+   */
+  private calculateDataSufficiency(context: CognitiveContext): number {
+    let sufficiency = 0.5 // Base sufficiency
+
+    // Working memory contributes to data sufficiency
+    if (context.workingMemory.length > 0) {
+      sufficiency += Math.min(0.2, context.workingMemory.length * 0.05)
+    }
+
+    // Task clarity contributes
+    if (context.task && context.task.length > 10) {
+      sufficiency += 0.15
+    }
+
+    // Attention focus contributes
+    if (context.attentionFocus) {
+      sufficiency += 0.1
+    }
+
+    // Recent history provides context
+    if (context.recentHistory && context.recentHistory.length > 0) {
+      sufficiency += 0.05
+    }
+
+    return Math.min(0.95, sufficiency)
+  }
+
+  /**
+   * Calculate context clarity
+   */
+  private calculateContextClarity(context: CognitiveContext): number {
+    let clarity = 0.4 // Base clarity
+
+    // Clear emotional state (not neutral) increases clarity
+    const emotionalClarity = Math.abs(context.emotional.valence) * 0.2
+    clarity += emotionalClarity
+
+    // Defined task increases clarity
+    if (context.task) {
+      clarity += 0.2
+    }
+
+    // Specific environment type increases clarity
+    if (context.environment.type !== 'other') {
+      clarity += 0.1
+    }
+
+    // Environment state details increase clarity
+    if (context.environment.state && Object.keys(context.environment.state).length > 0) {
+      clarity += 0.1
+    }
+
+    return Math.min(0.95, clarity)
+  }
+
+  /**
+   * Generate human-readable reasoning for confidence level
+   */
+  private generateConfidenceReasoning(
+    factors: ConfidenceCalibration['factors'],
+    confidence: number
+  ): string {
+    const parts: string[] = []
+
+    if (factors.componentAgreement > 0.7) {
+      parts.push('high component agreement')
+    }
+    else if (factors.componentAgreement < 0.4) {
+      parts.push('divergent component scores')
+    }
+
+    if (factors.historicalAccuracy > 0.7) {
+      parts.push('strong historical accuracy')
+    }
+    else if (factors.historicalAccuracy < 0.4) {
+      parts.push('limited historical accuracy')
+    }
+
+    if (factors.dataSufficiency > 0.7) {
+      parts.push('sufficient context data')
+    }
+    else if (factors.dataSufficiency < 0.4) {
+      parts.push('limited context data')
+    }
+
+    if (factors.contextClarity > 0.7) {
+      parts.push('clear context')
+    }
+    else if (factors.contextClarity < 0.4) {
+      parts.push('ambiguous context')
+    }
+
+    const level = confidence > 0.7 ? 'High' : confidence > 0.4 ? 'Moderate' : 'Low'
+
+    if (parts.length === 0) {
+      return `${level} confidence based on balanced factors`
+    }
+
+    return `${level} confidence due to ${parts.join(', ')}`
+  }
+
+  /**
+   * Get calibration statistics
+   */
+  getStatistics(): {
+    totalPredictions: number
+    recentAccuracy: number
+    averageConfidence: number
+  } {
+    const recentAccuracy = this.calculateHistoricalAccuracy()
+
+    return {
+      totalPredictions: this.historicalPredictions.length,
+      recentAccuracy,
+      averageConfidence: (recentAccuracy + 0.5) / 2,
+    }
+  }
+}
+
+/**
  * Relevance Coordinator
- * 
+ *
  * Implements systematic relevance realization for cognitive architecture
  */
 export class RelevanceCoordinator {
   private config: RelevanceConfig
+  private confidenceCalibrator: ConfidenceCalibrator
   private outcomeHistory: Array<{
     possibility: Possibility
     relevance: RelevanceScore
     outcome: 'success' | 'failure' | 'neutral'
     timestamp: number
   }> = []
-  
+
   constructor(config: Partial<RelevanceConfig> = {}) {
     this.config = { ...defaultRelevanceConfig, ...config }
+    this.confidenceCalibrator = new ConfidenceCalibrator()
   }
   
   /**
@@ -89,10 +343,13 @@ export class RelevanceCoordinator {
       0
     )
     
+    // Use ConfidenceCalibrator for dynamic confidence calculation
+    const calibration = this.confidenceCalibrator.calibrate(components, context)
+
     return {
       overall,
       components,
-      confidence: 0.8, // TODO: Implement confidence calibration
+      confidence: calibration.confidence,
       reasoning: this.generateReasoning(components, overall),
     }
   }
@@ -138,7 +395,15 @@ export class RelevanceCoordinator {
       outcome,
       timestamp: Date.now(),
     })
-    
+
+    // Update confidence calibrator with outcome
+    const actualOutcome = outcome === 'success' ? 1 : outcome === 'failure' ? 0 : 0.5
+    this.confidenceCalibrator.recordOutcome(
+      relevance.overall,
+      relevance.components,
+      actualOutcome
+    )
+
     if (this.config.enableLearning) {
       await this.updateWeights()
     }
@@ -335,12 +600,34 @@ export class RelevanceCoordinator {
     const total = this.outcomeHistory.length
     const successes = this.outcomeHistory.filter(h => h.outcome === 'success').length
     const failures = this.outcomeHistory.filter(h => h.outcome === 'failure').length
-    
+
     return {
       total,
       successes,
       failures,
       successRate: total > 0 ? successes / total : 0,
     }
+  }
+
+  /**
+   * Get confidence calibration statistics
+   */
+  getCalibrationStatistics(): {
+    totalPredictions: number
+    recentAccuracy: number
+    averageConfidence: number
+  } {
+    return this.confidenceCalibrator.getStatistics()
+  }
+
+  /**
+   * Calculate confidence for given components and context
+   * (useful for testing/inspection)
+   */
+  calculateConfidence(
+    components: RelevanceScore['components'],
+    context: CognitiveContext
+  ): ConfidenceCalibration {
+    return this.confidenceCalibrator.calibrate(components, context)
   }
 }

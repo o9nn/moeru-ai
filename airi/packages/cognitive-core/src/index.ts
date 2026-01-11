@@ -9,8 +9,15 @@
 export type * from './types'
 
 // Relevance Realization
-export { RelevanceCoordinator, defaultRelevanceConfig } from './relevance-coordinator'
-export type { RelevanceConfig } from './relevance-coordinator'
+export {
+  RelevanceCoordinator,
+  ConfidenceCalibrator,
+  defaultRelevanceConfig,
+} from './relevance-coordinator'
+export type {
+  RelevanceConfig,
+  ConfidenceCalibration,
+} from './relevance-coordinator'
 
 // Four Ways of Knowing
 export { FourWaysTracker, defaultBalanceConfig } from './four-ways-tracker'
