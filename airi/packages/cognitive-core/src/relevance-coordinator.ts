@@ -12,6 +12,19 @@ import type {
   RankedPossibilities,
 } from './types'
 
+import type {
+  ConfidenceCalibrationConfig,
+  CalibrationMetrics,
+  CalibrationStateData,
+  CalibratedConfidence,
+} from './confidence'
+
+import { 
+  ConfidenceCalibrator, 
+  createConfidenceCalibrator,
+  defaultCalibrationConfig,
+} from './confidence'
+
 /**
  * Configuration for relevance calculation
  */
@@ -30,6 +43,9 @@ export interface RelevanceConfig {
   
   /** Enable learning from outcomes */
   enableLearning: boolean
+  
+  /** Confidence calibration configuration */
+  confidenceCalibration?: Partial<ConfidenceCalibrationConfig>
 }
 
 /**
@@ -45,6 +61,20 @@ export const defaultRelevanceConfig: RelevanceConfig = {
   },
   threshold: 0.3,
   enableLearning: true,
+  confidenceCalibration: defaultCalibrationConfig,
+}
+
+/**
+ * Extended relevance score with debug information
+ */
+export interface ExtendedRelevanceScore extends RelevanceScore {
+  /** Debug information (only in development) */
+  _debug?: {
+    rawConfidence: number
+    confidenceFactors: CalibratedConfidence['factors']
+    calibrationState: CalibratedConfidence['calibrationState']
+    calibrationMethod: CalibratedConfidence['method']
+  }
 }
 
 /**
@@ -61,8 +91,20 @@ export class RelevanceCoordinator {
     timestamp: number
   }> = []
   
+  // Confidence calibration system
+  private confidenceCalibrator: ConfidenceCalibrator
+  
   constructor(config: Partial<RelevanceConfig> = {}) {
-    this.config = { ...defaultRelevanceConfig, ...config }
+    this.config = { 
+      ...defaultRelevanceConfig, 
+      ...config,
+      weights: { ...defaultRelevanceConfig.weights, ...config.weights },
+    }
+    
+    // Initialize confidence calibrator
+    this.confidenceCalibrator = createConfidenceCalibrator(
+      this.config.confidenceCalibration
+    )
   }
   
   /**
@@ -71,7 +113,7 @@ export class RelevanceCoordinator {
   async calculateRelevance(
     possibility: Possibility,
     context: CognitiveContext
-  ): Promise<RelevanceScore> {
+  ): Promise<ExtendedRelevanceScore> {
     const components = {
       novelty: this.assessNovelty(possibility, context),
       emotional: this.assessEmotionalResonance(possibility, context),
@@ -89,12 +131,29 @@ export class RelevanceCoordinator {
       0
     )
     
-    return {
+    // Calculate calibrated confidence
+    const calibratedConfidence = this.confidenceCalibrator.calculate(
+      possibility,
+      context,
+      components
+    )
+    
+    const result: ExtendedRelevanceScore = {
       overall,
       components,
-      confidence: 0.8, // TODO: Implement confidence calibration
-      reasoning: this.generateReasoning(components, overall),
+      confidence: calibratedConfidence.value,
+      reasoning: this.generateReasoning(components, overall, calibratedConfidence),
     }
+    
+    // Add debug information
+    result._debug = {
+      rawConfidence: calibratedConfidence.rawConfidence,
+      confidenceFactors: calibratedConfidence.factors,
+      calibrationState: calibratedConfidence.calibrationState,
+      calibrationMethod: calibratedConfidence.method,
+    }
+    
+    return result
   }
   
   /**
@@ -125,12 +184,13 @@ export class RelevanceCoordinator {
   
   /**
    * Report outcome of acting on a possibility
-   * Enables learning loop for relevance criteria
+   * Enables learning loop for relevance criteria and confidence calibration
    */
   async reportOutcome(
     possibility: Possibility,
     relevance: RelevanceScore,
-    outcome: 'success' | 'failure' | 'neutral'
+    outcome: 'success' | 'failure' | 'neutral',
+    context?: CognitiveContext
   ): Promise<void> {
     this.outcomeHistory.push({
       possibility,
@@ -138,6 +198,21 @@ export class RelevanceCoordinator {
       outcome,
       timestamp: Date.now(),
     })
+    
+    // Update confidence calibration
+    const extendedRelevance = relevance as ExtendedRelevanceScore
+    const rawConfidence = extendedRelevance._debug?.rawConfidence ?? relevance.confidence
+    
+    if (context) {
+      this.confidenceCalibrator.recordOutcome(
+        possibility,
+        relevance,
+        rawConfidence,
+        relevance.confidence,
+        outcome,
+        context
+      )
+    }
     
     if (this.config.enableLearning) {
       await this.updateWeights()
@@ -278,14 +353,27 @@ export class RelevanceCoordinator {
    */
   private generateReasoning(
     components: RelevanceScore['components'],
-    overall: number
+    overall: number,
+    confidence?: CalibratedConfidence
   ): string {
     const topFactors = Object.entries(components)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 2)
       .map(([key]) => key)
     
-    return `Relevance (${overall.toFixed(2)}) primarily driven by ${topFactors.join(' and ')}`
+    let reasoning = `Relevance (${overall.toFixed(2)}) primarily driven by ${topFactors.join(' and ')}`
+    
+    if (confidence) {
+      const confLevel = confidence.value >= 0.8 ? 'high' :
+        confidence.value >= 0.5 ? 'moderate' : 'low'
+      reasoning += `. Confidence: ${confLevel} (${confidence.value.toFixed(2)})`
+      
+      if (confidence.uncertainty > 0.5) {
+        reasoning += ` with notable uncertainty`
+      }
+    }
+    
+    return reasoning
   }
   
   /**
@@ -342,5 +430,41 @@ export class RelevanceCoordinator {
       failures,
       successRate: total > 0 ? successes / total : 0,
     }
+  }
+  
+  /**
+   * Get confidence calibration metrics
+   */
+  getCalibrationMetrics(): CalibrationMetrics | null {
+    return this.confidenceCalibrator.getMetrics()
+  }
+  
+  /**
+   * Get confidence calibration state
+   */
+  getCalibrationState(): CalibrationStateData {
+    return this.confidenceCalibrator.getState()
+  }
+  
+  /**
+   * Force recalibration of confidence
+   */
+  forceRecalibration(): void {
+    this.confidenceCalibrator.forceRecalibration()
+  }
+  
+  /**
+   * Get the confidence calibrator instance
+   */
+  getConfidenceCalibrator(): ConfidenceCalibrator {
+    return this.confidenceCalibrator
+  }
+  
+  /**
+   * Reset the coordinator state
+   */
+  reset(): void {
+    this.outcomeHistory = []
+    this.confidenceCalibrator.reset()
   }
 }

@@ -10,7 +10,53 @@ export type * from './types'
 
 // Relevance Realization
 export { RelevanceCoordinator, defaultRelevanceConfig } from './relevance-coordinator'
-export type { RelevanceConfig } from './relevance-coordinator'
+export type { RelevanceConfig, ExtendedRelevanceScore } from './relevance-coordinator'
+
+// Confidence Calibration
+export {
+  // Main calibrator
+  ConfidenceCalibrator,
+  createConfidenceCalibrator,
+  // Calibration algorithms
+  PlattScaler,
+  IsotonicCalibrator,
+  TemperatureScaler,
+  EnsembleCalibrator,
+  createCalibrator,
+  // Raw confidence
+  RawConfidenceCalculator,
+  createRawConfidenceCalculator,
+  // Reliability metrics
+  calculateECE,
+  calculateMCE,
+  calculateBrierScore,
+  calculateCalibrationMetrics,
+  isCalibrationAcceptable,
+  getCalibrationQuality,
+  decomposeBrierScore,
+  // Types and constants
+  CalibrationState,
+  defaultCalibrationConfig,
+  defaultRawConfidenceConfig,
+} from './confidence'
+export type {
+  RawConfidenceFactors,
+  RawConfidence,
+  CalibrationMethod,
+  ConfidenceCalibrationConfig,
+  ReliabilityBin,
+  CalibrationMetrics,
+  PlattParameters,
+  IsotonicCurve,
+  TemperatureParameter,
+  EnsembleWeights,
+  CalibrationStateData,
+  OutcomeRecord,
+  CalibratedConfidence,
+  CalibrationEvents,
+  CalibrationEventCallback,
+  RawConfidenceConfig,
+} from './confidence'
 
 // Four Ways of Knowing
 export { FourWaysTracker, defaultBalanceConfig } from './four-ways-tracker'
