@@ -1,5 +1,6 @@
 import type { ChatProvider } from '@xsai-ext/shared-providers'
-import type { CommonContentPart, CompletionToolCall, Message } from '@xsai/shared-chat'
+import type { CommonContentPart, CompletionToolCall, Message, Tool } from '@xsai/shared-chat'
+import type { ToolCategory, ToolCapability, ToolFilter } from '../tools/registry/types'
 
 import { listModels } from '@xsai/model'
 import { XSAIError } from '@xsai/shared'
@@ -7,6 +8,10 @@ import { streamText } from '@xsai/stream-text'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
+import { useToolRegistry } from '../tools/registry'
+import { registerAllProviders } from '../tools/providers'
+
+// Legacy imports for backward compatibility
 import { debug, mcp } from '../tools'
 
 export type StreamEvent
@@ -21,6 +26,24 @@ export interface StreamOptions {
   onStreamEvent?: (event: StreamEvent) => void | Promise<void>
   toolsCompatibility?: Map<string, boolean>
   supportsTools?: boolean
+  /** 
+   * Tool discovery options for automatic tool loading
+   * If not specified, all enabled tools are loaded
+   */
+  toolDiscovery?: {
+    /** Filter by categories */
+    categories?: ToolCategory[]
+    /** Filter by required capabilities */
+    capabilities?: ToolCapability[]
+    /** Filter by tags */
+    tags?: string[]
+    /** Tool IDs to exclude */
+    exclude?: string[]
+    /** Tool IDs to include (whitelist) */
+    include?: string[]
+    /** Use legacy tool loading (mcp + debug only) */
+    useLegacy?: boolean
+  }
 }
 
 // TODO: proper format for other error messages.
@@ -40,6 +63,57 @@ function streamOptionsToolsCompatibilityOk(model: string, chatProvider: ChatProv
   return !!(options?.supportsTools || toolsCompatibility.get(`${chatProvider.chat(model).baseURL}-${model}`))
 }
 
+/**
+ * Load tools using automatic discovery or legacy method
+ */
+async function loadTools(options?: StreamOptions): Promise<Tool[]> {
+  const discovery = options?.toolDiscovery
+  
+  // Use legacy loading if explicitly requested or for backward compatibility
+  if (discovery?.useLegacy) {
+    return [
+      ...await mcp(),
+      ...await debug(),
+    ]
+  }
+  
+  // Use tool registry for automatic discovery
+  try {
+    const toolRegistry = useToolRegistry()
+    
+    // Build filter from options
+    const filter: ToolFilter = {
+      categories: discovery?.categories,
+      capabilities: discovery?.capabilities,
+      tags: discovery?.tags,
+      exclude: discovery?.exclude,
+      include: discovery?.include,
+      enabledOnly: true,
+    }
+    
+    // Load tools matching filter
+    const tools = await toolRegistry.loadByFilter(filter)
+    
+    // If no tools found via registry, fall back to legacy
+    if (tools.length === 0) {
+      console.warn('[LLM] No tools found via registry, falling back to legacy loading')
+      return [
+        ...await mcp(),
+        ...await debug(),
+      ]
+    }
+    
+    return tools
+  }
+  catch (err) {
+    console.error('[LLM] Tool registry error, falling back to legacy loading:', err)
+    return [
+      ...await mcp(),
+      ...await debug(),
+    ]
+  }
+}
+
 async function streamFrom(model: string, chatProvider: ChatProvider, messages: Message[], options?: StreamOptions) {
   const headers = options?.headers
 
@@ -47,18 +121,17 @@ async function streamFrom(model: string, chatProvider: ChatProvider, messages: M
 
   return new Promise<void>(async (resolve, reject) => {
     try {
+      // Automatic tool discovery - resolves TODO at line 55
+      const tools = streamOptionsToolsCompatibilityOk(model, chatProvider, messages, options)
+        ? await loadTools(options)
+        : undefined
+
       await streamText({
         ...chatProvider.chat(model),
         maxSteps: 10,
         messages: sanitized,
         headers,
-        // TODO: we need Automatic tools discovery
-        tools: streamOptionsToolsCompatibilityOk(model, chatProvider, messages, options)
-          ? [
-              ...await mcp(),
-              ...await debug(),
-            ]
-          : undefined,
+        tools,
         async onEvent(event) {
           try {
             await options?.onStreamEvent?.(event as StreamEvent)
@@ -151,6 +224,24 @@ export async function attemptForToolsCompatibilityDiscovery(model: string, chatP
 
 export const useLLM = defineStore('llm', () => {
   const toolsCompatibility = ref<Map<string, boolean>>(new Map())
+  const toolRegistryInitialized = ref(false)
+
+  /**
+   * Initialize the tool registry with all providers
+   */
+  function initializeToolRegistry() {
+    if (toolRegistryInitialized.value) return
+    
+    try {
+      const toolRegistry = useToolRegistry()
+      registerAllProviders(toolRegistry)
+      toolRegistryInitialized.value = true
+      console.log('[LLM] Tool registry initialized with', toolRegistry.registeredCount, 'providers')
+    }
+    catch (err) {
+      console.error('[LLM] Failed to initialize tool registry:', err)
+    }
+  }
 
   async function discoverToolsCompatibility(model: string, chatProvider: ChatProvider, _: Message[], options?: Omit<StreamOptions, 'supportsTools'>) {
     // Cached, no need to discover again
@@ -163,6 +254,8 @@ export const useLLM = defineStore('llm', () => {
   }
 
   function stream(model: string, chatProvider: ChatProvider, messages: Message[], options?: StreamOptions) {
+    // Ensure tool registry is initialized before streaming
+    initializeToolRegistry()
     return streamFrom(model, chatProvider, messages, { ...options, toolsCompatibility: toolsCompatibility.value })
   }
 
@@ -186,9 +279,20 @@ export const useLLM = defineStore('llm', () => {
     }
   }
 
+  /**
+   * Get the tool registry for direct access
+   */
+  function getToolRegistry() {
+    initializeToolRegistry()
+    return useToolRegistry()
+  }
+
   return {
     models,
     stream,
     discoverToolsCompatibility,
+    initializeToolRegistry,
+    getToolRegistry,
+    toolRegistryInitialized,
   }
 })
