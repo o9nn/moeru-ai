@@ -51,3 +51,49 @@ export type {
   BiasAssessment,
   AlternativeType,
 } from './opponent-processor'
+
+// Cognitive Daemon - Nested Skill Architecture
+// /neuro-nn( /dgen( /topology-weaver self.daemon(*) ) )
+export {
+  // Topology Daemon (innermost layer)
+  TopologyDaemon,
+  createTopologyDaemon,
+  selfDaemon,
+  ANALOGY_PATTERNS,
+  // DGen Layer (middle layer)
+  DGenLayer,
+  createDGenLayer,
+  generateAsCharacter,
+  NEURO_CHARACTER,
+  // Neuro-NN (outermost layer)
+  NeuroNN,
+  createNeuroNN,
+  processWithNeuroNN,
+  PERSONALITY_BOUNDS,
+  // Unified entry point
+  invokeCognitiveDaemon,
+  createCognitiveDaemon,
+} from './daemon'
+export type {
+  // Topology types
+  TopologySpec,
+  TopologyTag,
+  LayerSpec,
+  MeshworkAnchor,
+  // DGen types
+  DGenMessage,
+  RoleConfig,
+  DGenSamplingParams,
+  Character,
+  SceneContext,
+  // Neuro-NN types
+  PersonalityParameter,
+  CognitiveFrame,
+  FrameOutput,
+  CognitiveContext,
+  EmotionState,
+  SelfImage,
+  MetaCognitionResult,
+  AgentModel,
+  TrainingFeedback,
+} from './daemon'

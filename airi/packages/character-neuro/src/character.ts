@@ -42,6 +42,8 @@ import {
   RelationshipTracker,
 } from './cognitive-enhancements'
 
+import { KernelOptimizer, createKernelOptimizer } from './kernel-fitness'
+
 export class NeuroCharacter {
   private personality: NeuroPersonality
   private state: NeuroCognitiveState
@@ -54,6 +56,7 @@ export class NeuroCharacter {
   private emotionRecognizer: EmotionRecognizer
   private confidenceEstimator: ConfidenceEstimator
   private relationshipTracker: RelationshipTracker
+  private kernelOptimizer: KernelOptimizer
   
   constructor(personalityOverrides?: Partial<NeuroPersonality>) {
     this.personality = { ...DEFAULT_NEURO_PERSONALITY, ...personalityOverrides }
@@ -67,6 +70,10 @@ export class NeuroCharacter {
     this.emotionRecognizer = new EmotionRecognizer()
     this.confidenceEstimator = new ConfidenceEstimator()
     this.relationshipTracker = new RelationshipTracker()
+    this.kernelOptimizer = createKernelOptimizer({
+      optimizationThreshold: 0.7,
+      maxHistorySize: 100,
+    })
     
     // Initialize AtomSpace with core concepts
     this.initializeAtomSpace()
@@ -175,9 +182,6 @@ export class NeuroCharacter {
     // 11. REFLECTION CHECK
     const reflectionTriggered = this.shouldReflect()
     
-    // 12. ONTOGENETIC CHECK (placeholder for now)
-    // TODO: Implement kernel fitness evaluation and self-optimization
-    
     const processingTime = Date.now() - startTime
     
     // Build response
@@ -201,6 +205,27 @@ export class NeuroCharacter {
         memory_added: true,
         reflection_triggered: reflectionTriggered,
       },
+    }
+    
+    // 12. ONTOGENETIC CHECK - Kernel fitness evaluation and self-optimization
+    const fitnessResult = this.kernelOptimizer.evaluate(
+      response,
+      this.personality,
+      this.state
+    )
+    
+    // Apply optimization if needed and fitness is below threshold
+    if (fitnessResult.shouldOptimize && fitnessResult.recommendations.length > 0) {
+      this.personality = this.kernelOptimizer.applyOptimization(
+        this.personality,
+        fitnessResult.recommendations,
+        0.3 // Conservative learning rate
+      )
+      
+      // Ensure immutable traits remain unchanged
+      this.personality.no_harm_intent = 1.0
+      this.personality.respect_boundaries = 0.95
+      this.personality.constructive_chaos = 0.90
     }
     
     return response

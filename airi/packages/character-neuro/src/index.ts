@@ -39,3 +39,14 @@ export {
   NEURO_COGNITIVE_INSTRUCTIONS,
   NEURO_REFLECTION_TEMPLATE,
 } from './prompts'
+
+// Kernel Fitness Evaluation and Self-Optimization
+export {
+  KernelOptimizer,
+  createKernelOptimizer,
+} from './kernel-fitness'
+export type {
+  KernelFitnessMetrics,
+  OptimizationRecommendation,
+  FitnessEvaluationResult,
+} from './kernel-fitness'
