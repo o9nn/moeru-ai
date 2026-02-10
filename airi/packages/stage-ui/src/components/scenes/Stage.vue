@@ -24,6 +24,7 @@ import { llmInferenceEndToken } from '../../constants'
 import { EMOTION_EmotionMotionName_value, EMOTION_VRMExpressionName_value, EmotionThinkMotionName } from '../../constants/emotions'
 import { useAudioContext, useSpeakingStore } from '../../stores/audio'
 import { useChatStore } from '../../stores/chat'
+import { useEmotionStore } from '../../stores/emotion'
 import { useLive2d } from '../../stores/live2d'
 import { useSpeechStore } from '../../stores/modules/speech'
 import { useProvidersStore } from '../../stores/providers'
@@ -172,10 +173,15 @@ onTextSegmented((chunk) => {
 })
 
 const { currentMotion } = storeToRefs(useLive2d())
+const emotionStore = useEmotionStore()
 
 const emotionsQueue = createQueue<Emotion>({
   handlers: [
     async (ctx) => {
+      // Route emotion through the centralized emotion store
+      // This triggers both parameter-level expressions and motion triggers
+      emotionStore.setEmotion(ctx.data, { source: 'llm' })
+
       if (stageModelRenderer.value === 'vrm') {
         const value = EMOTION_VRMExpressionName_value[ctx.data]
         if (!value)
@@ -183,9 +189,8 @@ const emotionsQueue = createQueue<Emotion>({
 
         await vrmViewerRef.value!.setExpression(value)
       }
-      else if (stageModelRenderer.value === 'live2d') {
-        currentMotion.value = { group: EMOTION_EmotionMotionName_value[ctx.data] }
-      }
+      // Live2D motion triggers are now handled by the emotion store
+      // which syncs to the emotion bridge in Model.vue
     },
   ],
 })

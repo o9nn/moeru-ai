@@ -9,9 +9,10 @@ import { DropShadowFilter } from 'pixi-filters'
 import { Live2DFactory, Live2DModel, MotionPriority } from 'pixi-live2d-display/cubism4'
 import { computed, onMounted, onUnmounted, ref, shallowRef, toRef, watch } from 'vue'
 
-import { useLive2DIdleEyeFocus } from '../../../composables/live2d'
+import { useLive2DIdleEyeFocus, useEmotionBridge } from '../../../composables/live2d'
 import { Emotion, EmotionNeutralMotionName } from '../../../constants/emotions'
 import { useBeatSyncStore } from '../../../stores/beat-sync'
+import { useEmotionStore } from '../../../stores/emotion'
 import { useLive2d } from '../../../stores/live2d'
 import { useSettings } from '../../../stores/settings'
 
@@ -92,6 +93,8 @@ const dark = useDark()
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const isMobile = computed(() => breakpoints.between('sm', 'md').value || breakpoints.smaller('sm').value)
 const idleEyeFocus = useLive2DIdleEyeFocus()
+const emotionBridge = useEmotionBridge()
+const emotionStore = useEmotionStore()
 const dropShadowFilter = shallowRef(new DropShadowFilter({
   alpha: 0.2,
   blur: 0,
@@ -216,10 +219,11 @@ async function loadModel() {
     // Remove eye ball movements from idle motion group to prevent conflicts
     // This is too hacky
     // FIXME: it cannot blink if loading a model only have idle motion
+    // Disable eye ball curves from idle motions to prevent conflicts with
+    // the dynamic saccade system and emotion bridge parameter control
     if (motionManager.groups.idle) {
       motionManager.motionGroups[motionManager.groups.idle]?.forEach((motion) => {
         motion._motionData.curves.forEach((curve: any) => {
-        // TODO: After emotion mapper, stage editor, eye related parameters should be take cared to be dynamical instead of hardcoding
           if (curve.id === 'ParamEyeBallX' || curve.id === 'ParamEyeBallY') {
             curve.id = `_${curve.id}`
           }
@@ -302,6 +306,11 @@ async function loadModel() {
       // Possibility 2: For models having no motion groups, currentGroup will be undefined while groups can be { idle: ... }
       if (isIdleMotion) {
         idleEyeFocus.update(internalModel, now)
+
+        // Apply emotion bridge parameter-level expressions
+        if (emotionStore.config.enableParameterMapping) {
+          emotionBridge.update(internalModel, now)
+        }
 
         // If the model has eye blink parameters
         if (internalModel.eyeBlink != null) {
@@ -558,6 +567,28 @@ watch(() => modelParameters.value.rightEyebrowForm, (value) => {
   if (model.value) {
     const internalModel = model.value.internalModel
     internalModel.coreModel.setParameterValueById('ParamBrowRForm', value)
+  }
+})
+
+// Watch emotion store changes and sync to emotion bridge
+watch(() => emotionStore.currentEmotion, (emotion) => {
+  emotionBridge.setEmotion(emotion, emotionStore.currentIntensity)
+  
+  // Update saccade behavior based on emotion
+  const saccadeContexts: Record<string, Parameters<typeof idleEyeFocus.setEmotionContext>[0]> = {
+    '<|EMOTE_HAPPY|>': { rangeX: [-0.8, 0.8], rangeY: [-0.5, 0.5], lerpSpeed: 0.35 },
+    '<|EMOTE_SAD|>': { rangeX: [-0.3, 0.3], rangeY: [-0.8, -0.2], focusScale: 0.3, lerpSpeed: 0.15 },
+    '<|EMOTE_ANGRY|>': { rangeX: [-0.5, 0.5], rangeY: [-0.3, 0.3], focusScale: 0.7, lerpSpeed: 0.4 },
+    '<|EMOTE_THINK|>': { rangeX: [0.2, 0.8], rangeY: [-0.5, 0.3], focusScale: 0.4, lerpSpeed: 0.2 },
+    '<|EMOTE_SURPRISE|>': { rangeX: [-1, 1], rangeY: [-0.5, 0.8], focusScale: 0.6, lerpSpeed: 0.5 },
+    '<|EMOTE_NEUTRAL|>': {},
+  }
+  
+  const ctx = saccadeContexts[emotion]
+  if (ctx && Object.keys(ctx).length > 0) {
+    idleEyeFocus.setEmotionContext(ctx)
+  } else {
+    idleEyeFocus.resetContext()
   }
 })
 
