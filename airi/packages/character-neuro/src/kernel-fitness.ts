@@ -250,13 +250,13 @@ export class KernelOptimizer {
         const trait = rec.trait as keyof typeof PERSONALITY_EVOLUTION_BOUNDS;
         const bounds = PERSONALITY_EVOLUTION_BOUNDS[trait];
         
-        if (bounds) {
+        if (bounds && typeof bounds === 'object' && 'min' in bounds && 'max' in bounds) {
           // Apply bounded update
           const delta = (rec.suggestedValue - rec.currentValue) * learningRate * rec.confidence;
           const newValue = rec.currentValue + delta;
           
           // Clamp to bounds
-          optimized[trait] = Math.max(bounds.min, Math.min(bounds.max, newValue));
+          optimized[trait] = Math.max(bounds.min as number, Math.min(bounds.max as number, newValue));
         }
       }
     }
@@ -344,9 +344,9 @@ export class KernelOptimizer {
     
     for (const [trait, value] of Object.entries(personality)) {
       const bounds = PERSONALITY_EVOLUTION_BOUNDS[trait as keyof typeof PERSONALITY_EVOLUTION_BOUNDS];
-      if (bounds) {
+      if (bounds && typeof bounds === 'object' && 'min' in bounds && 'max' in bounds) {
         total++;
-        if (value >= bounds.min && value <= bounds.max) {
+        if (value >= (bounds.min as number) && value <= (bounds.max as number)) {
           inBounds++;
         }
       }
@@ -368,7 +368,7 @@ export class KernelOptimizer {
 
   private evaluateEmotionalAuthenticity(
     response: NeuroResponse,
-    state: NeuroCognitiveState
+    _state: NeuroCognitiveState
   ): number {
     // Check if emotional state is reflected in response
     const emotionChanged = response.state_updates?.emotion_change ?? false;

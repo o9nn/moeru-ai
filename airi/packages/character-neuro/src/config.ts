@@ -136,6 +136,15 @@ export const PERSONALITY_EVOLUTION_BOUNDS = {
   min_value: 0.0,       // Minimum trait value
   max_value: 1.0,       // Maximum trait value
   
+  // Per-trait bounds for kernel fitness optimization
+  playfulness: { min: 0.7, max: 1.0 },
+  intelligence: { min: 0.7, max: 1.0 },
+  chaotic: { min: 0.5, max: 1.0 },
+  empathy: { min: 0.4, max: 0.85 },
+  sarcasm: { min: 0.5, max: 1.0 },
+  cognitive_power: { min: 0.7, max: 1.0 },
+  evolution_rate: { min: 0.5, max: 1.0 },
+  
   // Immutable traits (cannot be changed)
   immutable: [
     'no_harm_intent',
