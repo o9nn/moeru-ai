@@ -4,7 +4,7 @@
  * Types for confidence estimation, calibration, and outcome tracking.
  */
 
-import type { CognitiveContext, Possibility, RelevanceScore } from '../types'
+import type { Possibility, RelevanceScore } from '../types'
 
 /**
  * Factors contributing to raw confidence estimation

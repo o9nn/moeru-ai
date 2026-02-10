@@ -307,8 +307,8 @@ export class NeuroNN {
    * Backward pass for personality evolution
    */
   backward(feedback: TrainingFeedback): void {
-    // Compute multi-objective loss
-    const _loss = this.computeLoss(feedback);
+    // Compute multi-objective loss (side-effects update internal state)
+    this.computeLoss(feedback);
     
     // Compute gradients for each trait
     this.computeGradients(feedback);
@@ -358,7 +358,6 @@ export class NeuroNN {
     // Personality affects how we perceive the input
     const playfulness = this.getTraitValue('playfulness');
     const chaotic = this.getTraitValue('chaotic');
-    const _sarcasm = this.getTraitValue('sarcasm');
     
     // Modulate emotion based on personality
     modulated.emotion.dimensions.playful *= playfulness;

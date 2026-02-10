@@ -342,7 +342,7 @@ export class TemperatureScaler {
   /**
    * Fit temperature parameter from outcome data
    */
-  fit(records: OutcomeRecord[], maxIterations: number = 50): void {
+  fit(records: OutcomeRecord[], _maxIterations: number = 50): void {
     const validRecords = records.filter(r => r.outcome !== 'neutral')
     
     if (validRecords.length < 10) {

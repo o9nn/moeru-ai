@@ -8,14 +8,12 @@
 import type { CognitiveContext, Possibility, RelevanceScore } from '../types'
 import type {
   ConfidenceCalibrationConfig,
-  CalibrationState,
   CalibrationStateData,
   CalibrationMetrics,
   OutcomeRecord,
   CalibratedConfidence,
   CalibrationEvents,
   CalibrationEventCallback,
-  RawConfidenceFactors,
 } from './types'
 import { defaultCalibrationConfig, CalibrationState as State } from './types'
 import { RawConfidenceCalculator } from './raw-confidence'
@@ -420,10 +418,10 @@ export class ConfidenceCalibrator {
    * Get current state
    */
   getState(): CalibrationStateData {
-    let plattParams = null
-    let isotonicCurve = null
-    let temperatureParam = null
-    let ensembleWeights = null
+    let plattParams: CalibrationStateData['plattParams'] = null
+    let isotonicCurve: CalibrationStateData['isotonicCurve'] = null
+    let temperatureParam: CalibrationStateData['temperatureParam'] = null
+    let ensembleWeights: CalibrationStateData['ensembleWeights'] = null
     
     if (this.calibrator instanceof EnsembleCalibrator) {
       const calibrators = this.calibrator.getCalibrators()

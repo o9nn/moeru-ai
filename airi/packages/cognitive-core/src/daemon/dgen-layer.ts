@@ -14,7 +14,8 @@
  * - Creative sampling with DRY and minP
  */
 
-import { TopologyDaemon, TopologySpec, selfDaemon } from './topology-daemon';
+import type { TopologySpec } from './topology-daemon';
+import { TopologyDaemon } from './topology-daemon';
 
 /**
  * DreamGen message format
@@ -199,14 +200,8 @@ export class DGenLayer {
     // Build messages for DreamGen API format
     const messages = this.buildMessages(character, context);
     
-    // Create role config for character generation
-    const _roleConfig: RoleConfig = {
-      assistant: {
-        role: 'text',
-        name: characterName,
-        open: true,
-      },
-    };
+    // TODO: Role config will be used when DreamGen API is integrated
+    // roleConfig: { assistant: { role: 'text', name: characterName, open: true } }
     
     // Merge sampling parameters
     const finalSampling = { ...this.defaultSampling, ...sampling };
