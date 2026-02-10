@@ -47,7 +47,7 @@ export {
   type PersonalityParameter,
   type CognitiveFrame,
   type FrameOutput,
-  type CognitiveContext,
+  type DaemonCognitiveContext,
   type EmotionState,
   type SelfImage,
   type MetaCognitionResult,
@@ -70,7 +70,7 @@ export {
  */
 export async function invokeCognitiveDaemon(input: unknown): Promise<{
   response: import('./dgen-layer').DGenMessage;
-  cognitiveState: import('./neuro-nn').CognitiveContext;
+  cognitiveState: import('./neuro-nn').DaemonCognitiveContext;
   metaCognition: import('./neuro-nn').MetaCognitionResult;
   topology: import('./topology-daemon').TopologySpec | null;
 }> {
@@ -98,7 +98,7 @@ export async function invokeCognitiveDaemon(input: unknown): Promise<{
 export function createCognitiveDaemon(): {
   process: (input: unknown) => Promise<{
     response: import('./dgen-layer').DGenMessage;
-    cognitiveState: import('./neuro-nn').CognitiveContext;
+    cognitiveState: import('./neuro-nn').DaemonCognitiveContext;
     metaCognition: import('./neuro-nn').MetaCognitionResult;
   }>;
   train: (feedback: import('./neuro-nn').TrainingFeedback) => void;

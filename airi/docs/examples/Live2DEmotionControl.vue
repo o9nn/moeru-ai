@@ -6,9 +6,9 @@
  */
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useLive2DParameterController } from '@proj-airi/stage-ui/composables'
 import { Emotion, EmotionIntensity } from '@proj-airi/live2d-core'
+import { useLive2DParameterController } from '@proj-airi/stage-ui/composables'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 // Create the parameter controller
 const controller = useLive2DParameterController({
@@ -148,10 +148,18 @@ onUnmounted(() => {
     <!-- Quick Actions -->
     <div class="quick-actions">
       <h3>Quick Actions</h3>
-      <button @click="wink">Wink</button>
-      <button @click="smile">Smile</button>
-      <button @click="blendWithHappy">Blend with Happy</button>
-      <button @click="resetFace">Reset</button>
+      <button @click="wink">
+        Wink
+      </button>
+      <button @click="smile">
+        Smile
+      </button>
+      <button @click="blendWithHappy">
+        Blend with Happy
+      </button>
+      <button @click="resetFace">
+        Reset
+      </button>
     </div>
     
     <!-- Status -->

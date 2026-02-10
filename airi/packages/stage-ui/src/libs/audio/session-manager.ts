@@ -5,11 +5,11 @@
  * Handles session lifecycle, audio buffering, and automatic pause/resume.
  */
 
-import type { SilenceDetector, SilenceDetectorConfig, SilenceDetectorEvents } from './silence-detector'
+import type { SilenceDetector, SilenceDetectorConfig } from './silence-detector'
 import type { EnergyVAD, EnergyVADConfig } from './energy-vad'
 import type { BaseVAD } from './vad'
 
-import { createSilenceDetector, SilenceState } from './silence-detector'
+import { createSilenceDetector } from './silence-detector'
 import { createEnergyVAD } from './energy-vad'
 
 /**
@@ -327,7 +327,7 @@ export class TranscriptionSessionManager {
   /**
    * Handle resume event
    */
-  private handleResume(reason: string): void {
+  private handleResume(_reason: string): void {
     if (this.state !== SessionState.PAUSED) return
     
     // Calculate paused duration

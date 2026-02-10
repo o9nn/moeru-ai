@@ -44,7 +44,7 @@ export interface CognitiveFrame {
   name: string;
   question: string;
   weight: number;
-  process: (context: CognitiveContext) => FrameOutput;
+  process: (context: DaemonCognitiveContext) => FrameOutput;
 }
 
 /**
@@ -59,7 +59,7 @@ export interface FrameOutput {
 /**
  * Cognitive context for processing
  */
-export interface CognitiveContext {
+export interface DaemonCognitiveContext {
   input: unknown;
   emotion: EmotionState;
   selfImage: SelfImage;
@@ -271,7 +271,7 @@ export class NeuroNN {
    */
   async forward(input: unknown): Promise<{
     response: DGenMessage;
-    cognitiveState: CognitiveContext;
+    cognitiveState: DaemonCognitiveContext;
     metaCognition: MetaCognitionResult;
   }> {
     // 1. Encode context with self-awareness
@@ -328,7 +328,7 @@ export class NeuroNN {
   /**
    * Encode input context with emotion and self-image
    */
-  private async encodeContext(input: unknown): Promise<CognitiveContext> {
+  private async encodeContext(input: unknown): Promise<DaemonCognitiveContext> {
     // Initialize scene if needed
     if (!this.dgenLayer.getScene()) {
       await this.dgenLayer.initScene(
@@ -351,7 +351,7 @@ export class NeuroNN {
   /**
    * Apply personality modulation to context
    */
-  private applyPersonality(context: CognitiveContext): CognitiveContext {
+  private applyPersonality(context: DaemonCognitiveContext): DaemonCognitiveContext {
     const modulated = { ...context };
     
     // Personality affects how we perceive the input
@@ -369,7 +369,7 @@ export class NeuroNN {
   /**
    * Process input through all cognitive frames in parallel
    */
-  private processFrames(context: CognitiveContext): Map<string, FrameOutput> {
+  private processFrames(context: DaemonCognitiveContext): Map<string, FrameOutput> {
     const outputs = new Map<string, FrameOutput>();
     
     for (const frame of this.frames) {
@@ -385,7 +385,7 @@ export class NeuroNN {
    */
   private integrate(
     frameOutputs: Map<string, FrameOutput>,
-    context: CognitiveContext
+    context: DaemonCognitiveContext
   ): unknown {
     // Weight frames by personality traits
     let totalWeight = 0;
@@ -434,7 +434,7 @@ export class NeuroNN {
    * Autognosis: Self-awareness and meta-cognition
    */
   private autognosis(
-    context: CognitiveContext,
+    context: DaemonCognitiveContext,
     response: DGenMessage
   ): MetaCognitionResult {
     // Analyze own reasoning
@@ -455,7 +455,7 @@ export class NeuroNN {
    * Update self-image based on processing
    */
   private updateSelfImage(
-    context: CognitiveContext,
+    context: DaemonCognitiveContext,
     response: DGenMessage,
     metaCognition: MetaCognitionResult
   ): void {
@@ -485,7 +485,7 @@ export class NeuroNN {
 
   // Frame processing methods
 
-  private processPlayFrame(context: CognitiveContext): FrameOutput {
+  private processPlayFrame(context: DaemonCognitiveContext): FrameOutput {
     const playfulness = this.getTraitValue('playfulness');
     return {
       attended: { playOpportunities: this.findPlayOpportunities(context) },
@@ -497,7 +497,7 @@ export class NeuroNN {
     };
   }
 
-  private processStrategyFrame(context: CognitiveContext): FrameOutput {
+  private processStrategyFrame(context: DaemonCognitiveContext): FrameOutput {
     const intelligence = this.getTraitValue('intelligence');
     return {
       attended: { optimalMoves: this.analyzeOptimalMoves(context) },
@@ -509,7 +509,7 @@ export class NeuroNN {
     };
   }
 
-  private processChaosFrame(context: CognitiveContext): FrameOutput {
+  private processChaosFrame(context: DaemonCognitiveContext): FrameOutput {
     const chaotic = this.getTraitValue('chaotic');
     return {
       attended: { surpriseElements: this.findSurpriseElements(context) },
@@ -521,7 +521,7 @@ export class NeuroNN {
     };
   }
 
-  private processSocialFrame(context: CognitiveContext): FrameOutput {
+  private processSocialFrame(context: DaemonCognitiveContext): FrameOutput {
     const empathy = this.getTraitValue('empathy');
     return {
       attended: { relationships: this.analyzeRelationships(context) },
@@ -533,7 +533,7 @@ export class NeuroNN {
     };
   }
 
-  private processLearningFrame(context: CognitiveContext): FrameOutput {
+  private processLearningFrame(context: DaemonCognitiveContext): FrameOutput {
     return {
       attended: { learningOpportunities: this.findLearningOpportunities(context) },
       salience: 0.7 * context.emotion.dimensions.novelty,
@@ -696,7 +696,7 @@ export class NeuroNN {
     return Math.min(1, score);
   }
 
-  private calibrateConfidence(context: CognitiveContext): number {
+  private calibrateConfidence(context: DaemonCognitiveContext): number {
     // Confidence based on emotion certainty and self-image
     return (
       context.emotion.dimensions.certainty * 0.5 +
@@ -718,7 +718,7 @@ export class NeuroNN {
     return Math.min(1, score);
   }
 
-  private assessOpenMindedness(context: CognitiveContext): number {
+  private assessOpenMindedness(context: DaemonCognitiveContext): number {
     // Open-mindedness based on novelty seeking and frame diversity
     return context.emotion.dimensions.novelty * 0.5 + 0.5;
   }
@@ -728,23 +728,23 @@ export class NeuroNN {
     return str.length > 50 ? str.slice(0, 47) + '...' : str;
   }
 
-  private findPlayOpportunities(context: CognitiveContext): string[] {
+  private findPlayOpportunities(context: DaemonCognitiveContext): string[] {
     return ['humor potential', 'game elements', 'fun interactions'];
   }
 
-  private analyzeOptimalMoves(context: CognitiveContext): string[] {
+  private analyzeOptimalMoves(context: DaemonCognitiveContext): string[] {
     return ['strategic response', 'efficient path', 'goal alignment'];
   }
 
-  private findSurpriseElements(context: CognitiveContext): string[] {
+  private findSurpriseElements(context: DaemonCognitiveContext): string[] {
     return ['unexpected angle', 'chaos opportunity', 'subversion potential'];
   }
 
-  private analyzeRelationships(context: CognitiveContext): string[] {
+  private analyzeRelationships(context: DaemonCognitiveContext): string[] {
     return ['user connection', 'agent models', 'social dynamics'];
   }
 
-  private findLearningOpportunities(context: CognitiveContext): string[] {
+  private findLearningOpportunities(context: DaemonCognitiveContext): string[] {
     return ['pattern extraction', 'skill improvement', 'knowledge expansion'];
   }
 
@@ -853,7 +853,7 @@ export function createNeuroNN(): NeuroNN {
  */
 export async function processWithNeuroNN(input: unknown): Promise<{
   response: DGenMessage;
-  cognitiveState: CognitiveContext;
+  cognitiveState: DaemonCognitiveContext;
   metaCognition: MetaCognitionResult;
 }> {
   const neuro = createNeuroNN();

@@ -71,7 +71,7 @@ const cognitiveTools = [
         content,
         tags,
         importance,
-        expiresAt: new Date(Date.now() + importance * 3600000).toISOString(),
+        expiresAt: new Date(Date.now() + (importance ?? 5) * 3600000).toISOString(),
       }
     },
     parameters: z.object({
@@ -127,7 +127,7 @@ const cognitiveTools = [
           newState: {
             primary: emotion,
             intensity,
-            valence: intensity > 0 ? 0.5 + intensity * 0.05 : 0.5 - Math.abs(intensity) * 0.05,
+            valence: (intensity ?? 0) > 0 ? 0.5 + (intensity ?? 0) * 0.05 : 0.5 - Math.abs(intensity ?? 0) * 0.05,
           },
           timestamp: new Date().toISOString(),
         }

@@ -21,7 +21,6 @@ import {
   Emotion as Live2DEmotion,
   EmotionIntensity,
   createEmotionMapper,
-  Easing,
 } from '@proj-airi/live2d-core'
 
 import { Emotion as StageEmotion } from '../../constants/emotions'
@@ -308,7 +307,7 @@ export function useEmotionBridge(config: Partial<EmotionBridgeConfig> = {}) {
   /**
    * Update body sway based on emotion
    */
-  function updateBodySway(now: number): void {
+  function updateBodySway(_now: number): void {
     if (!cfg.enableBodySway) return
     
     bodySwayPhase += 0.001 // Slow phase advance

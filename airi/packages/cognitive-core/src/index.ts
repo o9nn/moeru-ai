@@ -136,7 +136,7 @@ export type {
   PersonalityParameter,
   CognitiveFrame,
   FrameOutput,
-  CognitiveContext,
+  DaemonCognitiveContext,
   EmotionState,
   SelfImage,
   MetaCognitionResult,

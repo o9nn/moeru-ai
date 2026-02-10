@@ -131,12 +131,12 @@ if (!validation.isValid) {
 Comprehensive TypeScript definitions for all operations:
 
 ```typescript
-import type { 
-  Live2DModelParameters,
-  PartialLive2DParameters,
+import type {
+  CubismParameterId,
   Emotion,
   EmotionIntensity,
-  CubismParameterId,
+  Live2DModelParameters,
+  PartialLive2DParameters,
 } from '@proj-airi/live2d-core'
 ```
 
@@ -145,8 +145,8 @@ import type {
 ### Basic Emotion Control
 
 ```typescript
-import { useLive2DParameterController } from '@proj-airi/stage-ui/composables'
 import { Emotion, EmotionIntensity } from '@proj-airi/live2d-core'
+import { useLive2DParameterController } from '@proj-airi/stage-ui/composables'
 
 const controller = useLive2DParameterController()
 
@@ -187,13 +187,13 @@ const controller = useLive2DParameterController()
 // In your animation loop
 function animate() {
   const currentParams = controller.update()
-  
+
   // Apply to Live2D model
   for (const [key, value] of Object.entries(currentParams)) {
     const cubismId = mapParameterToCubismId(key)
     coreModel.setParameterValueById(cubismId, value)
   }
-  
+
   requestAnimationFrame(animate)
 }
 ```
@@ -202,9 +202,9 @@ function animate() {
 
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useLive2DParameterController, useAutoUpdateLive2DParameters } from '@proj-airi/stage-ui/composables'
 import { Emotion } from '@proj-airi/live2d-core'
+import { useAutoUpdateLive2DParameters, useLive2DParameterController } from '@proj-airi/stage-ui/composables'
+import { ref } from 'vue'
 
 const controller = useLive2DParameterController()
 const modelParams = ref({})

@@ -1,0 +1,40 @@
+# Promise (λ) - moeru-ai CI/Build Optimization
+# QKV Framework: Protocol-to-Command-is-Executable
+
+promise:
+  name: "Green CI Pipeline"
+  type: "build_optimization"
+  threshold: 1.0  # 100% - ALL errors must be resolved
+
+constraints:
+  - "Zero TypeScript compilation errors (TS2345, TS6133, TS6192, TS6196, TS18048)"
+  - "Zero unused variable/import warnings treated as errors"
+  - "Resolve CognitiveContext type collision between types.ts and daemon/neuro-nn.ts"
+  - "All packages build successfully in dependency order"
+  - "CI pipeline passes on all jobs: typecheck, build-stage-tamagotchi, lint"
+
+evidence_files:
+  # K (Protocol) - Error source files
+  - path: "airi/packages/character-aion/src/character.ts"
+    errors: ["TS2345: CognitiveContext vs CognitiveContext$1 type mismatch (lines 138,141,147,349)"]
+  - path: "airi/packages/stage-ui/src/components/scenes/Stage.vue"
+    errors: ["TS6133: EMOTION_EmotionMotionName_value unused (line 24)"]
+  - path: "airi/packages/stage-ui/src/composables/live2d/emotion-bridge.ts"
+    errors: ["TS6133: Easing unused (line 24)", "TS6133: now unused (line 311)"]
+  - path: "airi/packages/stage-ui/src/libs/audio/session-manager.ts"
+    errors: ["TS6196: SilenceDetectorEvents unused (line 8)", "TS6133: SilenceState unused (line 12)", "TS6133: reason unused (line 330)"]
+  - path: "airi/packages/stage-ui/src/libs/audio/silence-detector.ts"
+    errors: ["TS6196: VADEvents unused (line 8)", "TS6133: lastSpeechTime unused (line 127)", "TS6133: sessionStartTime unused (line 128)", "TS6133: currentSpeechDuration unused (line 132)"]
+  - path: "airi/packages/stage-ui/src/stores/emotion.ts"
+    errors: ["TS6133: watch unused (line 16)"]
+  - path: "airi/packages/stage-ui/src/stores/modules/hearing.ts"
+    errors: ["TS6192: All imports unused (line 16)"]
+  - path: "airi/packages/stage-ui/src/tools/providers/cognitive.ts"
+    errors: ["TS18048: importance possibly undefined (line 74)", "TS18048: intensity possibly undefined (lines 130)", "TS2345: number|undefined not assignable to number (line 130)"]
+
+execution:
+  # V (Execution) - Fix strategy
+  - strategy: "Rename daemon CognitiveContext to DaemonCognitiveContext to resolve collision"
+  - strategy: "Prefix unused variables with underscore or remove unused imports"
+  - strategy: "Add null guards for possibly-undefined values"
+  - strategy: "Fix lint issues in docs and Vue files"

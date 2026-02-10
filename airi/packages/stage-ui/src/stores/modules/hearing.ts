@@ -13,7 +13,6 @@ import { computed, ref, shallowRef } from 'vue'
 import { useProvidersStore } from '../providers'
 import { streamTranscription as streamAliyunTranscription } from '../providers/aliyun'
 import { createSessionManager, SessionState, TranscriptionSessionManager } from '../../libs/audio/session-manager'
-import { createSilenceDetector, SilenceState } from '../../libs/audio/silence-detector'
 
 type GenerateTranscriptionResponse = Awaited<ReturnType<typeof generateTranscription>>
 type HearingTranscriptionGenerateResult = GenerateTranscriptionResponse & { mode: 'generate' }

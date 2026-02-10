@@ -13,7 +13,7 @@
 
 import { useLocalStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 
 import type { Emotion as StageEmotion } from '../constants/emotions'
 import { Emotion, EMOTION_EmotionMotionName_value } from '../constants/emotions'

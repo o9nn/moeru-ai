@@ -5,7 +5,7 @@
  * realtime transcription sessions based on speech patterns.
  */
 
-import type { BaseVAD, VADEvents } from './vad'
+import type { BaseVAD } from './vad'
 import type { EnergyVAD, VADFrameResult } from './energy-vad'
 
 /**
@@ -124,11 +124,14 @@ export class SilenceDetector {
   // Timing state
   private speechStartTime: number | null = null
   private silenceStartTime: number | null = null
+  // @ts-expect-error Reserved for future VAD-driven silence detection
   private lastSpeechTime: number | null = null
+  // @ts-expect-error Reserved for future VAD-driven silence detection
   private sessionStartTime: number | null = null
   
   // Statistics
   private stats: SessionStats = this.createEmptyStats()
+  // @ts-expect-error Reserved for future VAD-driven silence detection
   private currentSpeechDuration: number = 0
   private currentSilenceDuration: number = 0
   
