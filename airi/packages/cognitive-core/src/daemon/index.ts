@@ -79,8 +79,6 @@ export async function invokeCognitiveDaemon(input: unknown): Promise<{
   
   const result = await neuro.forward(input);
   
-  // Get the underlying topology from the dgen layer
-  const { DGenLayer } = await import('./dgen-layer');
   // Topology is embedded in cognitiveState
   
   return {

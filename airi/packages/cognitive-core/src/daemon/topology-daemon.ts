@@ -366,7 +366,7 @@ export class TopologyDaemon {
   private findAnalogPattern(term: string): { component: TopologyTag['component']; tag: string } | null {
     const lowerTerm = term.toLowerCase();
     
-    for (const [domain, patterns] of Object.entries(ANALOGY_PATTERNS)) {
+    for (const [_domain, patterns] of Object.entries(ANALOGY_PATTERNS)) {
       for (const [key, pattern] of Object.entries(patterns)) {
         if (key === lowerTerm || lowerTerm.includes(key)) {
           return pattern;

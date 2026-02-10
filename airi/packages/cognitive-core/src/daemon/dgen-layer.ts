@@ -200,7 +200,7 @@ export class DGenLayer {
     const messages = this.buildMessages(character, context);
     
     // Create role config for character generation
-    const roleConfig: RoleConfig = {
+    const _roleConfig: RoleConfig = {
       assistant: {
         role: 'text',
         name: characterName,
@@ -381,9 +381,9 @@ The character should exhibit their defining traits naturally through their words
    */
   private generateContent(
     character: Character,
-    messages: DGenMessage[],
+    _messages: DGenMessage[],
     topology: TopologySpec,
-    sampling: DGenSamplingParams
+    _sampling: DGenSamplingParams
   ): string {
     // In production, this would call the DreamGen API
     // For now, generate topology-aware placeholder content
@@ -417,9 +417,9 @@ The character should exhibit their defining traits naturally through their words
    * Generate narrator content
    */
   private generateNarratorContent(
-    messages: DGenMessage[],
+    _messages: DGenMessage[],
     topology: TopologySpec,
-    sampling: DGenSamplingParams
+    _sampling: DGenSamplingParams
   ): string {
     const layerCount = topology.layers.length;
     

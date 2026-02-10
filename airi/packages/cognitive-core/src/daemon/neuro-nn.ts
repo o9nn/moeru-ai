@@ -13,8 +13,9 @@
  * - Differentiable training loop for personality evolution
  */
 
-import { DGenLayer, DGenMessage, Character, SceneContext, NEURO_CHARACTER } from './dgen-layer';
-import { TopologySpec, TopologyTag } from './topology-daemon';
+import type { Character, DGenMessage } from './dgen-layer';
+import type { TopologySpec } from './topology-daemon';
+import { DGenLayer, NEURO_CHARACTER } from './dgen-layer';
 
 /**
  * Personality trait bounds - traits can evolve but stay in character
@@ -307,7 +308,7 @@ export class NeuroNN {
    */
   backward(feedback: TrainingFeedback): void {
     // Compute multi-objective loss
-    const loss = this.computeLoss(feedback);
+    const _loss = this.computeLoss(feedback);
     
     // Compute gradients for each trait
     this.computeGradients(feedback);
@@ -357,7 +358,7 @@ export class NeuroNN {
     // Personality affects how we perceive the input
     const playfulness = this.getTraitValue('playfulness');
     const chaotic = this.getTraitValue('chaotic');
-    const sarcasm = this.getTraitValue('sarcasm');
+    const _sarcasm = this.getTraitValue('sarcasm');
     
     // Modulate emotion based on personality
     modulated.emotion.dimensions.playful *= playfulness;
@@ -456,7 +457,7 @@ export class NeuroNN {
    */
   private updateSelfImage(
     context: DaemonCognitiveContext,
-    response: DGenMessage,
+    _response: DGenMessage,
     metaCognition: MetaCognitionResult
   ): void {
     // Level 0: What am I doing right now?
@@ -621,7 +622,7 @@ export class NeuroNN {
   }
 
   private updateParameters(): void {
-    for (const [name, param] of this.traits) {
+    for (const [_name, param] of this.traits) {
       if (param.requiresGrad) {
         param.value += this.learningRate * param.gradient;
       }
@@ -629,7 +630,7 @@ export class NeuroNN {
   }
 
   private clampTraits(): void {
-    for (const [name, param] of this.traits) {
+    for (const [_name, param] of this.traits) {
       param.value = Math.max(param.bounds.min, Math.min(param.bounds.max, param.value));
     }
   }
@@ -728,23 +729,23 @@ export class NeuroNN {
     return str.length > 50 ? str.slice(0, 47) + '...' : str;
   }
 
-  private findPlayOpportunities(context: DaemonCognitiveContext): string[] {
+  private findPlayOpportunities(_context: DaemonCognitiveContext): string[] {
     return ['humor potential', 'game elements', 'fun interactions'];
   }
 
-  private analyzeOptimalMoves(context: DaemonCognitiveContext): string[] {
+  private analyzeOptimalMoves(_context: DaemonCognitiveContext): string[] {
     return ['strategic response', 'efficient path', 'goal alignment'];
   }
 
-  private findSurpriseElements(context: DaemonCognitiveContext): string[] {
+  private findSurpriseElements(_context: DaemonCognitiveContext): string[] {
     return ['unexpected angle', 'chaos opportunity', 'subversion potential'];
   }
 
-  private analyzeRelationships(context: DaemonCognitiveContext): string[] {
+  private analyzeRelationships(_context: DaemonCognitiveContext): string[] {
     return ['user connection', 'agent models', 'social dynamics'];
   }
 
-  private findLearningOpportunities(context: DaemonCognitiveContext): string[] {
+  private findLearningOpportunities(_context: DaemonCognitiveContext): string[] {
     return ['pattern extraction', 'skill improvement', 'knowledge expansion'];
   }
 
