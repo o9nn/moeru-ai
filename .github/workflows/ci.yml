@@ -8,7 +8,9 @@ on:
       - 'airi/**'
       - 'airi-factorio/**'
       - 'airi-minecraft/**'
+      - 'arpk/**'
       - 'chat/**'
+      - 'cosine-similarity/**'
       - 'deditor/**'
       - 'eventa/**'
       - 'gpuu/**'
@@ -34,7 +36,9 @@ on:
       - 'airi/**'
       - 'airi-factorio/**'
       - 'airi-minecraft/**'
+      - 'arpk/**'
       - 'chat/**'
+      - 'cosine-similarity/**'
       - 'deditor/**'
       - 'eventa/**'
       - 'gpuu/**'
@@ -61,7 +65,9 @@ jobs:
       airi: ${{ steps.filter.outputs.airi }}
       airi-factorio: ${{ steps.filter.outputs.airi-factorio }}
       airi-minecraft: ${{ steps.filter.outputs.airi-minecraft }}
+      arpk: ${{ steps.filter.outputs.arpk }}
       chat: ${{ steps.filter.outputs.chat }}
+      cosine-similarity: ${{ steps.filter.outputs.cosine-similarity }}
       deditor: ${{ steps.filter.outputs.deditor }}
       eventa: ${{ steps.filter.outputs.eventa }}
       gpuu: ${{ steps.filter.outputs.gpuu }}
@@ -90,8 +96,12 @@ jobs:
               - 'airi-factorio/**'
             airi-minecraft:
               - 'airi-minecraft/**'
+            arpk:
+              - 'arpk/**'
             chat:
               - 'chat/**'
+            cosine-similarity:
+              - 'cosine-similarity/**'
             deditor:
               - 'deditor/**'
             eventa:
@@ -320,7 +330,9 @@ jobs:
   node-check:
     needs: changes
     if: |
+      needs.changes.outputs.arpk == 'true' ||
       needs.changes.outputs.chat == 'true' ||
+      needs.changes.outputs.cosine-similarity == 'true' ||
       needs.changes.outputs.std == 'true' ||
       needs.changes.outputs.talk == 'true' ||
       needs.changes.outputs.three-mmd == 'true' ||
@@ -332,8 +344,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - project: arpk
+            node: lts/*
           - project: chat
             node: latest
+          - project: cosine-similarity
+            node: lts/*
           - project: std
             node: '24'
             test: true
