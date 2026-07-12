@@ -1,0 +1,47 @@
+{
+  "name": "@proj-airi/group-dynamics",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Emergent group dynamics for multi-agent environments - group formation, social networks, collective planning, and consensus mechanisms",
+  "author": {
+    "name": "Moeru AI Project AIRI Team",
+    "email": "airi@moeru.ai",
+    "url": "https://github.com/moeru-ai"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/moeru-ai/airi.git",
+    "directory": "packages/group-dynamics"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "tsdown --watch",
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "dependencies": {
+    "@guiiai/logg": "catalog:",
+    "@proj-airi/cognitive-core": "workspace:*",
+    "@proj-airi/server-shared": "workspace:*"
+  },
+  "devDependencies": {
+    "tsdown": "^0.15.12",
+    "typescript": "~5.9.3",
+    "vitest": "^4.0.6"
+  }
+}
