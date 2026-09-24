@@ -22,6 +22,8 @@ asar: true
 asarUnpack:
   - resources/**
   - out/renderer/**
+  - node_modules/@esbuild*/**
+  - node_modules/esbuild/**
 
 extraMetadata:
   main: 'out/main/index.js'
