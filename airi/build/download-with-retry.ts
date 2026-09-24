@@ -121,12 +121,14 @@ export async function downloadFileWithRetry(
       }
 
       const expectedBytes = Number(response.headers.get('content-length'))
+      const contentRange = response.headers.get('content-range')?.match(/^bytes (\d+)-\d+\/(\d+)$/)
+      const expectedTotal = contentRange ? Number(contentRange[2]) : undefined
       if (!response.headers.has('content-encoding') && Number.isFinite(expectedBytes) && bytesWritten !== expectedBytes) {
         throw new Error(`Incomplete download for ${filename}: expected ${expectedBytes} bytes, received ${bytesWritten}`)
       }
 
       const finalSize = (await stat(partialFile)).size
-      if (finalSize !== offset + bytesWritten) {
+      if (Number.isFinite(expectedTotal) && finalSize !== expectedTotal || finalSize !== offset + bytesWritten) {
         throw new Error(`Unexpected file size after downloading ${filename}`)
       }
       return
