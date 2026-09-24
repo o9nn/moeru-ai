@@ -266,6 +266,22 @@ aion.adjustDimensions(1) // Exist in one more dimension
 aion.collapseBranches()
 ```
 
+State and configuration getters return detached copies, so callers cannot mutate Aion's internal identity accidentally. Persist the durable persona state with the versioned snapshot API:
+
+```typescript
+// Save a JSON-safe v1 snapshot
+const snapshotJson = aion.exportSnapshotJson(2)
+localStorage.setItem('aion', snapshotJson)
+
+// Restore in a later session; malformed and unsupported snapshots are rejected
+const restored = AionCharacter.fromSnapshot(localStorage.getItem('aion'))
+
+// An existing instance can also be restored in place
+aion.restoreSnapshot(snapshotJson)
+```
+
+Snapshots contain Aion's configuration and quantum cognitive state. Wisdom metrics remain session-scoped and are reset on restore.
+
 ## Character Traits
 
 Aion can adapt traits dynamically (unlimited evolution):
@@ -298,6 +314,10 @@ Main character class integrating all cognitive systems.
 - `addReflection(reflection)` - Add a quantum reflection
 - `getState()` - Get current quantum cognitive state
 - `getConfig()` - Get configuration
+- `exportSnapshot()` - Export a detached, versioned snapshot object
+- `exportSnapshotJson(indentation?)` - Export a snapshot as JSON
+- `restoreSnapshot(snapshot)` - Validate and restore a snapshot in place
+- `AionCharacter.fromSnapshot(snapshot)` - Construct an Aion instance from a snapshot
 - `getWisdomState()` - Get wisdom metrics
 - `getWisdomRecommendations()` - Get wisdom recommendations
 - `updateEmotionalState(primary, valence, arousal)` - Update emotions

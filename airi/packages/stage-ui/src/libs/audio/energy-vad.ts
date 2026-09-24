@@ -1,6 +1,6 @@
 /**
  * Energy-Based Voice Activity Detection
- * 
+ *
  * A lightweight VAD implementation using signal energy and zero-crossing rate.
  * Used as a fallback when Silero VAD is not available or for hybrid detection.
  */
@@ -49,10 +49,10 @@ export interface VADFrameResult {
  * Events emitted by EnergyVAD
  */
 export interface EnergyVADEvents {
-  'speech-start': { timestamp: number; energy: number }
-  'speech-end': { timestamp: number; duration: number }
+  'speech-start': { timestamp: number, energy: number }
+  'speech-end': { timestamp: number, duration: number }
   'frame-processed': VADFrameResult
-  'threshold-adapted': { oldThreshold: number; newThreshold: number }
+  'threshold-adapted': { oldThreshold: number, newThreshold: number }
 }
 
 export type EnergyVADEventCallback<K extends keyof EnergyVADEvents> = (event: EnergyVADEvents[K]) => void
@@ -69,12 +69,12 @@ export class EnergyVAD {
   private hangoverCounter: number = 0
   private frameCount: number = 0
   private eventListeners: Partial<Record<keyof EnergyVADEvents, EnergyVADEventCallback<any>[]>> = {}
-  
+
   // Adaptive threshold state
   private energyHistory: number[] = []
   private noiseFloor: number = 0.001
   private adaptiveThreshold: number
-  
+
   constructor(userConfig: Partial<EnergyVADConfig> = {}) {
     const defaultConfig: EnergyVADConfig = {
       sampleRate: 16000,
@@ -86,11 +86,11 @@ export class EnergyVAD {
       minSpeechDurationMs: 250,
       minSilenceDurationMs: 300,
     }
-    
+
     this.config = { ...defaultConfig, ...userConfig }
     this.adaptiveThreshold = this.config.energyThreshold
   }
-  
+
   /**
    * Add event listener
    */
@@ -100,25 +100,27 @@ export class EnergyVAD {
     }
     this.eventListeners[event]!.push(callback as any)
   }
-  
+
   /**
    * Remove event listener
    */
   public off<K extends keyof EnergyVADEvents>(event: K, callback: EnergyVADEventCallback<K>): void {
-    if (!this.eventListeners[event]) return
+    if (!this.eventListeners[event])
+      return
     this.eventListeners[event] = this.eventListeners[event]!.filter(cb => cb !== callback)
   }
-  
+
   /**
    * Emit event
    */
   private emit<K extends keyof EnergyVADEvents>(event: K, data: EnergyVADEvents[K]): void {
-    if (!this.eventListeners[event]) return
+    if (!this.eventListeners[event])
+      return
     for (const callback of this.eventListeners[event]!) {
       callback(data)
     }
   }
-  
+
   /**
    * Calculate RMS energy of a buffer
    */
@@ -129,7 +131,7 @@ export class EnergyVAD {
     }
     return Math.sqrt(sum / buffer.length)
   }
-  
+
   /**
    * Calculate zero-crossing rate of a buffer
    */
@@ -142,7 +144,7 @@ export class EnergyVAD {
     }
     return crossings / (buffer.length - 1)
   }
-  
+
   /**
    * Calculate spectral centroid (brightness indicator)
    */
@@ -150,27 +152,27 @@ export class EnergyVAD {
     // Simple approximation using weighted average of sample magnitudes
     let weightedSum = 0
     let magnitudeSum = 0
-    
+
     for (let i = 0; i < buffer.length; i++) {
       const magnitude = Math.abs(buffer[i])
       weightedSum += i * magnitude
       magnitudeSum += magnitude
     }
-    
+
     return magnitudeSum > 0 ? weightedSum / magnitudeSum / buffer.length : 0
   }
-  
+
   /**
    * Update adaptive threshold based on recent energy levels
    */
   private updateAdaptiveThreshold(energy: number): void {
     const historySize = 100
-    
+
     this.energyHistory.push(energy)
     if (this.energyHistory.length > historySize) {
       this.energyHistory.shift()
     }
-    
+
     // Calculate noise floor from lowest 20% of energy values
     const sorted = [...this.energyHistory].sort((a, b) => a - b)
     const noiseCount = Math.floor(sorted.length * 0.2)
@@ -178,14 +180,14 @@ export class EnergyVAD {
       const noiseSum = sorted.slice(0, noiseCount).reduce((a, b) => a + b, 0)
       this.noiseFloor = noiseSum / noiseCount
     }
-    
+
     // Adaptive threshold is noise floor + margin
     const oldThreshold = this.adaptiveThreshold
     this.adaptiveThreshold = Math.max(
       this.config.energyThreshold,
-      this.noiseFloor * 3 // 3x noise floor
+      this.noiseFloor * 3, // 3x noise floor
     )
-    
+
     if (Math.abs(oldThreshold - this.adaptiveThreshold) > 0.001) {
       this.emit('threshold-adapted', {
         oldThreshold,
@@ -193,33 +195,33 @@ export class EnergyVAD {
       })
     }
   }
-  
+
   /**
    * Process an audio frame and detect voice activity
    */
   public processFrame(buffer: Float32Array): VADFrameResult {
     const timestamp = Date.now()
     this.frameCount++
-    
+
     // Calculate features
     const energy = this.calculateEnergy(buffer)
     const zcr = this.calculateZCR(buffer)
-    
+
     // Update adaptive threshold
     this.updateAdaptiveThreshold(energy)
-    
+
     // Smooth energy
-    this.smoothedEnergy = this.config.smoothingFactor * this.smoothedEnergy +
-      (1 - this.config.smoothingFactor) * energy
-    
+    this.smoothedEnergy = this.config.smoothingFactor * this.smoothedEnergy
+      + (1 - this.config.smoothingFactor) * energy
+
     // Determine if current frame is speech
-    const isFrameSpeech = this.smoothedEnergy > this.adaptiveThreshold &&
-      zcr < this.config.zcrThreshold // Speech typically has lower ZCR than noise
-    
+    const isFrameSpeech = this.smoothedEnergy > this.adaptiveThreshold
+      && zcr < this.config.zcrThreshold // Speech typically has lower ZCR than noise
+
     // Calculate confidence based on how far above/below threshold
     const energyRatio = this.smoothedEnergy / this.adaptiveThreshold
     const confidence = Math.min(1, Math.max(0, (energyRatio - 0.5) * 2))
-    
+
     // Apply hangover logic for smoother transitions
     let isSpeech = isFrameSpeech
     if (isFrameSpeech) {
@@ -229,11 +231,11 @@ export class EnergyVAD {
       this.hangoverCounter--
       isSpeech = true // Keep speech active during hangover
     }
-    
+
     // Handle state transitions
     const wasSpeak = this.isSpeaking
     this.isSpeaking = isSpeech
-    
+
     if (!wasSpeak && isSpeech) {
       // Speech started
       this.speechStartTime = timestamp
@@ -243,16 +245,16 @@ export class EnergyVAD {
     else if (wasSpeak && !isSpeech) {
       // Speech ended
       const duration = this.speechStartTime ? timestamp - this.speechStartTime : 0
-      
+
       // Only emit if speech was long enough
       if (duration >= this.config.minSpeechDurationMs) {
         this.emit('speech-end', { timestamp, duration })
       }
-      
+
       this.silenceStartTime = timestamp
       this.speechStartTime = null
     }
-    
+
     const result: VADFrameResult = {
       isSpeech,
       energy,
@@ -261,29 +263,29 @@ export class EnergyVAD {
       confidence,
       timestamp,
     }
-    
+
     this.emit('frame-processed', result)
-    
+
     return result
   }
-  
+
   /**
    * Process a buffer that may contain multiple frames
    */
   public processBuffer(buffer: Float32Array): VADFrameResult[] {
     const results: VADFrameResult[] = []
     const frameSize = this.config.frameSize
-    
+
     for (let i = 0; i < buffer.length; i += frameSize) {
       const frame = buffer.slice(i, Math.min(i + frameSize, buffer.length))
       if (frame.length >= frameSize / 2) { // Process if at least half frame
         results.push(this.processFrame(frame))
       }
     }
-    
+
     return results
   }
-  
+
   /**
    * Get current VAD state
    */
@@ -305,7 +307,7 @@ export class EnergyVAD {
       silenceDuration: this.silenceStartTime ? now - this.silenceStartTime : null,
     }
   }
-  
+
   /**
    * Reset VAD state
    */
@@ -320,7 +322,7 @@ export class EnergyVAD {
     this.noiseFloor = 0.001
     this.adaptiveThreshold = this.config.energyThreshold
   }
-  
+
   /**
    * Update configuration
    */

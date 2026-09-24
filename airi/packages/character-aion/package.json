@@ -16,8 +16,8 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.mts"
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
     }
   },
   "main": "./dist/index.mjs",
@@ -29,13 +29,14 @@
   ],
   "scripts": {
     "build": "tsdown",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@moeru/std": "catalog:",
     "@proj-airi/cognitive-core": "workspace:*",
-    "@proj-airi/wisdom-metrics": "workspace:*",
-    "@proj-airi/server-sdk": "workspace:*"
+    "@proj-airi/server-sdk": "workspace:*",
+    "@proj-airi/wisdom-metrics": "workspace:*"
   },
   "devDependencies": {}
 }

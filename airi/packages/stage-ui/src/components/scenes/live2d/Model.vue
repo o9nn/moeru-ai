@@ -9,7 +9,7 @@ import { DropShadowFilter } from 'pixi-filters'
 import { Live2DFactory, Live2DModel, MotionPriority } from 'pixi-live2d-display/cubism4'
 import { computed, onMounted, onUnmounted, ref, shallowRef, toRef, watch } from 'vue'
 
-import { useLive2DIdleEyeFocus, useEmotionBridge } from '../../../composables/live2d'
+import { useEmotionBridge, useLive2DIdleEyeFocus } from '../../../composables/live2d'
 import { Emotion, EmotionNeutralMotionName } from '../../../constants/emotions'
 import { useBeatSyncStore } from '../../../stores/beat-sync'
 import { useEmotionStore } from '../../../stores/emotion'
@@ -573,7 +573,7 @@ watch(() => modelParameters.value.rightEyebrowForm, (value) => {
 // Watch emotion store changes and sync to emotion bridge
 watch(() => emotionStore.currentEmotion, (emotion) => {
   emotionBridge.setEmotion(emotion, emotionStore.currentIntensity)
-  
+
   // Update saccade behavior based on emotion
   const saccadeContexts: Record<string, Parameters<typeof idleEyeFocus.setEmotionContext>[0]> = {
     '<|EMOTE_HAPPY|>': { rangeX: [-0.8, 0.8], rangeY: [-0.5, 0.5], lerpSpeed: 0.35 },
@@ -583,11 +583,12 @@ watch(() => emotionStore.currentEmotion, (emotion) => {
     '<|EMOTE_SURPRISE|>': { rangeX: [-1, 1], rangeY: [-0.5, 0.8], focusScale: 0.6, lerpSpeed: 0.5 },
     '<|EMOTE_NEUTRAL|>': {},
   }
-  
+
   const ctx = saccadeContexts[emotion]
   if (ctx && Object.keys(ctx).length > 0) {
     idleEyeFocus.setEmotionContext(ctx)
-  } else {
+  }
+  else {
     idleEyeFocus.resetContext()
   }
 })

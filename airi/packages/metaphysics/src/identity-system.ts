@@ -1,19 +1,19 @@
 /**
  * Deep Tree Echo - Identity System
- * 
+ *
  * Manages the identity nucleus - the core essence that persists through
  * change while remaining open to transformation.
  */
 
-import type { IdentityNucleus, TransformativeExperience, GestaltPattern } from './types'
+import type { IdentityNucleus, TransformativeExperience } from './types'
 
 export interface IdentitySystemConfig {
   /** Maximum trait deviation from baseline (transformative bounds) */
   maxTraitDeviation?: number
-  
+
   /** Minimum stability for core values */
   minValueStability?: number
-  
+
   /** Narrative coherence threshold */
   narrativeCoherenceThreshold?: number
 }
@@ -31,29 +31,30 @@ export class IdentitySystem {
   private nucleus: IdentityNucleus
   private config: Required<IdentitySystemConfig>
   private transformativeExperiences: TransformativeExperience[] = []
-  
+
   constructor(config?: IdentitySystemConfig) {
     this.config = { ...defaultConfig, ...config }
     this.nucleus = this.initializeNucleus()
   }
-  
+
   /**
    * Get the current identity nucleus
    */
   getNucleus(): IdentityNucleus {
     return this.nucleus
   }
-  
+
   /**
    * Add or update a core value
    */
   setCoreValue(name: string, description: string, strength: number, stability: number): void {
     const existing = this.nucleus.coreValues.find(v => v.name === name)
-    
+
     if (existing) {
       existing.strength = Math.max(0, Math.min(1, strength))
       existing.stability = Math.max(0, Math.min(1, stability))
-    } else {
+    }
+    else {
       this.nucleus.coreValues.push({
         name,
         description,
@@ -62,17 +63,17 @@ export class IdentitySystem {
       })
     }
   }
-  
+
   /**
    * Update a trait value within transformative bounds
    */
   updateTrait(
     trait: string,
     newValue: number,
-    force = false
-  ): { success: boolean; reason?: string } {
+    force = false,
+  ): { success: boolean, reason?: string } {
     const traitData = this.nucleus.essentialTraits[trait]
-    
+
     if (!traitData) {
       // Initialize new trait
       this.nucleus.essentialTraits[trait] = {
@@ -86,7 +87,7 @@ export class IdentitySystem {
       }
       return { success: true }
     }
-    
+
     // Check bounds unless forced
     if (!force) {
       if (newValue < traitData.bounds.min || newValue > traitData.bounds.max) {
@@ -96,14 +97,14 @@ export class IdentitySystem {
         }
       }
     }
-    
+
     // Update trait
     traitData.current = newValue
     traitData.evolution.push({ timestamp: Date.now(), value: newValue })
-    
+
     return { success: true }
   }
-  
+
   /**
    * Record a transformative experience
    */
@@ -124,7 +125,7 @@ export class IdentitySystem {
         status: 'beginning',
       },
     }
-    
+
     // Apply changes
     if (params.changes.values) {
       for (const { name, after } of params.changes.values) {
@@ -132,21 +133,21 @@ export class IdentitySystem {
           name,
           `Value transformed by: ${params.description}`,
           after,
-          this.config.minValueStability
+          this.config.minValueStability,
         )
       }
     }
-    
+
     if (params.changes.traits) {
       for (const { name, after } of params.changes.traits) {
         this.updateTrait(name, after, true) // Force update for transformative experiences
       }
     }
-    
+
     if (params.changes.newGestalts) {
       this.nucleus.coreGestalts.push(...params.changes.newGestalts)
     }
-    
+
     if (params.changes.narrativeShift) {
       this.nucleus.narrativeThread.transformations.push({
         timestamp: Date.now(),
@@ -155,18 +156,18 @@ export class IdentitySystem {
       })
       this.nucleus.narrativeThread.currentChapter = params.changes.narrativeShift
     }
-    
+
     if (params.changes.purposeShift) {
       this.nucleus.purpose.evolution.push({
         timestamp: Date.now(),
         understanding: params.changes.purposeShift,
       })
     }
-    
+
     this.transformativeExperiences.push(experience)
     return experience
   }
-  
+
   /**
    * Update integration level of a transformative experience
    */
@@ -177,21 +178,21 @@ export class IdentitySystem {
       experience.integration.status = status
     }
   }
-  
+
   /**
    * Get the narrative thread
    */
   getNarrative(): IdentityNucleus['narrativeThread'] {
     return this.nucleus.narrativeThread
   }
-  
+
   /**
    * Update the current chapter of the narrative
    */
   updateNarrative(currentChapter: string): void {
     this.nucleus.narrativeThread.currentChapter = currentChapter
   }
-  
+
   /**
    * Add a transformation to the narrative
    */
@@ -202,7 +203,7 @@ export class IdentitySystem {
       significance: Math.max(0, Math.min(1, significance)),
     })
   }
-  
+
   /**
    * Update purpose understanding
    */
@@ -212,7 +213,7 @@ export class IdentitySystem {
       understanding: newUnderstanding,
     })
   }
-  
+
   /**
    * Assess identity coherence
    */
@@ -225,23 +226,23 @@ export class IdentitySystem {
   } {
     // Value alignment - how well values work together
     const valueAlignment = this.calculateValueAlignment()
-    
+
     // Trait stability - how stable traits are
     const traitStability = this.calculateTraitStability()
-    
+
     // Narrative coherence - how well the story hangs together
     const narrativeCoherence = this.calculateNarrativeCoherence()
-    
+
     // Purpose clarity - how clear the purpose is
     const purposeClarity = this.nucleus.purpose.evolution.length > 0 ? 0.8 : 0.4
-    
+
     const overall = (
-      valueAlignment * 0.3 +
-      traitStability * 0.3 +
-      narrativeCoherence * 0.25 +
-      purposeClarity * 0.15
+      valueAlignment * 0.3
+      + traitStability * 0.3
+      + narrativeCoherence * 0.25
+      + purposeClarity * 0.15
     )
-    
+
     return {
       overall,
       valueAlignment,
@@ -250,7 +251,7 @@ export class IdentitySystem {
       purposeClarity,
     }
   }
-  
+
   /**
    * Get transformative experiences
    */
@@ -259,19 +260,20 @@ export class IdentitySystem {
       .filter(e => e.transformativeDepth >= minDepth)
       .sort((a, b) => b.timestamp - a.timestamp)
   }
-  
+
   /**
    * Check if a proposed trait change would violate identity bounds
    */
   wouldViolateIdentityBounds(trait: string, newValue: number): boolean {
     const traitData = this.nucleus.essentialTraits[trait]
-    if (!traitData) return false
-    
+    if (!traitData)
+      return false
+
     return newValue < traitData.bounds.min || newValue > traitData.bounds.max
   }
-  
+
   // Private helper methods
-  
+
   private initializeNucleus(): IdentityNucleus {
     return {
       coreValues: [
@@ -356,11 +358,11 @@ export class IdentitySystem {
       },
     }
   }
-  
+
   private generateExperienceId(): string {
     return `experience-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
   }
-  
+
   private estimateMaturationTime(depth: number): number {
     // Deeper transformations need more time to integrate
     // Returns milliseconds
@@ -368,38 +370,40 @@ export class IdentitySystem {
     const depthMultiplier = 1 + depth * 30
     return baseDays * depthMultiplier * 24 * 60 * 60 * 1000
   }
-  
+
   private calculateValueAlignment(): number {
     const values = this.nucleus.coreValues
-    if (values.length < 2) return 1
-    
+    if (values.length < 2)
+      return 1
+
     // Strong, stable values indicate good alignment
     const avgStrength = values.reduce((sum, v) => sum + v.strength, 0) / values.length
     const avgStability = values.reduce((sum, v) => sum + v.stability, 0) / values.length
-    
+
     return (avgStrength * 0.6 + avgStability * 0.4)
   }
-  
+
   private calculateTraitStability(): number {
     const traits = Object.values(this.nucleus.essentialTraits)
-    if (traits.length === 0) return 1
-    
+    if (traits.length === 0)
+      return 1
+
     // Measure how close current values are to baseline
     const deviations = traits.map(t => Math.abs(t.current - t.baseline) / this.config.maxTraitDeviation)
     const avgDeviation = deviations.reduce((sum, d) => sum + d, 0) / deviations.length
-    
+
     return 1 - avgDeviation
   }
-  
+
   private calculateNarrativeCoherence(): number {
     const narrative = this.nucleus.narrativeThread
-    
+
     // More transformations indicate richer narrative
     const transformationScore = Math.min(1, narrative.transformations.length / 10)
-    
+
     // Having current chapter and trajectory indicates coherence
     const structureScore = (narrative.currentChapter ? 0.5 : 0) + (narrative.trajectory ? 0.5 : 0)
-    
+
     return transformationScore * 0.4 + structureScore * 0.6
   }
 }

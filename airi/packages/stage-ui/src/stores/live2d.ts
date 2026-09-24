@@ -1,8 +1,9 @@
+import type { Live2DModelParameters } from '@proj-airi/live2d-core'
+
+import { getDefaultParameters } from '@proj-airi/live2d-core'
 import { useBroadcastChannel, useLocalStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
-import type { Live2DModelParameters } from '@proj-airi/live2d-core'
-import { getDefaultParameters } from '@proj-airi/live2d-core'
 
 type BroadcastChannelEvents
   = | BroadcastChannelEventShouldUpdateView

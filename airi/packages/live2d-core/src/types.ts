@@ -1,6 +1,6 @@
 /**
  * Live2D Cubism SDK Type Definitions
- * 
+ *
  * This module provides comprehensive type definitions for Live2D model parameters
  * and utilities for working with the Cubism SDK.
  */
@@ -14,7 +14,7 @@ export const CubismParameterIds = {
   ParamAngleX: 'ParamAngleX',
   ParamAngleY: 'ParamAngleY',
   ParamAngleZ: 'ParamAngleZ',
-  
+
   // Eye parameters
   ParamEyeLOpen: 'ParamEyeLOpen',
   ParamEyeROpen: 'ParamEyeROpen',
@@ -23,7 +23,7 @@ export const CubismParameterIds = {
   ParamEyeBallX: 'ParamEyeBallX',
   ParamEyeBallY: 'ParamEyeBallY',
   ParamEyeBallForm: 'ParamEyeBallForm',
-  
+
   // Eyebrow parameters
   ParamBrowLY: 'ParamBrowLY',
   ParamBrowRY: 'ParamBrowRY',
@@ -33,16 +33,16 @@ export const CubismParameterIds = {
   ParamBrowRAngle: 'ParamBrowRAngle',
   ParamBrowLForm: 'ParamBrowLForm',
   ParamBrowRForm: 'ParamBrowRForm',
-  
+
   // Mouth parameters
   ParamMouthOpenY: 'ParamMouthOpenY',
   ParamMouthForm: 'ParamMouthForm',
-  
+
   // Body parameters
   ParamBodyAngleX: 'ParamBodyAngleX',
   ParamBodyAngleY: 'ParamBodyAngleY',
   ParamBodyAngleZ: 'ParamBodyAngleZ',
-  
+
   // Other facial parameters
   ParamCheek: 'ParamCheek',
   ParamBreath: 'ParamBreath',
@@ -59,7 +59,7 @@ export interface Live2DModelParameters {
   angleX: number
   angleY: number
   angleZ: number
-  
+
   // Eyes
   leftEyeOpen: number
   rightEyeOpen: number
@@ -67,7 +67,7 @@ export interface Live2DModelParameters {
   rightEyeSmile: number
   eyeBallX: number
   eyeBallY: number
-  
+
   // Eyebrows
   leftEyebrowLR: number
   rightEyebrowLR: number
@@ -77,16 +77,16 @@ export interface Live2DModelParameters {
   rightEyebrowAngle: number
   leftEyebrowForm: number
   rightEyebrowForm: number
-  
+
   // Mouth
   mouthOpen: number
   mouthForm: number
-  
+
   // Body
   bodyAngleX: number
   bodyAngleY: number
   bodyAngleZ: number
-  
+
   // Other
   cheek: number
   breath: number

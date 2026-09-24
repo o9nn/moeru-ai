@@ -1,30 +1,31 @@
 /**
  * Confidence Calibrator
- * 
+ *
  * Main class that orchestrates confidence calculation, calibration,
  * and learning from outcomes.
  */
 
 import type { CognitiveContext, Possibility, RelevanceScore } from '../types'
 import type {
-  ConfidenceCalibrationConfig,
-  CalibrationStateData,
-  CalibrationMetrics,
-  OutcomeRecord,
   CalibratedConfidence,
-  CalibrationEvents,
   CalibrationEventCallback,
+  CalibrationEvents,
+  CalibrationMetrics,
+  CalibrationStateData,
+  ConfidenceCalibrationConfig,
+  OutcomeRecord,
 } from './types'
-import { defaultCalibrationConfig, CalibrationState as State } from './types'
-import { RawConfidenceCalculator } from './raw-confidence'
-import { 
-  PlattScaler, 
-  IsotonicCalibrator, 
-  TemperatureScaler, 
-  EnsembleCalibrator,
+
+import {
   createCalibrator,
+  EnsembleCalibrator,
+  IsotonicCalibrator,
+  PlattScaler,
+  TemperatureScaler,
 } from './calibration-engine'
+import { RawConfidenceCalculator } from './raw-confidence'
 import { calculateCalibrationMetrics, isCalibrationAcceptable } from './reliability-metrics'
+import { defaultCalibrationConfig, CalibrationState as State } from './types'
 
 /**
  * Generate unique ID
@@ -35,7 +36,7 @@ function generateId(): string {
 
 /**
  * Confidence Calibrator
- * 
+ *
  * Manages the full confidence calibration pipeline:
  * 1. Raw confidence calculation
  * 2. Calibration via Platt/isotonic/temperature/ensemble
@@ -47,55 +48,57 @@ export class ConfidenceCalibrator {
   private state: State = State.INITIAL
   private stateReason: string = 'Initial state'
   private lastTransition: number = Date.now()
-  
+
   // Components
   private rawCalculator: RawConfidenceCalculator
   private calibrator: PlattScaler | IsotonicCalibrator | TemperatureScaler | EnsembleCalibrator
-  
+
   // History
   private outcomeHistory: OutcomeRecord[] = []
   private metrics: CalibrationMetrics | null = null
-  
+
   // Events
   private eventListeners: Partial<Record<keyof CalibrationEvents, CalibrationEventCallback<any>[]>> = {}
-  
+
   constructor(config: Partial<ConfidenceCalibrationConfig> = {}) {
     this.config = { ...defaultCalibrationConfig, ...config }
     this.rawCalculator = new RawConfidenceCalculator()
     this.calibrator = createCalibrator(this.config.method)
   }
-  
+
   /**
    * Add event listener
    */
   on<K extends keyof CalibrationEvents>(
     event: K,
-    callback: CalibrationEventCallback<K>
+    callback: CalibrationEventCallback<K>,
   ): () => void {
     if (!this.eventListeners[event]) {
       this.eventListeners[event] = []
     }
     this.eventListeners[event]!.push(callback as any)
-    
+
     return () => this.off(event, callback)
   }
-  
+
   /**
    * Remove event listener
    */
   off<K extends keyof CalibrationEvents>(
     event: K,
-    callback: CalibrationEventCallback<K>
+    callback: CalibrationEventCallback<K>,
   ): void {
-    if (!this.eventListeners[event]) return
+    if (!this.eventListeners[event])
+      return
     this.eventListeners[event] = this.eventListeners[event]!.filter(cb => cb !== callback)
   }
-  
+
   /**
    * Emit event
    */
   private emit<K extends keyof CalibrationEvents>(event: K, data: CalibrationEvents[K]): void {
-    if (!this.eventListeners[event]) return
+    if (!this.eventListeners[event])
+      return
     for (const callback of this.eventListeners[event]!) {
       try {
         callback(data)
@@ -105,53 +108,54 @@ export class ConfidenceCalibrator {
       }
     }
   }
-  
+
   /**
    * Transition to a new state
    */
   private transitionTo(newState: State, reason: string): void {
-    if (this.state === newState) return
-    
+    if (this.state === newState)
+      return
+
     const oldState = this.state
     this.state = newState
     this.stateReason = reason
     this.lastTransition = Date.now()
-    
+
     this.emit('state-change', {
       from: oldState,
       to: newState,
       reason,
       timestamp: Date.now(),
     })
-    
+
     this.emit('debug', {
       message: `State transition: ${oldState} -> ${newState}`,
       data: { reason },
     })
   }
-  
+
   /**
    * Calculate calibrated confidence for a relevance assessment
    */
   calculate(
     possibility: Possibility,
     context: CognitiveContext,
-    components: RelevanceScore['components']
+    components: RelevanceScore['components'],
   ): CalibratedConfidence {
     // Calculate raw confidence
     const raw = this.rawCalculator.calculate(possibility, context, components)
-    
+
     // Apply calibration based on state
     let calibratedValue: number
     let method: CalibratedConfidence['method']
-    
+
     switch (this.state) {
       case State.INITIAL:
         // Use prior confidence
         calibratedValue = this.config.priorConfidence
         method = 'prior'
         break
-        
+
       case State.LEARNING:
         // Use basic calibration (Platt scaling if available)
         if (this.calibrator instanceof PlattScaler && this.calibrator.isFitted()) {
@@ -163,25 +167,25 @@ export class ConfidenceCalibrator {
           method = 'prior'
         }
         break
-        
+
       case State.CALIBRATED:
       case State.ADAPTIVE:
         // Use full calibration
         calibratedValue = this.applyCalibration(raw.value)
         method = this.config.method
         break
-        
+
       case State.DEGRADED:
         // Use raw value while recalibrating
         calibratedValue = raw.value
         method = 'prior'
         break
-        
+
       default:
         calibratedValue = this.config.priorConfidence
         method = 'prior'
     }
-    
+
     return {
       value: Math.max(0, Math.min(1, calibratedValue)),
       rawConfidence: raw.value,
@@ -191,7 +195,7 @@ export class ConfidenceCalibrator {
       calibrationState: this.state,
     }
   }
-  
+
   /**
    * Apply calibration to raw confidence
    */
@@ -208,10 +212,10 @@ export class ConfidenceCalibrator {
     else if (this.calibrator instanceof TemperatureScaler) {
       return this.calibrator.predict(rawConfidence)
     }
-    
+
     return rawConfidence
   }
-  
+
   /**
    * Record an outcome and update calibration
    */
@@ -221,7 +225,7 @@ export class ConfidenceCalibrator {
     rawConfidence: number,
     calibratedConfidence: number,
     outcome: 'success' | 'failure' | 'neutral',
-    context: CognitiveContext
+    context: CognitiveContext,
   ): void {
     // Create outcome record
     const record: OutcomeRecord = {
@@ -235,38 +239,38 @@ export class ConfidenceCalibrator {
       contextFeatures: this.extractContextFeatures(context),
       timestamp: Date.now(),
     }
-    
+
     // Add to history
     this.outcomeHistory.push(record)
-    
+
     // Trim history if needed
     if (this.outcomeHistory.length > this.config.maxHistorySize) {
       this.outcomeHistory = this.outcomeHistory.slice(-this.config.maxHistorySize)
     }
-    
+
     // Update raw calculator
     this.rawCalculator.recordOutcome(record)
-    
+
     // Emit event
     this.emit('outcome-recorded', {
       record,
       timestamp: Date.now(),
     })
-    
+
     // Update state machine
     this.updateStateMachine()
   }
-  
+
   /**
    * Extract context features for stratified calibration
    */
   private extractContextFeatures(context: CognitiveContext): Record<string, unknown> {
     const features: Record<string, unknown> = {}
-    
+
     for (const feature of this.config.stratificationFeatures) {
       const parts = feature.split('.')
       let value: unknown = context
-      
+
       for (const part of parts) {
         if (value && typeof value === 'object' && part in value) {
           value = (value as Record<string, unknown>)[part]
@@ -276,27 +280,27 @@ export class ConfidenceCalibrator {
           break
         }
       }
-      
+
       features[feature] = value
     }
-    
+
     // Add context signature
-    features['contextSignature'] = [
+    features.contextSignature = [
       context.environment.type,
       context.task ? 'has_task' : 'no_task',
       context.attentionFocus ? 'has_focus' : 'no_focus',
     ].join(':')
-    
+
     return features
   }
-  
+
   /**
    * Update state machine based on current data
    */
   private updateStateMachine(): void {
     const validRecords = this.outcomeHistory.filter(r => r.outcome !== 'neutral')
     const sampleCount = validRecords.length
-    
+
     switch (this.state) {
       case State.INITIAL:
         if (sampleCount >= this.config.minSamples) {
@@ -304,19 +308,19 @@ export class ConfidenceCalibrator {
           this.fitCalibration()
         }
         break
-        
+
       case State.LEARNING:
         this.fitCalibration()
         this.updateMetrics()
-        
+
         if (this.metrics && isCalibrationAcceptable(this.metrics, this.config.eceThreshold)) {
           this.transitionTo(State.CALIBRATED, `ECE ${this.metrics.ece.toFixed(3)} below threshold`)
         }
         break
-        
+
       case State.CALIBRATED:
         this.updateMetrics()
-        
+
         if (this.metrics) {
           if (!isCalibrationAcceptable(this.metrics, this.config.eceThreshold * 1.5)) {
             this.transitionTo(State.DEGRADED, `ECE ${this.metrics.ece.toFixed(3)} above threshold`)
@@ -332,13 +336,13 @@ export class ConfidenceCalibrator {
           }
         }
         break
-        
+
       case State.ADAPTIVE:
         // Periodically refit and check quality
         if (sampleCount % 10 === 0) {
           this.fitCalibration()
           this.updateMetrics()
-          
+
           if (this.metrics && !isCalibrationAcceptable(this.metrics, this.config.eceThreshold * 1.5)) {
             this.transitionTo(State.DEGRADED, `ECE ${this.metrics.ece.toFixed(3)} degraded`)
             this.emit('calibration-degraded', {
@@ -349,12 +353,12 @@ export class ConfidenceCalibrator {
           }
         }
         break
-        
+
       case State.DEGRADED:
         // Attempt recalibration
         this.fitCalibration()
         this.updateMetrics()
-        
+
         if (this.metrics && isCalibrationAcceptable(this.metrics, this.config.eceThreshold)) {
           this.transitionTo(State.CALIBRATED, `Recalibration successful, ECE ${this.metrics.ece.toFixed(3)}`)
           this.emit('recalibration-complete', {
@@ -366,17 +370,17 @@ export class ConfidenceCalibrator {
         break
     }
   }
-  
+
   /**
    * Fit calibration model
    */
   private fitCalibration(): void {
     const validRecords = this.outcomeHistory.filter(r => r.outcome !== 'neutral')
-    
+
     if (validRecords.length < this.config.minSamples) {
       return
     }
-    
+
     try {
       if (this.calibrator instanceof EnsembleCalibrator) {
         this.calibrator.fit(validRecords)
@@ -395,25 +399,25 @@ export class ConfidenceCalibrator {
       console.error('[ConfidenceCalibrator] Error fitting calibration:', err)
     }
   }
-  
+
   /**
    * Update calibration metrics
    */
   private updateMetrics(): void {
     const validRecords = this.outcomeHistory.filter(r => r.outcome !== 'neutral')
-    
+
     if (validRecords.length < 10) {
       return
     }
-    
+
     this.metrics = calculateCalibrationMetrics(validRecords, this.config.numBins)
-    
+
     this.emit('metrics-updated', {
       metrics: this.metrics,
       timestamp: Date.now(),
     })
   }
-  
+
   /**
    * Get current state
    */
@@ -422,7 +426,7 @@ export class ConfidenceCalibrator {
     let isotonicCurve: CalibrationStateData['isotonicCurve'] = null
     let temperatureParam: CalibrationStateData['temperatureParam'] = null
     let ensembleWeights: CalibrationStateData['ensembleWeights'] = null
-    
+
     if (this.calibrator instanceof EnsembleCalibrator) {
       const calibrators = this.calibrator.getCalibrators()
       plattParams = calibrators.platt.getParameters()
@@ -439,7 +443,7 @@ export class ConfidenceCalibrator {
     else if (this.calibrator instanceof TemperatureScaler) {
       temperatureParam = this.calibrator.getParameter()
     }
-    
+
     return {
       state: this.state,
       metrics: this.metrics || {
@@ -460,48 +464,48 @@ export class ConfidenceCalibrator {
       stateReason: this.stateReason,
     }
   }
-  
+
   /**
    * Get calibration metrics
    */
   getMetrics(): CalibrationMetrics | null {
     return this.metrics
   }
-  
+
   /**
    * Get outcome history
    */
   getHistory(): OutcomeRecord[] {
     return [...this.outcomeHistory]
   }
-  
+
   /**
    * Get configuration
    */
   getConfig(): ConfidenceCalibrationConfig {
     return { ...this.config }
   }
-  
+
   /**
    * Update configuration
    */
   updateConfig(config: Partial<ConfidenceCalibrationConfig>): void {
     this.config = { ...this.config, ...config }
-    
+
     // Recreate calibrator if method changed
     if (config.method && config.method !== this.config.method) {
       this.calibrator = createCalibrator(config.method)
       this.fitCalibration()
     }
   }
-  
+
   /**
    * Force recalibration
    */
   forceRecalibration(): void {
     this.fitCalibration()
     this.updateMetrics()
-    
+
     if (this.metrics) {
       this.emit('recalibration-complete', {
         newECE: this.metrics.ece,
@@ -510,7 +514,7 @@ export class ConfidenceCalibrator {
       })
     }
   }
-  
+
   /**
    * Reset calibration state
    */
@@ -523,7 +527,7 @@ export class ConfidenceCalibrator {
     this.calibrator = createCalibrator(this.config.method)
     this.rawCalculator = new RawConfidenceCalculator()
   }
-  
+
   /**
    * Dispose and clean up
    */
@@ -538,7 +542,7 @@ export class ConfidenceCalibrator {
  * Create a confidence calibrator
  */
 export function createConfidenceCalibrator(
-  config?: Partial<ConfidenceCalibrationConfig>
+  config?: Partial<ConfidenceCalibrationConfig>,
 ): ConfidenceCalibrator {
   return new ConfidenceCalibrator(config)
 }

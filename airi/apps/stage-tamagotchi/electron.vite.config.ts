@@ -10,10 +10,11 @@ import Inspect from 'vite-plugin-inspect'
 import VitePluginVueDevTools from 'vite-plugin-vue-devtools'
 import Layouts from 'vite-plugin-vue-layouts'
 
-import { Download } from '@proj-airi/unplugin-fetch'
 import { DownloadLive2DSDK } from '@proj-airi/unplugin-live2d-sdk'
 import { templateCompilerOptions } from '@tresjs/core'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
+
+import { DownloadAssetsWithRetry } from '../../build/download-with-retry'
 
 export default defineConfig({
   main: {
@@ -130,10 +131,12 @@ export default defineConfig({
       }),
 
       DownloadLive2DSDK(),
-      Download('https://dist.ayaka.moe/live2d-models/hiyori_free_zh.zip', 'hiyori_free_zh.zip', 'assets/live2d/models'),
-      Download('https://dist.ayaka.moe/live2d-models/hiyori_pro_zh.zip', 'hiyori_pro_zh.zip', 'assets/live2d/models'),
-      Download('https://dist.ayaka.moe/vrm-models/VRoid-Hub/AvatarSample-A/AvatarSample_A.vrm', 'AvatarSample_A.vrm', 'assets/vrm/models/AvatarSample-A'),
-      Download('https://dist.ayaka.moe/vrm-models/VRoid-Hub/AvatarSample-B/AvatarSample_B.vrm', 'AvatarSample_B.vrm', 'assets/vrm/models/AvatarSample-B'),
+      DownloadAssetsWithRetry([
+        { url: 'https://dist.ayaka.moe/live2d-models/hiyori_free_zh.zip', filename: 'hiyori_free_zh.zip', destination: 'assets/live2d/models' },
+        { url: 'https://dist.ayaka.moe/live2d-models/hiyori_pro_zh.zip', filename: 'hiyori_pro_zh.zip', destination: 'assets/live2d/models' },
+        { url: 'https://dist.ayaka.moe/vrm-models/VRoid-Hub/AvatarSample-A/AvatarSample_A.vrm', filename: 'AvatarSample_A.vrm', destination: 'assets/vrm/models/AvatarSample-A' },
+        { url: 'https://dist.ayaka.moe/vrm-models/VRoid-Hub/AvatarSample-B/AvatarSample_B.vrm', filename: 'AvatarSample_B.vrm', destination: 'assets/vrm/models/AvatarSample-B' },
+      ]),
     ],
   },
 })
