@@ -17,6 +17,9 @@ on:
       - '.github/workflows/maintenance.yml'
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
   contents: write
 
@@ -42,70 +45,88 @@ jobs:
             xsai:
               - 'xsai/**'
 
-  # Autofix for Node.js projects (lint --fix)
-  autofix:
+  autofix-airi:
     needs: changes
-    if: |
-      (needs.changes.outputs.airi == 'true' || needs.changes.outputs.xsai == 'true') &&
-      github.event_name == 'pull_request'
+    if: needs.changes.outputs.airi == 'true' && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        project: [airi, xsai]
-    name: Autofix ${{ matrix.project }}
+    name: Autofix airi
     steps:
       - uses: actions/checkout@v5
 
-      - uses: pnpm/action-setup@v4
-        if: matrix.project == 'xsai'
+      - uses: pnpm/action-setup@v5
         with:
           run_install: false
-          package_json_file: ${{ matrix.project }}/package.json
-
-      - uses: pnpm/action-setup@v3
-        if: matrix.project == 'airi'
-        with:
-          package_json_file: ${{ matrix.project }}/package.json
+          package_json_file: airi/package.json
 
       - uses: actions/setup-node@v6
         with:
-          node-version: ${{ matrix.project == 'xsai' && '24' || 'lts/*' }}
+          node-version: lts/*
           cache: pnpm
-          cache-dependency-path: ${{ matrix.project }}/pnpm-lock.yaml
+          cache-dependency-path: airi/pnpm-lock.yaml
 
       - name: Cache turbo
-        if: matrix.project == 'xsai'
         uses: actions/cache@v4
         with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          path: airi/.turbo
+          key: ${{ runner.os }}-airi-turbo-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-turbo-
+            ${{ runner.os }}-airi-turbo-
 
       - name: Install dependencies
-        run: pnpm install ${{ matrix.project == 'airi' && '--frozen-lockfile' || '' }}
-        working-directory: ${{ matrix.project }}
-
-      - name: Prune and dedupe (airi only)
-        if: matrix.project == 'airi'
-        run: pnpm prune && pnpm dedupe
+        run: pnpm install --frozen-lockfile
         working-directory: airi
 
       - name: Lint fix
-        run: pnpm ${{ matrix.project == 'airi' && 'run lint:fix' || 'lint --fix' }}
-        working-directory: ${{ matrix.project }}
+        run: pnpm run lint:fix
+        working-directory: airi
+
+      - uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27
+
+  autofix-xsai:
+    needs: changes
+    if: needs.changes.outputs.xsai == 'true' && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    name: Autofix xsai
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v5
+        with:
+          run_install: false
+          package_json_file: xsai/package.json
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: pnpm
+          cache-dependency-path: xsai/pnpm-lock.yaml
+
+      - name: Cache turbo
+        uses: actions/cache@v4
+        with:
+          path: xsai/.turbo
+          key: ${{ runner.os }}-xsai-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-xsai-turbo-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: xsai
+
+      - name: Lint fix
+        run: pnpm lint --fix
+        working-directory: xsai
 
       - uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27
 
   # Nix assets hash update (airi only)
   nix-assets-hash:
     needs: changes
-    if: |
-      needs.changes.outputs.airi-nix == 'true' &&
-      github.event_name == 'push'
+    if: needs.changes.outputs.airi-nix == 'true' && github.event_name == 'push'
     runs-on: ubuntu-latest
     concurrency: nix-update-assets
     name: Update Nix assets hash
@@ -128,9 +149,7 @@ jobs:
   # Nix pnpm deps hash update (airi only)
   nix-pnpm-deps-hash:
     needs: changes
-    if: |
-      needs.changes.outputs.airi == 'true' &&
-      github.event_name == 'push'
+    if: needs.changes.outputs.airi == 'true' && github.event_name == 'push'
     runs-on: ubuntu-latest
     concurrency: nix-update-pnpm-deps
     name: Update Nix pnpm deps hash
