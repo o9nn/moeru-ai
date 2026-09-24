@@ -510,45 +510,56 @@ jobs:
         include:
           - project: unspeech
             job: build-test
-            go: stable
+            go: '1.25.1'
+            changed: ${{ needs.changes.outputs.unspeech }}
           - project: unspeech
             job: lint
-            go: stable
-            lint-version: v8
+            go: '1.25.1'
+            lint-version: v2.5.0
+            changed: ${{ needs.changes.outputs.unspeech }}
           - project: unspeech
             job: unit-test
-            go: stable
+            go: '1.25.1'
+            changed: ${{ needs.changes.outputs.unspeech }}
           - project: mcp-launcher
             job: build-test
-            go: stable
+            go: '1.25.1'
+            changed: ${{ needs.changes.outputs.mcp-launcher }}
           - project: mcp-launcher
             job: lint
-            go: stable
-            lint-version: v3.4.0
+            go: '1.25.1'
+            lint-version: v2.5.0
+            changed: ${{ needs.changes.outputs.mcp-launcher }}
           - project: mcp-launcher
             job: unit-test
-            go: stable
+            go: '1.25.1'
+            changed: ${{ needs.changes.outputs.mcp-launcher }}
           - project: inventory
             job: build-test
-            go: '^1.24'
+            go: '1.25.1'
+            changed: ${{ needs.changes.outputs.inventory }}
           - project: inventory
             job: lint
-            go: '^1.24'
-            lint-version: v6.1.1
+            go: '1.25.1'
+            lint-version: v2.5.0
+            changed: ${{ needs.changes.outputs.inventory }}
           - project: inventory
             job: unit-test
-            go: '^1.24'
+            go: '1.25.1'
+            changed: ${{ needs.changes.outputs.inventory }}
     name: ${{ matrix.project }} - ${{ matrix.job }}
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-go@v5
+        if: matrix.changed == 'true'
+      - uses: actions/setup-go@v6
+        if: matrix.changed == 'true'
         with:
           go-version: ${{ matrix.go }}
           cache: true
           cache-dependency-path: ${{ matrix.project }}/go.sum
 
       - name: Lint
-        if: matrix.job == 'lint'
+        if: matrix.changed == 'true' && matrix.job == 'lint'
         uses: golangci/golangci-lint-action@v8
         with:
           working-directory: ${{ matrix.project }}
@@ -556,7 +567,7 @@ jobs:
           version: ${{ matrix.lint-version }}
 
       - name: Build
-        if: matrix.job == 'build-test'
+        if: matrix.changed == 'true' && matrix.job == 'build-test'
         run: |
           if [ "${{ matrix.project }}" = "inventory" ]; then
             go build -a -o "release/inventory" "github.com/moeru-ai/inventory/cmd/api-server"
@@ -566,7 +577,7 @@ jobs:
         working-directory: ${{ matrix.project }}
 
       - name: Test
-        if: matrix.job == 'unit-test'
+        if: matrix.changed == 'true' && matrix.job == 'unit-test'
         run: |
           go test ./... -coverprofile=coverage.out -covermode=atomic -p=1
           go tool cover -func coverage.out
