@@ -6,6 +6,7 @@ permissions:
 env:
   PRODUCT_NAME: 'Deditor'
   BUNDLE_NAME: ''
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
   release:
@@ -39,7 +40,7 @@ jobs:
       matrix:
         include:
 
-          - os: macos-13
+          - os: macos-15
             artifact: darwin-x64
             target: x86_64-apple-darwin
             builder-args: --macos --x64
@@ -92,7 +93,7 @@ jobs:
           swap-storage: true
 
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: 10
           run_install: false
@@ -119,7 +120,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build (macOS Only) # macOS
-        if: matrix.os == 'macos-13' || matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-15' || matrix.os == 'macos-latest'
         run: pnpm run -F @deditor-app/deditor build && pnpm -F @deditor-app/deditor exec electron-builder build ${{ matrix.builder-args }} --publish never
         working-directory: deditor
         env:
@@ -137,7 +138,7 @@ jobs:
       # ---------
       - name: Upload Build Logs on Failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: build-logs-${{ matrix.artifact }}
           path: |
@@ -169,7 +170,7 @@ jobs:
         run: pnpm run -F @deditor-app/deditor rename-artifacts ${{ matrix.target }}
       - name: Upload Artifacts (Nightly)
         if: ${{ github.event_name == 'schedule' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ env.BUNDLE_NAME }}
           path: apps/deditor/bundle/${{ env.BUNDLE_NAME }}
@@ -200,7 +201,7 @@ jobs:
 
       - name: Upload Artifacts (Manual + Non-Release)
         if: ${{ github.event_name == 'workflow_dispatch' && !inputs.build_only && inputs.artifacts_only }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ env.BUNDLE_NAME }}
           path: apps/deditor/bundle/${{ env.BUNDLE_NAME }}
