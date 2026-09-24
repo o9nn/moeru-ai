@@ -118,26 +118,24 @@ async function streamFrom(model: string, chatProvider: ChatProvider, messages: M
   const headers = options?.headers
 
   const sanitized = sanitizeMessages(messages as unknown[])
+  // Resolve tools before starting the stream so discovery failures reject this
+  // function directly instead of being trapped in an async Promise executor.
+  const tools = streamOptionsToolsCompatibilityOk(model, chatProvider, messages, options)
+    ? await loadTools(options)
+    : undefined
 
-  return new Promise<void>(async (resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     try {
-      // Automatic tool discovery - resolves TODO at line 55
-      const tools = streamOptionsToolsCompatibilityOk(model, chatProvider, messages, options)
-        ? await loadTools(options)
-        : undefined
-
-      await streamText({
+      const result = streamText({
         ...chatProvider.chat(model),
         maxSteps: 10,
         messages: sanitized,
         headers,
         tools,
-        async onEvent(event) {
+        onEvent(event) {
           try {
-            await options?.onStreamEvent?.(event as StreamEvent)
-            if (event.type === 'finish')
-              resolve()
-            else if (event.type === 'error')
+            void Promise.resolve(options?.onStreamEvent?.(event as StreamEvent)).catch(reject)
+            if (event.type === 'error')
               reject(event.error ?? new Error('Stream error'))
           }
           catch (err) {
@@ -145,6 +143,17 @@ async function streamFrom(model: string, chatProvider: ChatProvider, messages: M
           }
         },
       })
+
+      // streamText starts work eagerly and returns result promises. Observing all
+      // of them is required: otherwise transport/parser failures only reject
+      // those promises, leaving this wrapper pending and producing unhandled
+      // rejections in callers such as compatibility discovery.
+      void Promise.all([
+        result.messages,
+        result.steps,
+        result.totalUsage,
+        result.usage,
+      ]).then(() => resolve(), reject)
     }
     catch (err) {
       reject(err)

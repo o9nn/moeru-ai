@@ -54,7 +54,7 @@ const debugTools = [
       }
     },
     parameters: z.object({
-      format: z.enum(['iso', 'unix', 'unix_ms']).optional().describe('Timestamp format'),
+      format: z.enum(['iso', 'unix', 'unix_ms']).describe('Timestamp format'),
     }),
   }),
   tool({
