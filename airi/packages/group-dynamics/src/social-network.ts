@@ -256,9 +256,7 @@ export class SocialNetwork {
         }
       }
 
-      if (community.size > 1) {
-        communities.push(community)
-      }
+      communities.push(community)
     }
 
     // Add unassigned agents as singletons
