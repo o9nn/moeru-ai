@@ -1,4 +1,4 @@
-name: autofix.ci
+name: Maintenance
 
 on:
   pull_request:
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    name: Autofix airi
+    name: Check airi formatting
     steps:
       - uses: actions/checkout@v5
 
@@ -82,7 +82,8 @@ jobs:
         run: pnpm run lint:fix
         working-directory: airi
 
-      - uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27
+      - name: Verify no lint fixes are required
+        run: git diff --exit-code
 
   autofix-xsai:
     needs: changes
@@ -90,7 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    name: Autofix xsai
+    name: Check xsai formatting
     steps:
       - uses: actions/checkout@v5
 
@@ -121,7 +122,8 @@ jobs:
         run: pnpm lint --fix
         working-directory: xsai
 
-      - uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27
+      - name: Verify no lint fixes are required
+        run: git diff --exit-code
 
   # Nix assets hash update (airi only)
   nix-assets-hash:
