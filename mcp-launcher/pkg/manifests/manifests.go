@@ -13,7 +13,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// ManifestOperation defines the type of operation to perform
+// OperationType defines the type of manifest operation to perform.
 type OperationType string
 
 const (
