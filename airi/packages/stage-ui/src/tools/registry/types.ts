@@ -1,6 +1,6 @@
 /**
  * Tool Registry Type Definitions
- * 
+ *
  * Defines the core types for automatic tool discovery and management.
  */
 

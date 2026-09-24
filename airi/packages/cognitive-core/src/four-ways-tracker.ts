@@ -1,6 +1,6 @@
 /**
  * Four Ways of Knowing Tracker
- * 
+ *
  * Tracks and balances the four ways of knowing:
  * - Propositional (knowing-that)
  * - Procedural (knowing-how)
@@ -13,7 +13,7 @@ import type { FourWaysOfKnowing } from './types'
 /**
  * Event types that contribute to ways of knowing
  */
-export type KnowingEvent = {
+export interface KnowingEvent {
   type: 'propositional' | 'procedural' | 'perspectival' | 'participatory'
   description: string
   weight?: number // Relative importance (default: 1)
@@ -26,10 +26,10 @@ export type KnowingEvent = {
 export interface BalanceConfig {
   /** Target percentages (should sum to 1.0) */
   targets: FourWaysOfKnowing
-  
+
   /** Acceptable deviation from target */
   tolerance: number
-  
+
   /** Time window for balance calculation (ms) */
   timeWindow: number
 }
@@ -54,19 +54,19 @@ export const defaultBalanceConfig: BalanceConfig = {
 export interface BalanceRecommendation {
   /** Which way needs attention */
   way: keyof FourWaysOfKnowing
-  
+
   /** Current percentage */
   current: number
-  
+
   /** Target percentage */
   target: number
-  
+
   /** Gap (positive = need more, negative = need less) */
   gap: number
-  
+
   /** Specific recommendation */
   recommendation: string
-  
+
   /** Priority (higher = more urgent) */
   priority: number
 }
@@ -77,11 +77,11 @@ export interface BalanceRecommendation {
 export class FourWaysTracker {
   private events: KnowingEvent[] = []
   private config: BalanceConfig
-  
+
   constructor(config: Partial<BalanceConfig> = {}) {
     this.config = { ...defaultBalanceConfig, ...config }
   }
-  
+
   /**
    * Record a knowing event
    */
@@ -91,17 +91,17 @@ export class FourWaysTracker {
       weight: event.weight ?? 1,
       timestamp: Date.now(),
     })
-    
+
     // Keep only events within time window
     this.pruneOldEvents()
   }
-  
+
   /**
    * Get current balance
    */
   getBalance(): FourWaysOfKnowing {
     this.pruneOldEvents()
-    
+
     if (this.events.length === 0) {
       return {
         propositional: 0.25,
@@ -110,22 +110,22 @@ export class FourWaysTracker {
         participatory: 0.25,
       }
     }
-    
+
     const totals = {
       propositional: 0,
       procedural: 0,
       perspectival: 0,
       participatory: 0,
     }
-    
+
     let totalWeight = 0
-    
+
     for (const event of this.events) {
       const weight = event.weight ?? 1
       totals[event.type] += weight
       totalWeight += weight
     }
-    
+
     return {
       propositional: totals.propositional / totalWeight,
       procedural: totals.procedural / totalWeight,
@@ -133,35 +133,35 @@ export class FourWaysTracker {
       participatory: totals.participatory / totalWeight,
     }
   }
-  
+
   /**
    * Check if balance is within tolerance
    */
   isBalanced(): boolean {
     const current = this.getBalance()
     const { targets, tolerance } = this.config
-    
+
     return Object.entries(current).every(([key, value]) => {
       const target = targets[key as keyof FourWaysOfKnowing]
       return Math.abs(value - target) <= tolerance
     })
   }
-  
+
   /**
    * Get recommendations for improving balance
    */
   getRecommendations(): BalanceRecommendation[] {
     const current = this.getBalance()
     const { targets } = this.config
-    
+
     const recommendations: BalanceRecommendation[] = []
-    
+
     // Check each way
     for (const [key, currentValue] of Object.entries(current)) {
       const way = key as keyof FourWaysOfKnowing
       const target = targets[way]
       const gap = target - currentValue
-      
+
       // Only recommend if gap is significant
       if (Math.abs(gap) > this.config.tolerance / 2) {
         recommendations.push({
@@ -174,21 +174,21 @@ export class FourWaysTracker {
         })
       }
     }
-    
+
     // Sort by priority (descending)
     return recommendations.sort((a, b) => b.priority - a.priority)
   }
-  
+
   /**
    * Generate specific recommendation
    */
   private generateRecommendation(
     way: keyof FourWaysOfKnowing,
-    gap: number
+    gap: number,
   ): string {
     const needMore = gap > 0
-    
-    const recommendations: Record<keyof FourWaysOfKnowing, { more: string; less: string }> = {
+
+    const recommendations: Record<keyof FourWaysOfKnowing, { more: string, less: string }> = {
       propositional: {
         more: 'Engage in more fact-learning, reading, conceptual analysis, or theoretical reasoning',
         less: 'Reduce passive information consumption, focus on embodied practice instead',
@@ -206,12 +206,12 @@ export class FourWaysTracker {
         less: 'Balance transformation with stability, integrate changes before seeking more',
       },
     }
-    
-    return needMore 
+
+    return needMore
       ? recommendations[way].more
       : recommendations[way].less
   }
-  
+
   /**
    * Remove events outside time window
    */
@@ -219,7 +219,7 @@ export class FourWaysTracker {
     const cutoff = Date.now() - this.config.timeWindow
     this.events = this.events.filter(e => e.timestamp >= cutoff)
   }
-  
+
   /**
    * Get statistics about recent activity
    */
@@ -231,14 +231,14 @@ export class FourWaysTracker {
     timeWindow: number
   } {
     this.pruneOldEvents()
-    
+
     const eventsByType = {
       propositional: this.events.filter(e => e.type === 'propositional').length,
       procedural: this.events.filter(e => e.type === 'procedural').length,
       perspectival: this.events.filter(e => e.type === 'perspectival').length,
       participatory: this.events.filter(e => e.type === 'participatory').length,
     }
-    
+
     return {
       totalEvents: this.events.length,
       eventsByType,
@@ -247,7 +247,7 @@ export class FourWaysTracker {
       timeWindow: this.config.timeWindow,
     }
   }
-  
+
   /**
    * Reset tracker
    */

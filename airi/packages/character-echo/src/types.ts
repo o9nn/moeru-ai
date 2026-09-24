@@ -1,6 +1,6 @@
 /**
  * Echo Event Types
- * 
+ *
  * TypeScript type definitions for Echo-specific WebSocket events
  */
 

@@ -1,48 +1,48 @@
 /**
  * Audio Processing Library
- * 
+ *
  * Provides VAD, silence detection, and transcription session management.
  */
 
-// Base VAD types and utilities
-export {
-  type BaseVADConfig,
-  type VADEvents,
-  type VADEventCallback,
-  type BaseVAD,
-  type VADAudioOptions,
-  createVADStates,
-} from './vad'
-
 // Energy-based VAD
 export {
-  EnergyVAD,
   createEnergyVAD,
+  EnergyVAD,
   type EnergyVADConfig,
-  type VADFrameResult,
-  type EnergyVADEvents,
   type EnergyVADEventCallback,
+  type EnergyVADEvents,
+  type VADFrameResult,
 } from './energy-vad'
-
-// Silence detection
-export {
-  SilenceDetector,
-  createSilenceDetector,
-  useSilenceDetector,
-  SilenceState,
-  type SilenceDetectorConfig,
-  type SilenceDetectorEvents,
-  type SilenceDetectorEventCallback,
-  type SessionStats,
-} from './silence-detector'
 
 // Session management
 export {
-  TranscriptionSessionManager,
   createSessionManager,
-  SessionState,
   type SessionConfig,
-  type SessionEvents,
   type SessionEventCallback,
+  type SessionEvents,
+  SessionState,
   type SessionStatistics,
+  TranscriptionSessionManager,
 } from './session-manager'
+
+// Silence detection
+export {
+  createSilenceDetector,
+  type SessionStats,
+  SilenceDetector,
+  type SilenceDetectorConfig,
+  type SilenceDetectorEventCallback,
+  type SilenceDetectorEvents,
+  SilenceState,
+  useSilenceDetector,
+} from './silence-detector'
+
+// Base VAD types and utilities
+export {
+  type BaseVAD,
+  type BaseVADConfig,
+  createVADStates,
+  type VADAudioOptions,
+  type VADEventCallback,
+  type VADEvents,
+} from './vad'

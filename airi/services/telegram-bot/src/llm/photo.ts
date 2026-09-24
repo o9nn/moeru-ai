@@ -68,7 +68,7 @@ export async function interpretPhotos(state: BotContext, msg: Message, photos: P
       }
 
       // Generate embedding for photo description to enable semantic search
-      const embedRes = await embed({
+      await embed({
         baseURL: env.EMBEDDING_API_BASE_URL!,
         apiKey: env.EMBEDDING_API_KEY!,
         model: env.EMBEDDING_MODEL!,

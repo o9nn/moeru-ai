@@ -1,13 +1,16 @@
 /**
  * Echo Service
- * 
+ *
  * AIRI service adapter for the Echo character
  */
 
+import type { EchoReflection } from '@proj-airi/character-echo'
+
 import { env } from 'node:process'
+
 import { useLogg } from '@guiiai/logg'
+import { EchoCharacter } from '@proj-airi/character-echo'
 import { Client as AiriClient } from '@proj-airi/server-sdk'
-import { EchoCharacter, type EchoReflection } from '@proj-airi/character-echo'
 
 const log = useLogg('EchoService')
 

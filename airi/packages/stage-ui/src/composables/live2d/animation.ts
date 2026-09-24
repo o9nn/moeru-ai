@@ -6,7 +6,7 @@ import { randomSaccadeInterval } from '../../utils'
 
 /**
  * Idle Eye Saccade and Focus Controller
- * 
+ *
  * Simulates idle eye saccades and focus (head) movements.
  * Eye ball parameters are now dynamically controlled rather than hardcoded,
  * integrating with the emotion bridge system for context-aware behavior.
@@ -32,10 +32,14 @@ export function useLive2DIdleEyeFocus() {
     focusScale?: number
     lerpSpeed?: number
   }): void {
-    if (context.rangeX) saccadeRangeX = context.rangeX
-    if (context.rangeY) saccadeRangeY = context.rangeY
-    if (context.focusScale !== undefined) saccadeFocusScale = context.focusScale
-    if (context.lerpSpeed !== undefined) saccadeLerpSpeed = context.lerpSpeed
+    if (context.rangeX)
+      saccadeRangeX = context.rangeX
+    if (context.rangeY)
+      saccadeRangeY = context.rangeY
+    if (context.focusScale !== undefined)
+      saccadeFocusScale = context.focusScale
+    if (context.lerpSpeed !== undefined)
+      saccadeLerpSpeed = context.lerpSpeed
   }
 
   /**
@@ -68,7 +72,7 @@ export function useLive2DIdleEyeFocus() {
 
     model.focusController.update(now - lastSaccadeAt)
     const coreModel = model.coreModel as any
-    
+
     // Dynamic eye ball parameters (no longer hardcoded)
     coreModel.setParameterValueById(
       'ParamEyeBallX',

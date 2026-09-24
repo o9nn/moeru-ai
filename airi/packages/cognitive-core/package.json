@@ -1,12 +1,21 @@
 {
   "name": "@proj-airi/cognitive-core",
+  "type": "module",
   "version": "0.1.0",
   "description": "Unified cognitive architecture core for AIRI - relevance realization, sophrosyne, and opponent processing",
-  "type": "module",
+  "author": "Moeru AI Project AIRI Team",
+  "license": "MIT",
+  "keywords": [
+    "cognitive-architecture",
+    "relevance-realization",
+    "4e-cognition",
+    "wisdom-cultivation",
+    "agi"
+  ],
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.mts"
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
     }
   },
   "files": [
@@ -17,15 +26,6 @@
     "dev": "tsdown --watch",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": [
-    "cognitive-architecture",
-    "relevance-realization",
-    "4e-cognition",
-    "wisdom-cultivation",
-    "agi"
-  ],
-  "author": "Moeru AI Project AIRI Team",
-  "license": "MIT",
   "devDependencies": {
     "tsdown": "latest",
     "typescript": "latest"

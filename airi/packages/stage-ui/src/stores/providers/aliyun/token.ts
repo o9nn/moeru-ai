@@ -91,7 +91,7 @@ export async function buildCreateTokenRequest(accessKeyId: string, accessKeySecr
   }
 
   const canonicalQuery = canonicalizeQuery(params)
-  const stringToSign = createStringToSign('POST', '/', canonicalQuery)
+  const stringToSign = createStringToSign('GET', '/', canonicalQuery)
   const signatureBase64 = await signStringToBase64(stringToSign, accessKeySecret)
   const encodedSignature = encodeURIComponent(signatureBase64)
   const signedQuery = `Signature=${encodedSignature}&${canonicalQuery}`
@@ -124,7 +124,7 @@ export async function createToken(accessKeyId: string, accessKeySecret: string, 
     RequestId: string
     Message: string
     Code: string
-  }>(request.url, { method: 'POST' })
+  }>(request.url, { method: 'GET' })
 
   if ('Token' in response && typeof response.Token === 'object' && 'Id' in response.Token) {
     return { token: response.Token.Id, expiresAt: response.Token.ExpireTime * 1000 }

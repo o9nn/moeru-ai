@@ -1,18 +1,18 @@
 import type { TranscriptionProviderWithExtraOptions } from '@xsai-ext/shared-providers'
 
-import type { StreamTranscriptionResult } from '../providers/aliyun'
-import type { BaseVAD } from '../../libs/audio/vad'
+import type { SessionConfig, SessionEvents, TranscriptionSessionManager } from '../../libs/audio/session-manager'
 import type { SilenceDetectorConfig } from '../../libs/audio/silence-detector'
-import type { SessionConfig, SessionEvents } from '../../libs/audio/session-manager'
+import type { BaseVAD } from '../../libs/audio/vad'
+import type { StreamTranscriptionResult } from '../providers/aliyun'
 
 import { useLocalStorage } from '@vueuse/core'
 import { generateTranscription } from '@xsai/generate-transcription'
 import { defineStore, storeToRefs } from 'pinia'
 import { computed, ref, shallowRef } from 'vue'
 
+import { createSessionManager, SessionState } from '../../libs/audio/session-manager'
 import { useProvidersStore } from '../providers'
 import { streamTranscription as streamAliyunTranscription } from '../providers/aliyun'
-import { createSessionManager, SessionState, TranscriptionSessionManager } from '../../libs/audio/session-manager'
 
 type GenerateTranscriptionResponse = Awaited<ReturnType<typeof generateTranscription>>
 type HearingTranscriptionGenerateResult = GenerateTranscriptionResponse & { mode: 'generate' }
@@ -63,13 +63,13 @@ export const useHearingStore = defineStore('hearing-store', () => {
   const activeTranscriptionModel = useLocalStorage('settings/hearing/active-model', '')
   const activeCustomModelName = useLocalStorage('settings/hearing/active-custom-model', '')
   const transcriptionModelSearchQuery = ref('')
-  
+
   // VAD Silence Detection State
   const vadSilenceDetectionEnabled = useLocalStorage('settings/hearing/vad-silence-detection-enabled', true)
   const vadPauseThresholdMs = useLocalStorage('settings/hearing/vad-pause-threshold-ms', 2000)
   const vadStopThresholdMs = useLocalStorage('settings/hearing/vad-stop-threshold-ms', 10000)
   const vadAdaptiveEnabled = useLocalStorage('settings/hearing/vad-adaptive-enabled', true)
-  
+
   // Active session manager
   const activeSessionManager = shallowRef<TranscriptionSessionManager | null>(null)
 
@@ -92,12 +92,12 @@ export const useHearingStore = defineStore('hearing-store', () => {
   const activeProviderModelError = computed(() => {
     return providersStore.modelLoadError[activeTranscriptionProvider.value] || null
   })
-  
+
   // VAD session state
   const vadSessionState = computed(() => {
     return activeSessionManager.value?.getState() ?? SessionState.IDLE
   })
-  
+
   const vadSessionStats = computed(() => {
     return activeSessionManager.value?.getStatistics() ?? null
   })
@@ -119,12 +119,12 @@ export const useHearingStore = defineStore('hearing-store', () => {
   const configured = computed(() => {
     return !!activeTranscriptionProvider.value && !!activeTranscriptionModel.value
   })
-  
+
   /**
    * Create a session manager with VAD-driven silence detection
    */
   function createVADSessionManager(
-    vadConfig?: VADSilenceDetectionConfig
+    vadConfig?: VADSilenceDetectionConfig,
   ): TranscriptionSessionManager {
     const sessionManager = createSessionManager({
       silenceConfig: {
@@ -135,7 +135,7 @@ export const useHearingStore = defineStore('hearing-store', () => {
       },
       ...vadConfig?.sessionConfig,
     })
-    
+
     // Setup event handlers
     if (vadConfig?.onSessionPause) {
       sessionManager.on('session-pause', vadConfig.onSessionPause)
@@ -146,12 +146,12 @@ export const useHearingStore = defineStore('hearing-store', () => {
     if (vadConfig?.onSessionStop) {
       sessionManager.on('session-stop', vadConfig.onSessionStop)
     }
-    
+
     // Connect external VAD if provided
     if (vadConfig?.vad) {
       sessionManager.connectVAD(vadConfig.vad)
     }
-    
+
     return sessionManager
   }
 
@@ -169,10 +169,10 @@ export const useHearingStore = defineStore('hearing-store', () => {
     }
     const features = providersStore.getTranscriptionFeatures(providerId)
     const streamExecutor = STREAM_TRANSCRIPTION_EXECUTORS[providerId]
-    
+
     // Determine if VAD silence detection should be used
-    const useVADSilenceDetection = options?.vadSilenceDetection?.enabled ?? 
-      (vadSilenceDetectionEnabled.value && normalizedInput.inputAudioStream)
+    const useVADSilenceDetection = options?.vadSilenceDetection?.enabled
+      ?? (vadSilenceDetectionEnabled.value && normalizedInput.inputAudioStream)
 
     if (features.supportsStreamOutput && streamExecutor) {
       const request = provider.transcription(model, options?.providerOptions)
@@ -182,37 +182,37 @@ export const useHearingStore = defineStore('hearing-store', () => {
           ...request,
           inputAudioStream: normalizedInput.inputAudioStream,
         } as Parameters<typeof streamExecutor>[0])
-        
+
         // VAD-driven silence detection integration
         if (useVADSilenceDetection) {
           // Clean up previous session manager
           if (activeSessionManager.value) {
             activeSessionManager.value.dispose()
           }
-          
+
           // Create new session manager
           const sessionManager = createVADSessionManager(options?.vadSilenceDetection)
           activeSessionManager.value = sessionManager
-          
+
           // Start the session
           await sessionManager.start()
-          
+
           // Setup session event handlers for stream control
           sessionManager.on('session-pause', () => {
-            console.log('[Hearing] VAD detected extended silence, session paused')
+            console.info('[Hearing] VAD detected extended silence, session paused')
             // The stream can continue but we track the pause state
           })
-          
+
           sessionManager.on('session-resume', () => {
-            console.log('[Hearing] VAD detected speech resume, session resumed')
+            console.info('[Hearing] VAD detected speech resume, session resumed')
           })
-          
+
           sessionManager.on('session-stop', ({ reason }) => {
-            console.log(`[Hearing] VAD session stopped: ${reason}`)
+            console.info(`[Hearing] VAD session stopped: ${reason}`)
             // Clean up when session stops
             activeSessionManager.value = null
           })
-          
+
           // Return enhanced stream result with session manager
           return {
             mode: 'stream',
@@ -221,7 +221,7 @@ export const useHearingStore = defineStore('hearing-store', () => {
             sessionManager,
           } as HearingTranscriptionStreamResult & { sessionManager: TranscriptionSessionManager }
         }
-        
+
         return {
           mode: 'stream',
           ...streamResult,
@@ -233,20 +233,20 @@ export const useHearingStore = defineStore('hearing-store', () => {
           ...request,
           file: normalizedInput.file,
         } as Parameters<typeof streamExecutor>[0])
-        
+
         // VAD-driven silence detection for file-based streaming
         if (useVADSilenceDetection && options?.vadSilenceDetection?.vad) {
           const sessionManager = createVADSessionManager(options.vadSilenceDetection)
           activeSessionManager.value = sessionManager
           await sessionManager.start()
-          
+
           return {
             mode: 'stream',
             ...streamResult,
             sessionManager,
           } as HearingTranscriptionStreamResult & { sessionManager: TranscriptionSessionManager }
         }
-        
+
         return {
           mode: 'stream',
           ...streamResult,
@@ -258,20 +258,20 @@ export const useHearingStore = defineStore('hearing-store', () => {
           ...request,
           file: normalizedInput.file,
         } as Parameters<typeof streamExecutor>[0])
-        
+
         // VAD-driven silence detection for file-based streaming
         if (useVADSilenceDetection && options?.vadSilenceDetection?.vad) {
           const sessionManager = createVADSessionManager(options.vadSilenceDetection)
           activeSessionManager.value = sessionManager
           await sessionManager.start()
-          
+
           return {
             mode: 'stream',
             ...streamResult,
             sessionManager,
           } as HearingTranscriptionStreamResult & { sessionManager: TranscriptionSessionManager }
         }
-        
+
         return {
           mode: 'stream',
           ...streamResult,
@@ -298,14 +298,14 @@ export const useHearingStore = defineStore('hearing-store', () => {
       ...response,
     }
   }
-  
+
   /**
    * Get the active session manager
    */
   function getActiveSessionManager(): TranscriptionSessionManager | null {
     return activeSessionManager.value
   }
-  
+
   /**
    * Stop the active VAD session
    */
@@ -316,14 +316,14 @@ export const useHearingStore = defineStore('hearing-store', () => {
       activeSessionManager.value = null
     }
   }
-  
+
   /**
    * Pause the active VAD session
    */
   function pauseVADSession(): void {
     activeSessionManager.value?.pause()
   }
-  
+
   /**
    * Resume the active VAD session
    */
@@ -343,7 +343,7 @@ export const useHearingStore = defineStore('hearing-store', () => {
     isLoadingActiveProviderModels,
     activeProviderModelError,
     configured,
-    
+
     // VAD Silence Detection
     vadSilenceDetectionEnabled,
     vadPauseThresholdMs,
@@ -355,7 +355,7 @@ export const useHearingStore = defineStore('hearing-store', () => {
     transcription,
     loadModelsForProvider,
     getModelsForProvider,
-    
+
     // VAD Session Management
     getActiveSessionManager,
     stopVADSession,

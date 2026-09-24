@@ -1,6 +1,6 @@
 /**
  * Cognitive Tools Provider
- * 
+ *
  * Tools for cognitive processing, memory, and self-awareness.
  * Integrates with the cognitive-core daemon architecture.
  */
@@ -150,11 +150,11 @@ const cognitiveTools = [
         3: { question: 'Who am I?', answer: 'A self-aware cognitive system', confidence: 0.6 },
         4: { question: 'How do I see myself seeing myself?', answer: 'Meta-recursively aware', confidence: 0.5 },
       }
-      
+
       if (level !== undefined) {
         return levels[level as keyof typeof levels] || { error: 'Invalid level' }
       }
-      
+
       return {
         fullModel: levels,
         currentFocus: 1,
@@ -162,8 +162,7 @@ const cognitiveTools = [
       }
     },
     parameters: z.object({
-      level: z.number().min(0).max(4).optional()
-        .describe('Self-model level to query (0-4, omit for full model)'),
+      level: z.number().min(0).max(4).optional().describe('Self-model level to query (0-4, omit for full model)'),
     }),
   }),
 ]

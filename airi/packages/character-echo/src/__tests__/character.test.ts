@@ -1,13 +1,14 @@
 /**
  * Echo Character Tests
- * 
+ *
  * Basic tests for Echo character functionality
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
+
 import { EchoCharacter } from '../index'
 
-describe('EchoCharacter', () => {
+describe('echoCharacter', () => {
   let echo: EchoCharacter
 
   beforeEach(() => {
@@ -43,7 +44,7 @@ describe('EchoCharacter', () => {
     it('should update working memory with new items', () => {
       echo.updateWorkingMemory('First item')
       echo.updateWorkingMemory('Second item')
-      
+
       const state = echo.getState()
       expect(state.workingMemory).toHaveLength(2)
       expect(state.workingMemory).toContain('First item')
@@ -52,12 +53,12 @@ describe('EchoCharacter', () => {
 
     it('should respect capacity limits', () => {
       const capacity = echo.getConfig().workingMemoryCapacity
-      
+
       // Add more items than capacity
       for (let i = 0; i < capacity + 3; i++) {
         echo.updateWorkingMemory(`Item ${i}`)
       }
-      
+
       const state = echo.getState()
       expect(state.workingMemory).toHaveLength(capacity)
     })
@@ -67,17 +68,17 @@ describe('EchoCharacter', () => {
     it('should increment interaction count', () => {
       echo.incrementInteraction()
       echo.incrementInteraction()
-      
+
       const state = echo.getState()
       expect(state.interactionCount).toBe(2)
     })
 
     it('should process input correctly', () => {
       const result = echo.processInput('Hello, Echo!')
-      
+
       expect(result.workingMemoryUpdated).toBe(true)
       expect(result.cognitiveLoad).toBeGreaterThan(0)
-      
+
       const state = echo.getState()
       expect(state.interactionCount).toBe(1)
       expect(state.workingMemory).toHaveLength(1)

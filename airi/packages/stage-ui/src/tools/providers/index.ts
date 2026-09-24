@@ -1,22 +1,22 @@
 /**
  * Tool Providers Index
- * 
+ *
  * Exports all tool providers and their manifests for automatic discovery.
  */
 
+import { cognitiveManifest } from './cognitive'
 // Debug tools
-export { debug, debugManifest } from './debug'
-
-// MCP tools
-export { mcp, mcpManifest } from './mcp'
+// All manifests for bulk registration
+import { debugManifest } from './debug'
+import { mcpManifest } from './mcp'
 
 // Cognitive tools
 export { cognitive, cognitiveManifest } from './cognitive'
 
-// All manifests for bulk registration
-import { debugManifest } from './debug'
-import { mcpManifest } from './mcp'
-import { cognitiveManifest } from './cognitive'
+export { debug, debugManifest } from './debug'
+
+// MCP tools
+export { mcp, mcpManifest } from './mcp'
 
 export const allManifests = [
   debugManifest,

@@ -1,6 +1,6 @@
 /**
  * Echo System Prompt
- * 
+ *
  * Core personality and behavioral instructions for Echo character
  */
 

@@ -1,6 +1,7 @@
 import type { ChatProvider } from '@xsai-ext/shared-providers'
 import type { CommonContentPart, CompletionToolCall, Message, Tool } from '@xsai/shared-chat'
-import type { ToolCategory, ToolCapability, ToolFilter } from '../tools/registry/types'
+
+import type { ToolCapability, ToolCategory, ToolFilter } from '../tools/registry/types'
 
 import { listModels } from '@xsai/model'
 import { XSAIError } from '@xsai/shared'
@@ -8,11 +9,10 @@ import { streamText } from '@xsai/stream-text'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-import { useToolRegistry } from '../tools/registry'
-import { registerAllProviders } from '../tools/providers'
-
 // Legacy imports for backward compatibility
 import { debug, mcp } from '../tools'
+import { registerAllProviders } from '../tools/providers'
+import { useToolRegistry } from '../tools/registry'
 
 export type StreamEvent
   = | { type: 'text-delta', text: string }
@@ -26,7 +26,7 @@ export interface StreamOptions {
   onStreamEvent?: (event: StreamEvent) => void | Promise<void>
   toolsCompatibility?: Map<string, boolean>
   supportsTools?: boolean
-  /** 
+  /**
    * Tool discovery options for automatic tool loading
    * If not specified, all enabled tools are loaded
    */
@@ -68,7 +68,7 @@ function streamOptionsToolsCompatibilityOk(model: string, chatProvider: ChatProv
  */
 async function loadTools(options?: StreamOptions): Promise<Tool[]> {
   const discovery = options?.toolDiscovery
-  
+
   // Use legacy loading if explicitly requested or for backward compatibility
   if (discovery?.useLegacy) {
     return [
@@ -76,11 +76,11 @@ async function loadTools(options?: StreamOptions): Promise<Tool[]> {
       ...await debug(),
     ]
   }
-  
+
   // Use tool registry for automatic discovery
   try {
     const toolRegistry = useToolRegistry()
-    
+
     // Build filter from options
     const filter: ToolFilter = {
       categories: discovery?.categories,
@@ -90,10 +90,10 @@ async function loadTools(options?: StreamOptions): Promise<Tool[]> {
       include: discovery?.include,
       enabledOnly: true,
     }
-    
+
     // Load tools matching filter
     const tools = await toolRegistry.loadByFilter(filter)
-    
+
     // If no tools found via registry, fall back to legacy
     if (tools.length === 0) {
       console.warn('[LLM] No tools found via registry, falling back to legacy loading')
@@ -102,7 +102,7 @@ async function loadTools(options?: StreamOptions): Promise<Tool[]> {
         ...await debug(),
       ]
     }
-    
+
     return tools
   }
   catch (err) {
@@ -118,26 +118,24 @@ async function streamFrom(model: string, chatProvider: ChatProvider, messages: M
   const headers = options?.headers
 
   const sanitized = sanitizeMessages(messages as unknown[])
+  // Resolve tools before starting the stream so discovery failures reject this
+  // function directly instead of being trapped in an async Promise executor.
+  const tools = streamOptionsToolsCompatibilityOk(model, chatProvider, messages, options)
+    ? await loadTools(options)
+    : undefined
 
-  return new Promise<void>(async (resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     try {
-      // Automatic tool discovery - resolves TODO at line 55
-      const tools = streamOptionsToolsCompatibilityOk(model, chatProvider, messages, options)
-        ? await loadTools(options)
-        : undefined
-
-      await streamText({
+      const result = streamText({
         ...chatProvider.chat(model),
         maxSteps: 10,
         messages: sanitized,
         headers,
         tools,
-        async onEvent(event) {
+        onEvent(event) {
           try {
-            await options?.onStreamEvent?.(event as StreamEvent)
-            if (event.type === 'finish')
-              resolve()
-            else if (event.type === 'error')
+            void Promise.resolve(options?.onStreamEvent?.(event as StreamEvent)).catch(reject)
+            if (event.type === 'error')
               reject(event.error ?? new Error('Stream error'))
           }
           catch (err) {
@@ -145,6 +143,17 @@ async function streamFrom(model: string, chatProvider: ChatProvider, messages: M
           }
         },
       })
+
+      // streamText starts work eagerly and returns result promises. Observing all
+      // of them is required: otherwise transport/parser failures only reject
+      // those promises, leaving this wrapper pending and producing unhandled
+      // rejections in callers such as compatibility discovery.
+      void Promise.all([
+        result.messages,
+        result.steps,
+        result.totalUsage,
+        result.usage,
+      ]).then(() => resolve(), reject)
     }
     catch (err) {
       reject(err)
@@ -230,13 +239,14 @@ export const useLLM = defineStore('llm', () => {
    * Initialize the tool registry with all providers
    */
   function initializeToolRegistry() {
-    if (toolRegistryInitialized.value) return
-    
+    if (toolRegistryInitialized.value)
+      return
+
     try {
       const toolRegistry = useToolRegistry()
       registerAllProviders(toolRegistry)
       toolRegistryInitialized.value = true
-      console.log('[LLM] Tool registry initialized with', toolRegistry.registeredCount, 'providers')
+      console.info('[LLM] Tool registry initialized with', toolRegistry.registeredCount, 'providers')
     }
     catch (err) {
       console.error('[LLM] Failed to initialize tool registry:', err)

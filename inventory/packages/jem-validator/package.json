@@ -21,7 +21,7 @@
     "unified": "^11.0.5",
     "xsai": "catalog:",
     "zod": "^3.25.76",
-    "zod-to-json-schema": "^3.24.6"
+    "zod-to-json-schema": "^3.25.2"
   },
   "devDependencies": {
     "@types/mdast": "^4.0.4",

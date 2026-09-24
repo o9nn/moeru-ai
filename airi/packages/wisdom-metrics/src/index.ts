@@ -1,6 +1,6 @@
 /**
  * Wisdom Metrics - Main Exports
- * 
+ *
  * Wisdom cultivation tracking for AIRI
  * Measures and optimizes morality, meaning, and mastery
  */
@@ -9,5 +9,5 @@
 export type * from './types'
 
 // Wisdom Tracker
-export { WisdomTracker, defaultWisdomConfig } from './wisdom-tracker'
+export { defaultWisdomConfig, WisdomTracker } from './wisdom-tracker'
 export type { WisdomConfig } from './wisdom-tracker'

@@ -158,7 +158,7 @@ export class OptimalGripCoordinator {
 
   constructor(
     config: Partial<OptimalGripConfig> = {},
-    customFrames?: CognitiveFrame[]
+    customFrames?: CognitiveFrame[],
   ) {
     this.config = { ...defaultOptimalGripConfig, ...config }
 
@@ -191,7 +191,7 @@ export class OptimalGripCoordinator {
    */
   async assess(
     context: CognitiveContext,
-    items: Array<{ id: string, description: string, data?: Record<string, unknown> }>
+    items: Array<{ id: string, description: string, data?: Record<string, unknown> }>,
   ): Promise<OptimalGripAssessment> {
     // Evaluate frame fitness for current context
     const frameFitness = this.evaluateFrameFitness(context)
@@ -218,14 +218,14 @@ export class OptimalGripCoordinator {
     const perspectivalFitness = this.computePerspectivalFitness(
       gripStrength,
       salienceMap,
-      gestalts
+      gestalts,
     )
 
     // Generate recommendations
     const recommendations = this.generateRecommendations(
       gripStrength,
       frameFitness,
-      gestalts
+      gestalts,
     )
 
     return {
@@ -245,7 +245,7 @@ export class OptimalGripCoordinator {
    * Evaluate fitness of all frames for current context
    */
   evaluateFrameFitness(
-    context: CognitiveContext
+    context: CognitiveContext,
   ): Array<{ frame: CognitiveFrame, fitness: number }> {
     const results: Array<{ frame: CognitiveFrame, fitness: number }> = []
 
@@ -361,7 +361,7 @@ export class OptimalGripCoordinator {
    */
   computeSalienceMap(
     items: Array<{ id: string, description: string, data?: Record<string, unknown> }>,
-    context: CognitiveContext
+    context: CognitiveContext,
   ): SalienceMap {
     const salientItems: SalientItem[] = []
 
@@ -376,9 +376,9 @@ export class OptimalGripCoordinator {
       const { salienceWeights } = this.config
       const salience
         = factors.frameBased * salienceWeights.frameBased
-        + factors.goalBased * salienceWeights.goalBased
-        + factors.noveltyBased * salienceWeights.noveltyBased
-        + factors.emotionalBased * salienceWeights.emotionalBased
+          + factors.goalBased * salienceWeights.goalBased
+          + factors.noveltyBased * salienceWeights.noveltyBased
+          + factors.emotionalBased * salienceWeights.emotionalBased
 
       // Generate reason
       const topFactor = Object.entries(factors)
@@ -466,7 +466,7 @@ export class OptimalGripCoordinator {
     // Check if in working memory (less novel)
     const inMemory = context.workingMemory.some(
       item => item.toLowerCase().includes(description.toLowerCase())
-        || description.toLowerCase().includes(item.toLowerCase())
+        || description.toLowerCase().includes(item.toLowerCase()),
     )
 
     if (inMemory)
@@ -475,7 +475,7 @@ export class OptimalGripCoordinator {
     // Check recent history
     if (context.recentHistory) {
       const recentlyMentioned = context.recentHistory.some(
-        item => JSON.stringify(item).toLowerCase().includes(description.toLowerCase())
+        item => JSON.stringify(item).toLowerCase().includes(description.toLowerCase()),
       )
       if (recentlyMentioned)
         return 0.4
@@ -495,9 +495,22 @@ export class OptimalGripCoordinator {
 
     // Check for emotionally charged words
     const emotionalWords = [
-      'danger', 'threat', 'opportunity', 'exciting', 'important',
-      'urgent', 'critical', 'amazing', 'terrible', 'wonderful',
-      'love', 'hate', 'fear', 'joy', 'anger', 'surprise',
+      'danger',
+      'threat',
+      'opportunity',
+      'exciting',
+      'important',
+      'urgent',
+      'critical',
+      'amazing',
+      'terrible',
+      'wonderful',
+      'love',
+      'hate',
+      'fear',
+      'joy',
+      'anger',
+      'surprise',
     ]
 
     const descLower = description.toLowerCase()
@@ -657,7 +670,7 @@ export class OptimalGripCoordinator {
   private computePerspectivalFitness(
     gripStrength: GripStrength,
     salienceMap: SalienceMap,
-    gestalts: Gestalt[]
+    gestalts: Gestalt[],
   ): number {
     let fitness = 0
 
@@ -699,7 +712,7 @@ export class OptimalGripCoordinator {
   private generateRecommendations(
     gripStrength: GripStrength,
     frameFitness: Array<{ frame: CognitiveFrame, fitness: number }>,
-    gestalts: Gestalt[]
+    gestalts: Gestalt[],
   ): string[] {
     const recommendations: string[] = []
 
@@ -713,26 +726,26 @@ export class OptimalGripCoordinator {
     const bestFitness = frameFitness[0]?.fitness ?? 0
     if (frameFitness.length > 0 && bestFitness - currentFitness > 0.15) {
       recommendations.push(
-        `Consider shifting to ${frameFitness[0].frame.name} for better situational fit.`
+        `Consider shifting to ${frameFitness[0].frame.name} for better situational fit.`,
       )
     }
 
     // Gestalt recommendations
     if (gestalts.length === 0) {
       recommendations.push(
-        'No clear patterns detected. Try looking for connections between elements.'
+        'No clear patterns detected. Try looking for connections between elements.',
       )
     }
     else if (gestalts.some(g => g.coherence < 0.5)) {
       recommendations.push(
-        'Some perceived patterns have low coherence. Consider whether they represent genuine connections.'
+        'Some perceived patterns have low coherence. Consider whether they represent genuine connections.',
       )
     }
 
     // Frame blind spot warning
     if (this.activeFrame.blindSpots.length > 0) {
       recommendations.push(
-        `Current frame may obscure: ${this.activeFrame.blindSpots.slice(0, 2).join(', ')}. Consider whether these are relevant.`
+        `Current frame may obscure: ${this.activeFrame.blindSpots.slice(0, 2).join(', ')}. Consider whether these are relevant.`,
       )
     }
 
@@ -745,7 +758,7 @@ export class OptimalGripCoordinator {
   async shiftFrame(
     newFrame: CognitiveFrame,
     trigger: FrameShift['trigger'],
-    triggerDescription?: string
+    triggerDescription?: string,
   ): Promise<FrameShift> {
     const shift: FrameShift = {
       from: this.activeFrame,
@@ -778,7 +791,7 @@ export class OptimalGripCoordinator {
   async shiftFrameById(
     frameId: string,
     trigger: FrameShift['trigger'],
-    triggerDescription?: string
+    triggerDescription?: string,
   ): Promise<FrameShift | null> {
     const frame = this.frameLibrary.frames.find(f => f.id === frameId)
     if (!frame)

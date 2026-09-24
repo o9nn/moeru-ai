@@ -1,6 +1,6 @@
 /**
  * Confidence Calibration - Type Definitions
- * 
+ *
  * Types for confidence estimation, calibration, and outcome tracking.
  */
 
@@ -12,16 +12,16 @@ import type { Possibility, RelevanceScore } from '../types'
 export interface RawConfidenceFactors {
   /** How aligned are the component scores (0-1) */
   componentAgreement: number
-  
+
   /** Strength of supporting evidence (0-1) */
   evidenceStrength: number
-  
+
   /** Similarity to past successful contexts (0-1) */
   contextFamiliarity: number
-  
+
   /** Stability of prediction across perturbations (0-1) */
   predictionStability: number
-  
+
   /** Historical accuracy for similar assessments (0-1) */
   historicalAccuracy: number
 }
@@ -32,10 +32,10 @@ export interface RawConfidenceFactors {
 export interface RawConfidence {
   /** Raw confidence value (0-1) */
   value: number
-  
+
   /** Contributing factors */
   factors: RawConfidenceFactors
-  
+
   /** Epistemic uncertainty (0-1, higher = more uncertain) */
   uncertainty: number
 }
@@ -51,34 +51,34 @@ export type CalibrationMethod = 'platt' | 'isotonic' | 'temperature' | 'ensemble
 export interface ConfidenceCalibrationConfig {
   /** Calibration method to use */
   method: CalibrationMethod
-  
+
   /** Minimum samples before calibration activates */
   minSamples: number
-  
+
   /** Number of bins for reliability diagram */
   numBins: number
-  
+
   /** Learning rate for online updates */
   learningRate: number
-  
+
   /** Decay factor for old observations (0-1) */
   decayFactor: number
-  
+
   /** ECE threshold for calibration quality */
   eceThreshold: number
-  
+
   /** Enable stratified calibration by context */
   stratifiedByContext: boolean
-  
+
   /** Context features for stratification */
   stratificationFeatures: string[]
-  
+
   /** Prior confidence when uncalibrated */
   priorConfidence: number
-  
+
   /** Enable uncertainty quantification */
   quantifyUncertainty: boolean
-  
+
   /** Maximum history size to retain */
   maxHistorySize: number
 }
@@ -122,22 +122,22 @@ export enum CalibrationState {
 export interface ReliabilityBin {
   /** Bin index (0 to numBins-1) */
   index: number
-  
+
   /** Lower bound of confidence range */
   lowerBound: number
-  
+
   /** Upper bound of confidence range */
   upperBound: number
-  
+
   /** Number of samples in this bin */
   count: number
-  
+
   /** Average confidence of samples in bin */
   averageConfidence: number
-  
+
   /** Actual accuracy (fraction of successes) */
   accuracy: number
-  
+
   /** Calibration gap (|accuracy - averageConfidence|) */
   gap: number
 }
@@ -148,25 +148,25 @@ export interface ReliabilityBin {
 export interface CalibrationMetrics {
   /** Expected Calibration Error */
   ece: number
-  
+
   /** Maximum Calibration Error */
   mce: number
-  
+
   /** Brier Score (proper scoring rule) */
   brierScore: number
-  
+
   /** Log loss */
   logLoss: number
-  
+
   /** Area under ROC curve */
   auroc: number
-  
+
   /** Reliability diagram bins */
   reliabilityBins: ReliabilityBin[]
-  
+
   /** Total samples used */
   sampleCount: number
-  
+
   /** Timestamp of last update */
   lastUpdated: number
 }
@@ -177,10 +177,10 @@ export interface CalibrationMetrics {
 export interface PlattParameters {
   /** Slope parameter A */
   A: number
-  
+
   /** Intercept parameter B */
   B: number
-  
+
   /** Fitting quality (R²) */
   fitQuality: number
 }
@@ -191,10 +191,10 @@ export interface PlattParameters {
 export interface IsotonicCurve {
   /** Input points (raw confidence) */
   inputs: number[]
-  
+
   /** Output points (calibrated confidence) */
   outputs: number[]
-  
+
   /** Monotonicity preserved */
   isMonotonic: boolean
 }
@@ -205,7 +205,7 @@ export interface IsotonicCurve {
 export interface TemperatureParameter {
   /** Temperature value (>0) */
   temperature: number
-  
+
   /** Optimization converged */
   converged: boolean
 }
@@ -216,10 +216,10 @@ export interface TemperatureParameter {
 export interface EnsembleWeights {
   /** Weight for Platt scaling */
   platt: number
-  
+
   /** Weight for isotonic regression */
   isotonic: number
-  
+
   /** Weight for temperature scaling */
   temperature: number
 }
@@ -230,25 +230,25 @@ export interface EnsembleWeights {
 export interface CalibrationStateData {
   /** Current state machine state */
   state: CalibrationState
-  
+
   /** Calibration metrics */
   metrics: CalibrationMetrics
-  
+
   /** Platt scaling parameters */
   plattParams: PlattParameters | null
-  
+
   /** Isotonic curve */
   isotonicCurve: IsotonicCurve | null
-  
+
   /** Temperature parameter */
   temperatureParam: TemperatureParameter | null
-  
+
   /** Ensemble weights */
   ensembleWeights: EnsembleWeights | null
-  
+
   /** Last state transition timestamp */
   lastTransition: number
-  
+
   /** Reason for current state */
   stateReason: string
 }
@@ -259,28 +259,28 @@ export interface CalibrationStateData {
 export interface OutcomeRecord {
   /** Unique identifier */
   id: string
-  
+
   /** The possibility that was assessed */
   possibility: Possibility
-  
+
   /** The relevance score given */
   relevanceScore: RelevanceScore
-  
+
   /** Raw confidence before calibration */
   rawConfidence: number
-  
+
   /** Calibrated confidence */
   calibratedConfidence: number
-  
+
   /** Actual outcome */
   outcome: 'success' | 'failure' | 'neutral'
-  
+
   /** Binary outcome for calibration (1 for success, 0 for failure) */
   binaryOutcome: number
-  
+
   /** Context features for stratified calibration */
   contextFeatures: Record<string, unknown>
-  
+
   /** Timestamp */
   timestamp: number
 }
@@ -291,19 +291,19 @@ export interface OutcomeRecord {
 export interface CalibratedConfidence {
   /** Calibrated confidence value (0-1) */
   value: number
-  
+
   /** Raw confidence before calibration */
   rawConfidence: number
-  
+
   /** Contributing factors */
   factors: RawConfidenceFactors
-  
+
   /** Uncertainty in the calibration */
   uncertainty: number
-  
+
   /** Calibration method used */
   method: CalibrationMethod | 'prior'
-  
+
   /** Calibration state when computed */
   calibrationState: CalibrationState
 }
@@ -313,45 +313,45 @@ export interface CalibratedConfidence {
  */
 export interface CalibrationEvents {
   /** Calibration state changed */
-  'state-change': { 
+  'state-change': {
     from: CalibrationState
     to: CalibrationState
     reason: string
-    timestamp: number 
+    timestamp: number
   }
-  
+
   /** Calibration metrics updated */
-  'metrics-updated': { 
+  'metrics-updated': {
     metrics: CalibrationMetrics
-    timestamp: number 
+    timestamp: number
   }
-  
+
   /** Calibration quality degraded */
-  'calibration-degraded': { 
+  'calibration-degraded': {
     ece: number
     threshold: number
-    timestamp: number 
+    timestamp: number
   }
-  
+
   /** Recalibration completed */
-  'recalibration-complete': { 
+  'recalibration-complete': {
     newECE: number
     samplesUsed: number
-    timestamp: number 
+    timestamp: number
   }
-  
+
   /** Outcome recorded */
-  'outcome-recorded': { 
+  'outcome-recorded': {
     record: OutcomeRecord
-    timestamp: number 
+    timestamp: number
   }
-  
+
   /** Debug information */
-  'debug': { 
+  'debug': {
     message: string
-    data?: unknown 
+    data?: unknown
   }
 }
 
-export type CalibrationEventCallback<K extends keyof CalibrationEvents> = 
-  (event: CalibrationEvents[K]) => void
+export type CalibrationEventCallback<K extends keyof CalibrationEvents>
+  = (event: CalibrationEvents[K]) => void

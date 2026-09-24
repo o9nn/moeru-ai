@@ -1,33 +1,34 @@
 /**
  * Enhanced Live2D Parameter Controller
- * 
+ *
  * Provides utilities for controlling Live2D model parameters with
  * emotion mapping and smooth animations.
  */
 
-import { ref, watch } from 'vue'
-import type { Ref } from 'vue'
 import type { Live2DModelParameters, PartialLive2DParameters } from '@proj-airi/live2d-core'
+import type { Ref } from 'vue'
+
 import {
-  Emotion,
+  clampParameters,
   createEmotionMapper,
   createParameterAnimator,
   Easing,
+  Emotion,
   EmotionIntensity,
-  clampParameters,
 } from '@proj-airi/live2d-core'
+import { ref, watch } from 'vue'
 
 export interface Live2DParameterControllerOptions {
   /**
    * Default animation duration in milliseconds
    */
   defaultDuration?: number
-  
+
   /**
    * Default easing function
    */
   defaultEasing?: (t: number) => number
-  
+
   /**
    * Enable automatic parameter clamping
    */
@@ -45,14 +46,14 @@ export function useLive2DParameterController(
     defaultEasing = Easing.easeOutCubic,
     autoClamp = true,
   } = options
-  
+
   const emotionMapper = createEmotionMapper()
   const animator = createParameterAnimator()
-  
+
   const currentEmotion = ref<Emotion | null>(null)
   const currentParameters = ref<PartialLive2DParameters>({})
   const isAnimating = ref(false)
-  
+
   /**
    * Set emotion with animation
    */
@@ -66,7 +67,7 @@ export function useLive2DParameterController(
     const finalParams = autoClamp ? clampParameters(params) : params
     animator.animateParameters(finalParams, duration, defaultEasing)
   }
-  
+
   /**
    * Blend between two emotions
    */
@@ -80,7 +81,7 @@ export function useLive2DParameterController(
     const finalParams = autoClamp ? clampParameters(params) : params
     animator.animateParameters(finalParams, duration, defaultEasing)
   }
-  
+
   /**
    * Set individual parameter with animation
    */
@@ -92,7 +93,7 @@ export function useLive2DParameterController(
     const finalValue = autoClamp ? clampParameters({ [key]: value })[key]! : value
     animator.animateParameter(key, finalValue, duration, defaultEasing)
   }
-  
+
   /**
    * Set multiple parameters with animation
    */
@@ -103,7 +104,7 @@ export function useLive2DParameterController(
     const finalParams = autoClamp ? clampParameters(params) : params
     animator.animateParameters(finalParams, duration, defaultEasing)
   }
-  
+
   /**
    * Set parameter immediately without animation
    */
@@ -114,7 +115,7 @@ export function useLive2DParameterController(
     const finalValue = autoClamp ? clampParameters({ [key]: value })[key]! : value
     animator.setParameterImmediate(key, finalValue)
   }
-  
+
   /**
    * Set multiple parameters immediately
    */
@@ -122,21 +123,21 @@ export function useLive2DParameterController(
     const finalParams = autoClamp ? clampParameters(params) : params
     animator.setParametersImmediate(finalParams)
   }
-  
+
   /**
    * Reset to neutral emotion
    */
   function reset(duration: number = defaultDuration): void {
     setEmotion(Emotion.Neutral, EmotionIntensity.Strong, duration)
   }
-  
+
   /**
    * Stop all animations
    */
   function stopAnimations(): void {
     animator.stopAllAnimations()
   }
-  
+
   /**
    * Update animation (call in animation loop)
    */
@@ -146,14 +147,14 @@ export function useLive2DParameterController(
     isAnimating.value = animator.hasActiveAnimations()
     return params
   }
-  
+
   /**
    * Get current parameter values
    */
   function getCurrentParameters(): PartialLive2DParameters {
     return animator.getCurrentValues()
   }
-  
+
   /**
    * Update custom emotion mapping
    */
@@ -163,13 +164,13 @@ export function useLive2DParameterController(
   ): void {
     emotionMapper.updateEmotionMap(emotion, parameters)
   }
-  
+
   return {
     // State
     currentEmotion,
     currentParameters,
     isAnimating,
-    
+
     // Methods
     setEmotion,
     blendEmotions,
@@ -182,7 +183,7 @@ export function useLive2DParameterController(
     update,
     getCurrentParameters,
     updateEmotionMapping,
-    
+
     // Instances (for advanced usage)
     emotionMapper,
     animator,
@@ -198,21 +199,22 @@ export function useAutoUpdateLive2DParameters(
 ): void {
   // Set up automatic update loop
   let animationFrameId: number | null = null
-  
+
   const updateLoop = () => {
     const params = controller.update()
     targetRef.value = { ...targetRef.value, ...params }
-    
+
     if (controller.isAnimating.value) {
       animationFrameId = requestAnimationFrame(updateLoop)
     }
   }
-  
+
   // Watch for animation state changes
   watch(controller.isAnimating, (isAnimating) => {
     if (isAnimating && animationFrameId === null) {
       animationFrameId = requestAnimationFrame(updateLoop)
-    } else if (!isAnimating && animationFrameId !== null) {
+    }
+    else if (!isAnimating && animationFrameId !== null) {
       cancelAnimationFrame(animationFrameId)
       animationFrameId = null
     }
