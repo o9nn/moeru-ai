@@ -228,12 +228,17 @@ Reflect on:
   private generateTags(event: GroupEvent): string[] {
     const tags: string[] = []
 
-    if (event.emotionalValence > 0.5) tags.push('positive')
-    else if (event.emotionalValence < -0.3) tags.push('negative')
+    if (event.emotionalValence > 0.5)
+      tags.push('positive')
+    else if (event.emotionalValence < -0.3)
+      tags.push('negative')
 
-    if (event.participants.size > 4) tags.push('large_group')
-    if (event.type === 'task_completion') tags.push('achievement')
-    if (event.type === 'conflict') tags.push('tension')
+    if (event.participants.size > 4)
+      tags.push('large_group')
+    if (event.type === 'task_completion')
+      tags.push('achievement')
+    if (event.type === 'conflict')
+      tags.push('tension')
 
     return tags
   }

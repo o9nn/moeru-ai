@@ -15,10 +15,10 @@
 
 import type {
   AgentId,
-  GroupConversation,
   ConversationTurn,
-  Whisper,
+  GroupConversation,
   PersonalityVector,
+  Whisper,
 } from './types'
 
 let conversationIdCounter = 0
@@ -32,7 +32,7 @@ export interface ConversationPromptContext {
   topic: string
   recentTurns: ConversationTurn[]
   personality: PersonalityVector
-  relationships: Map<AgentId, { trust: number; familiarity: number }>
+  relationships: Map<AgentId, { trust: number, familiarity: number }>
 }
 
 export class GroupConversationManager {
@@ -78,8 +78,10 @@ export class GroupConversationManager {
    */
   addTurn(conversationId: string, turn: ConversationTurn): boolean {
     const conversation = this.conversations.get(conversationId)
-    if (!conversation || !conversation.active) return false
-    if (!conversation.participants.has(turn.speaker)) return false
+    if (!conversation || !conversation.active)
+      return false
+    if (!conversation.participants.has(turn.speaker))
+      return false
 
     conversation.turns.push(turn)
     return true
@@ -90,12 +92,15 @@ export class GroupConversationManager {
    */
   addWhisper(conversationId: string, whisper: Whisper): boolean {
     const conversation = this.conversations.get(conversationId)
-    if (!conversation || !conversation.active) return false
-    if (!conversation.participants.has(whisper.sender)) return false
+    if (!conversation || !conversation.active)
+      return false
+    if (!conversation.participants.has(whisper.sender))
+      return false
 
     // Verify all recipients are participants
     for (const recipient of whisper.recipients) {
-      if (!conversation.participants.has(recipient)) return false
+      if (!conversation.participants.has(recipient))
+        return false
     }
 
     conversation.whispers.push(whisper)
@@ -107,7 +112,8 @@ export class GroupConversationManager {
    */
   leaveConversation(conversationId: string, agentId: AgentId): void {
     const conversation = this.conversations.get(conversationId)
-    if (!conversation) return
+    if (!conversation)
+      return
 
     conversation.participants.delete(agentId)
     this.agentConversations.get(agentId)?.delete(conversationId)
@@ -123,7 +129,8 @@ export class GroupConversationManager {
    */
   joinConversation(conversationId: string, agentId: AgentId): boolean {
     const conversation = this.conversations.get(conversationId)
-    if (!conversation || !conversation.active) return false
+    if (!conversation || !conversation.active)
+      return false
 
     conversation.participants.add(agentId)
     if (!this.agentConversations.has(agentId)) {
@@ -138,7 +145,8 @@ export class GroupConversationManager {
    */
   endConversation(conversationId: string): void {
     const conversation = this.conversations.get(conversationId)
-    if (!conversation) return
+    if (!conversation)
+      return
 
     conversation.active = false
 
@@ -156,10 +164,12 @@ export class GroupConversationManager {
     personalities: Map<AgentId, PersonalityVector>,
   ): AgentId | null {
     const conversation = this.conversations.get(conversationId)
-    if (!conversation || !conversation.active) return null
+    if (!conversation || !conversation.active)
+      return null
 
     const participants = [...conversation.participants]
-    if (participants.length === 0) return null
+    if (participants.length === 0)
+      return null
 
     // Calculate speaking probability for each participant
     const probabilities = new Map<AgentId, number>()
@@ -193,7 +203,8 @@ export class GroupConversationManager {
     let random = Math.random() * totalProb
     for (const [agent, prob] of probabilities) {
       random -= prob
-      if (random <= 0) return agent
+      if (random <= 0)
+        return agent
     }
 
     return participants[0]
@@ -208,11 +219,12 @@ export class GroupConversationManager {
     agentName: string,
     memberNames: Map<AgentId, string>,
     personality: PersonalityVector,
-    relationships: Map<AgentId, { trust: number; familiarity: number }>,
+    relationships: Map<AgentId, { trust: number, familiarity: number }>,
     maxRecentTurns: number = 10,
   ): ConversationPromptContext | null {
     const conversation = this.conversations.get(conversationId)
-    if (!conversation) return null
+    if (!conversation)
+      return null
 
     const names = [...conversation.participants]
       .filter(p => p !== agentId)
@@ -233,7 +245,7 @@ export class GroupConversationManager {
    */
   formatPrompt(context: ConversationPromptContext): string {
     const turnHistory = context.recentTurns
-      .map(t => {
+      .map((t) => {
         const addressee = t.addressee ? ` (to ${t.addressee})` : ''
         return `${t.speaker}${addressee}: ${t.content}`
       })
@@ -264,7 +276,8 @@ What do you say next? Consider: who to address, whether to agree/disagree, wheth
    */
   getAgentConversations(agentId: AgentId): GroupConversation[] {
     const convIds = this.agentConversations.get(agentId)
-    if (!convIds) return []
+    if (!convIds)
+      return []
     return [...convIds]
       .map(id => this.conversations.get(id))
       .filter((c): c is GroupConversation => c !== undefined && c.active)
@@ -281,13 +294,20 @@ What do you say next? Consider: who to address, whether to agree/disagree, wheth
 
   private describePersonality(p: PersonalityVector): string {
     const traits: string[] = []
-    if (p.extraversion > 0.7) traits.push('outgoing and talkative')
-    else if (p.extraversion < 0.3) traits.push('reserved and thoughtful')
-    if (p.agreeableness > 0.7) traits.push('cooperative and harmonious')
-    else if (p.agreeableness < 0.3) traits.push('direct and challenging')
-    if (p.openness > 0.7) traits.push('creative and curious')
-    if (p.conscientiousness > 0.7) traits.push('organized and focused')
-    if (p.neuroticism > 0.7) traits.push('sensitive and emotional')
+    if (p.extraversion > 0.7)
+      traits.push('outgoing and talkative')
+    else if (p.extraversion < 0.3)
+      traits.push('reserved and thoughtful')
+    if (p.agreeableness > 0.7)
+      traits.push('cooperative and harmonious')
+    else if (p.agreeableness < 0.3)
+      traits.push('direct and challenging')
+    if (p.openness > 0.7)
+      traits.push('creative and curious')
+    if (p.conscientiousness > 0.7)
+      traits.push('organized and focused')
+    if (p.neuroticism > 0.7)
+      traits.push('sensitive and emotional')
     return traits.length > 0 ? traits.join(', ') : 'balanced and adaptable'
   }
 }

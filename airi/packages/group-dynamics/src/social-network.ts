@@ -9,11 +9,11 @@
 
 import type {
   AgentId,
-  Relationship,
+  Information,
   InteractionRecord,
   InteractionType,
-  Information,
   PersonalityVector,
+  Relationship,
 } from './types'
 
 export class SocialNetwork {
@@ -114,7 +114,11 @@ export class SocialNetwork {
   ): number {
     // Similarity-attraction: similar personalities have higher affinity
     const dimensions: (keyof PersonalityVector)[] = [
-      'openness', 'conscientiousness', 'extraversion', 'agreeableness', 'neuroticism',
+      'openness',
+      'conscientiousness',
+      'extraversion',
+      'agreeableness',
+      'neuroticism',
     ]
     let similarity = 0
     for (const dim of dimensions) {
@@ -128,7 +132,8 @@ export class SocialNetwork {
    * Get the influence weight from source to target
    */
   getInfluenceWeight(source: AgentId, target: AgentId): number {
-    if (!this.hasRelationship(source, target)) return 0
+    if (!this.hasRelationship(source, target))
+      return 0
     const rel = this.getRelationship(source, target)
     // Influence is modulated by trust and familiarity
     return rel.influence * Math.max(0, rel.trust) * rel.familiarity
@@ -152,7 +157,8 @@ export class SocialNetwork {
       const nextFrontier = new Set<AgentId>()
 
       for (const agent of frontier) {
-        if (visited.has(agent)) continue
+        if (visited.has(agent))
+          continue
 
         const weight = this.getInfluenceWeight(source, agent)
         const propagationChance = weight * (1 / hop) // Decay with distance
@@ -200,7 +206,8 @@ export class SocialNetwork {
    */
   calculateCentrality(agentId: AgentId): number {
     const neighbors = this.getNeighbors(agentId)
-    if (neighbors.size === 0) return 0
+    if (neighbors.size === 0)
+      return 0
 
     const maxPossibleConnections = this.agents.size - 1
     const connectionRatio = neighbors.size / Math.max(1, maxPossibleConnections)
@@ -227,7 +234,8 @@ export class SocialNetwork {
     agentList.sort((a, b) => this.calculateCentrality(b) - this.calculateCentrality(a))
 
     for (const agent of agentList) {
-      if (assigned.has(agent)) continue
+      if (assigned.has(agent))
+        continue
 
       // Start a new community from this agent
       const community = new Set<AgentId>([agent])
@@ -236,7 +244,8 @@ export class SocialNetwork {
       // Add strongly connected neighbors
       const neighbors = this.getNeighbors(agent)
       for (const neighbor of neighbors) {
-        if (assigned.has(neighbor)) continue
+        if (assigned.has(neighbor))
+          continue
 
         const rel = this.getRelationship(agent, neighbor)
         const connectionStrength = (rel.trust + 1) / 2 * rel.familiarity

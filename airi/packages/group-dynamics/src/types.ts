@@ -51,11 +51,11 @@ export interface ProtoGroup {
   detectedAt: number
 }
 
-export type GroupFormationTrigger =
-  | { type: 'proximity'; duration: number; zone: string }
-  | { type: 'shared_goal'; goalId: string; overlap: number }
-  | { type: 'social_affinity'; score: number }
-  | { type: 'event_invitation'; eventId: string }
+export type GroupFormationTrigger
+  = | { type: 'proximity', duration: number, zone: string }
+    | { type: 'shared_goal', goalId: string, overlap: number }
+    | { type: 'social_affinity', score: number }
+    | { type: 'event_invitation', eventId: string }
 
 export interface Group {
   id: string
@@ -77,12 +77,12 @@ export interface Group {
   lastInteractionTick: number
 }
 
-export type GroupStage =
-  | 'forming'    // Initial gathering
-  | 'storming'   // Role negotiation, conflict
-  | 'norming'    // Establishing norms
-  | 'performing' // Productive collaboration
-  | 'adjourning' // Dissolving
+export type GroupStage
+  = | 'forming' // Initial gathering
+    | 'storming' // Role negotiation, conflict
+    | 'norming' // Establishing norms
+    | 'performing' // Productive collaboration
+    | 'adjourning' // Dissolving
 
 export interface GroupRole {
   type: 'leader' | 'facilitator' | 'contributor' | 'observer' | 'specialist'
@@ -172,14 +172,14 @@ export interface InteractionRecord {
   description: string
 }
 
-export type InteractionType =
-  | 'conversation'
-  | 'collaboration'
-  | 'conflict'
-  | 'help_given'
-  | 'help_received'
-  | 'shared_experience'
-  | 'gossip'
+export type InteractionType
+  = | 'conversation'
+    | 'collaboration'
+    | 'conflict'
+    | 'help_given'
+    | 'help_received'
+    | 'shared_experience'
+    | 'gossip'
 
 // ─── Conversation ────────────────────────────────────────────────────────────
 
@@ -226,16 +226,16 @@ export interface GroupEvent {
   emotionalValence: number
 }
 
-export type GroupEventType =
-  | 'meeting'
-  | 'celebration'
-  | 'conflict'
-  | 'task_completion'
-  | 'member_joined'
-  | 'member_left'
-  | 'norm_established'
-  | 'role_change'
-  | 'collective_reflection'
+export type GroupEventType
+  = | 'meeting'
+    | 'celebration'
+    | 'conflict'
+    | 'task_completion'
+    | 'member_joined'
+    | 'member_left'
+    | 'norm_established'
+    | 'role_change'
+    | 'collective_reflection'
 
 export interface GroupMemoryNode {
   id: string

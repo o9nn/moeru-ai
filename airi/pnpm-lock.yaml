@@ -1242,6 +1242,28 @@ importers:
 
   packages/font-xiaolai: {}
 
+  packages/group-dynamics:
+    dependencies:
+      '@guiiai/logg':
+        specifier: 'catalog:'
+        version: 1.1.0
+      '@proj-airi/cognitive-core':
+        specifier: workspace:*
+        version: link:../cognitive-core
+      '@proj-airi/server-shared':
+        specifier: workspace:*
+        version: link:../server-shared
+    devDependencies:
+      tsdown:
+        specifier: ^0.15.12
+        version: 0.15.12(@arethetypeswrong/core@0.18.2)(publint@0.3.15)(typescript@5.9.3)(unplugin-lightningcss@0.4.3)(unplugin-unused@0.5.5)(unrun@0.2.19(synckit@0.11.11))(vue-tsc@3.1.2(typescript@5.9.3))
+      typescript:
+        specifier: ~5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^4.0.6
+        version: 4.0.6(@types/debug@4.1.12)(@types/node@24.10.0)(jiti@2.6.1)(jsdom@25.0.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(less@4.4.2)(lightningcss@1.30.2)(msw@2.7.3(@types/node@24.10.0)(typescript@5.9.3))(terser@5.44.1)(tsx@4.20.6)(yaml@2.8.1)
+
   packages/i18n:
     devDependencies:
       unplugin-yaml:

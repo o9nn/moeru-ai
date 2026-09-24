@@ -9,18 +9,19 @@
  * Personality consistency - introverts don't suddenly become leaders.
  */
 
+import type { SocialNetwork } from './social-network'
 import type {
   AgentId,
-  Group,
-  Proposal,
   ConsensusResult,
   Faction,
+  Group,
+  GroupDynamicsConfig,
   Information,
   PersonalityVector,
-  GroupDynamicsConfig,
+  Proposal,
 } from './types'
+
 import { DEFAULT_GROUP_DYNAMICS_CONFIG } from './types'
-import type { SocialNetwork } from './social-network'
 
 export class ConsensusEngine {
   private config: GroupDynamicsConfig
@@ -41,7 +42,7 @@ export class ConsensusEngine {
    */
   seekConsensus(
     group: Group,
-    proposal: Proposal,
+    _proposal: Proposal,
     personalities: Map<AgentId, PersonalityVector>,
     evaluations: Map<AgentId, number>,
   ): ConsensusResult {
@@ -133,17 +134,19 @@ export class ConsensusEngine {
    */
   quickVote(
     group: Group,
-    proposal: Proposal,
+    _proposal: Proposal,
     votes: Map<AgentId, boolean>,
-  ): { approved: boolean; forCount: number; againstCount: number; abstainCount: number } {
+  ): { approved: boolean, forCount: number, againstCount: number, abstainCount: number } {
     let forCount = 0
     let againstCount = 0
     let abstainCount = 0
 
     for (const member of group.members) {
       const vote = votes.get(member)
-      if (vote === true) forCount++
-      else if (vote === false) againstCount++
+      if (vote === true)
+        forCount++
+      else if (vote === false)
+        againstCount++
       else abstainCount++
     }
 
@@ -207,7 +210,8 @@ export class ConsensusEngine {
         let totalWeight = 0
 
         for (const neighbor of neighbors) {
-          if (!agents.includes(neighbor)) continue
+          if (!agents.includes(neighbor))
+            continue
           const neighborOpinion = opinions.get(neighbor) || 0.5
 
           // Bounded confidence check
@@ -241,7 +245,8 @@ export class ConsensusEngine {
   private detectFactions(opinions: Map<AgentId, number>): Faction[] {
     // Simple k-means-like clustering into 2-3 factions
     const entries = [...opinions.entries()]
-    if (entries.length < 2) return []
+    if (entries.length < 2)
+      return []
 
     // Sort by opinion
     entries.sort((a, b) => a[1] - b[1])

@@ -8,14 +8,13 @@
 
 import type {
   AgentId,
-  Group,
-  GroupConversation,
-  ConversationTurn,
-  Whisper,
-  GroupEvent,
   ConsensusResult,
-  Proposal,
+  ConversationTurn,
+  Group,
+  GroupEvent,
   Information,
+  Proposal,
+  Whisper,
 } from './types'
 
 /**
@@ -58,7 +57,7 @@ export interface GroupDynamicsWebSocketEvents {
   /** Group roles changed */
   'group:roles-updated': {
     groupId: string
-    roles: Array<{ agentId: AgentId; role: string; fitness: number }>
+    roles: Array<{ agentId: AgentId, role: string, fitness: number }>
   }
 
   // ─── Conversation ──────────────────────────────────────────────────────
@@ -98,7 +97,7 @@ export interface GroupDynamicsWebSocketEvents {
   /** Collective reflection triggered */
   'group:reflection-triggered': {
     groupId: string
-    prompts: Array<{ agentId: AgentId; prompt: string }>
+    prompts: Array<{ agentId: AgentId, prompt: string }>
   }
 
   // ─── Consensus & Propagation ───────────────────────────────────────────
@@ -155,9 +154,9 @@ export interface SerializedGroup {
   members: AgentId[]
   formationTime: number
   cohesion: number
-  sharedGoals: Array<{ id: string; description: string; progress: number }>
-  roles: Array<{ agentId: AgentId; role: string; fitness: number }>
-  norms: Array<{ id: string; description: string; strength: number }>
+  sharedGoals: Array<{ id: string, description: string, progress: number }>
+  roles: Array<{ agentId: AgentId, role: string, fitness: number }>
+  norms: Array<{ id: string, description: string, strength: number }>
   stage: string
 }
 

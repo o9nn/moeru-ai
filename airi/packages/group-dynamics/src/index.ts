@@ -21,41 +21,42 @@
  */
 
 // Types
-export type * from './types'
-export { DEFAULT_GROUP_DYNAMICS_CONFIG } from './types'
+// ─── Convenience Factory ─────────────────────────────────────────────────────
 
-// Social Network
-export { SocialNetwork } from './social-network'
+import type { GroupDynamicsConfig } from './types'
+
+import { ConsensusEngine } from './consensus'
+import { GroupConversationManager } from './group-conversation'
+import { GroupEventManager } from './group-events'
+import { GroupManager } from './group-manager'
+import { SocialNetwork } from './social-network'
+
+// Consensus & Propagation
+export { ConsensusEngine } from './consensus'
+// WebSocket Events
+export { serializeGroup } from './events'
+
+export type {
+  GroupDynamicsEvent,
+  GroupDynamicsWebSocketEvents,
+  SerializedGroup,
+} from './events'
+
+// Group Conversation
+export { GroupConversationManager } from './group-conversation'
+
+export type { ConversationPromptContext } from './group-conversation'
+// Group Events
+export { GroupEventManager } from './group-events'
 
 // Group Manager
 export { GroupManager } from './group-manager'
 
-// Group Conversation
-export { GroupConversationManager } from './group-conversation'
-export type { ConversationPromptContext } from './group-conversation'
+// Social Network
+export { SocialNetwork } from './social-network'
 
-// Consensus & Propagation
-export { ConsensusEngine } from './consensus'
-
-// Group Events
-export { GroupEventManager } from './group-events'
-
-// WebSocket Events
-export { serializeGroup } from './events'
-export type {
-  GroupDynamicsWebSocketEvents,
-  GroupDynamicsEvent,
-  SerializedGroup,
-} from './events'
-
-// ─── Convenience Factory ─────────────────────────────────────────────────────
-
-import type { GroupDynamicsConfig } from './types'
-import { SocialNetwork } from './social-network'
-import { GroupManager } from './group-manager'
-import { GroupConversationManager } from './group-conversation'
-import { ConsensusEngine } from './consensus'
-import { GroupEventManager } from './group-events'
+export type * from './types'
+export { DEFAULT_GROUP_DYNAMICS_CONFIG } from './types'
 
 /**
  * Complete group dynamics system - creates all subsystems with shared network

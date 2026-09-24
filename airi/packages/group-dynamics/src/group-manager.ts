@@ -10,21 +10,18 @@
  * Groups follow Tuckman's stages: forming → storming → norming → performing → adjourning
  */
 
+import type { SocialNetwork } from './social-network'
 import type {
   AgentId,
   AgentProfile,
   Group,
-  GroupRole,
-  GroupNorm,
-  GroupStage,
-  ProtoGroup,
-  GroupFormationTrigger,
-  Goal,
-  GroupMemoryNode,
   GroupDynamicsConfig,
+  GroupMemoryNode,
+  GroupRole,
+  ProtoGroup,
 } from './types'
+
 import { DEFAULT_GROUP_DYNAMICS_CONFIG } from './types'
-import type { SocialNetwork } from './social-network'
 
 let groupIdCounter = 0
 function generateGroupId(): string {
@@ -34,7 +31,7 @@ function generateGroupId(): string {
 export class GroupManager {
   private groups: Map<string, Group> = new Map()
   private agentGroups: Map<AgentId, Set<string>> = new Map()
-  private proximityTracker: Map<string, { members: Set<AgentId>; since: number }> = new Map()
+  private proximityTracker: Map<string, { members: Set<AgentId>, since: number }> = new Map()
   private config: GroupDynamicsConfig
 
   constructor(
@@ -62,7 +59,7 @@ export class GroupManager {
     protoGroups.push(...goalClusters)
 
     // Strategy 3: Social affinity from network
-    const affinityClusters = this.detectAffinityClusters(agents)
+    const affinityClusters = this.detectAffinityClusters()
     protoGroups.push(...affinityClusters)
 
     return protoGroups
@@ -118,7 +115,8 @@ export class GroupManager {
    */
   dissolveGroup(groupId: string, reason: string, currentTick: number): void {
     const group = this.groups.get(groupId)
-    if (!group) return
+    if (!group)
+      return
 
     // Add dissolution memory
     group.collectiveMemory.push({
@@ -146,7 +144,8 @@ export class GroupManager {
   mergeGroups(groupAId: string, groupBId: string, currentTick: number): Group | null {
     const groupA = this.groups.get(groupAId)
     const groupB = this.groups.get(groupBId)
-    if (!groupA || !groupB) return null
+    if (!groupA || !groupB)
+      return null
 
     // Create merged group
     const mergedMembers = new Set([...groupA.members, ...groupB.members])
@@ -185,7 +184,8 @@ export class GroupManager {
     currentTick: number,
   ): [Group, Group] | null {
     const group = this.groups.get(groupId)
-    if (!group) return null
+    if (!group)
+      return null
 
     this.dissolveGroup(groupId, 'split', currentTick)
 
@@ -233,7 +233,8 @@ export class GroupManager {
    */
   recordGroupInteraction(groupId: string, currentTick: number, valence: number = 0.5): void {
     const group = this.groups.get(groupId)
-    if (!group) return
+    if (!group)
+      return
 
     group.lastInteractionTick = currentTick
     group.cohesion = Math.min(1, group.cohesion + 0.05 * valence)
@@ -244,8 +245,10 @@ export class GroupManager {
    */
   addMember(groupId: string, agentId: AgentId, currentTick: number): boolean {
     const group = this.groups.get(groupId)
-    if (!group) return false
-    if (group.members.size >= this.config.maxGroupSize) return false
+    if (!group)
+      return false
+    if (group.members.size >= this.config.maxGroupSize)
+      return false
 
     group.members.add(agentId)
     if (!this.agentGroups.has(agentId)) {
@@ -278,7 +281,8 @@ export class GroupManager {
    */
   removeMember(groupId: string, agentId: AgentId, currentTick: number): void {
     const group = this.groups.get(groupId)
-    if (!group) return
+    if (!group)
+      return
 
     group.members.delete(agentId)
     group.roles.delete(agentId)
@@ -312,7 +316,8 @@ export class GroupManager {
    */
   getAgentGroups(agentId: AgentId): Group[] {
     const groupIds = this.agentGroups.get(agentId)
-    if (!groupIds) return []
+    if (!groupIds)
+      return []
     return [...groupIds]
       .map(id => this.groups.get(id))
       .filter((g): g is Group => g !== undefined)
@@ -345,7 +350,8 @@ export class GroupManager {
     }
 
     for (const [zone, zoneAgents] of zoneGroups) {
-      if (zoneAgents.length < 2) continue
+      if (zoneAgents.length < 2)
+        continue
 
       const key = zoneAgents.map(a => a.id).sort().join(',')
       let tracker = this.proximityTracker.get(key)
@@ -383,7 +389,8 @@ export class GroupManager {
     }
 
     for (const [goalId, agentIds] of goalAgents) {
-      if (agentIds.length < 2) continue
+      if (agentIds.length < 2)
+        continue
 
       // Check if these agents aren't already in a group together
       const members = new Set(agentIds)
@@ -402,12 +409,13 @@ export class GroupManager {
     return protoGroups
   }
 
-  private detectAffinityClusters(agents: AgentProfile[]): ProtoGroup[] {
+  private detectAffinityClusters(): ProtoGroup[] {
     const protoGroups: ProtoGroup[] = []
     const communities = this.network.detectCommunities()
 
     for (const community of communities) {
-      if (community.size < 2) continue
+      if (community.size < 2)
+        continue
 
       // Calculate average affinity within community
       let totalAffinity = 0
