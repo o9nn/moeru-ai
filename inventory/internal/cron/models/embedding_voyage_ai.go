@@ -117,6 +117,7 @@ func embeddingVoyageAI(modelID string, input string) error {
 		slog.Error("failed to make request", slog.Any("error", err))
 		return err
 	}
+
 	if res.Body != nil {
 		defer res.Body.Close()
 	}
