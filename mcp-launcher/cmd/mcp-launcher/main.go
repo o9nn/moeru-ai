@@ -48,6 +48,7 @@ func parseRepoURL(url string) (string, error) {
 	if strings.HasPrefix(url, "https://github.com/") {
 		return strings.TrimPrefix(url, "https://"), nil
 	}
+
 	if strings.HasPrefix(url, "git@github.com:") {
 		path := strings.TrimPrefix(url, "git@github.com:")
 		return "github.com/" + strings.TrimSuffix(path, ".git"), nil
@@ -231,6 +232,7 @@ func printStatus(status client.SolveStatus) {
 
 		// Extract step number from name if available
 		stepInfo := ""
+
 		if strings.Contains(vertex.Name, "] ") {
 			parts := strings.SplitN(vertex.Name, "] ", 2) //nolint:mnd
 			if len(parts) == 2 {                          //nolint:mnd
@@ -240,6 +242,7 @@ func printStatus(status client.SolveStatus) {
 		}
 
 		fmt.Fprintf(os.Stdout, "\r[%s] %s%s", status, stepInfo, vertex.Name)
+
 		if vertex.Error != "" {
 			fmt.Fprintf(os.Stdout, " %s", vertex.Error)
 		}
@@ -261,6 +264,7 @@ func main() {
 			level := new(slog.LevelVar)
 
 			level.Set(slog.LevelInfo)
+
 			if os.Getenv("DEBUG") != "" {
 				level.Set(slog.LevelDebug)
 			}
@@ -348,6 +352,7 @@ func main() {
 			}
 
 			dockerfilePath := filepath.Join(tempDir, "Dockerfile")
+
 			err = os.WriteFile(dockerfilePath, contents, 0600) //nolint:mnd
 			if err != nil {
 				panic(err)
@@ -358,7 +363,7 @@ func main() {
 			var imageHash string
 
 			// Create a command for Docker build
-			dockerCmd := exec.Command("docker", "build", "-t", "mcp-server-dev", "-f", dockerfilePath, repoPath, "--progress=rawjson")
+			dockerCmd := exec.CommandContext(ctx, "docker", "build", "-t", "mcp-server-dev", "-f", dockerfilePath, repoPath, "--progress=rawjson")
 
 			log.Info("Building Docker image", slog.String("command", dockerCmd.String()))
 
@@ -366,6 +371,7 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
+
 			if err := dockerCmd.Start(); err != nil {
 				panic(err)
 			}
@@ -377,6 +383,7 @@ func main() {
 
 				// Try to parse as JSON for additional processing if needed
 				var data client.SolveStatus
+
 				err := json.Unmarshal([]byte(line), &data)
 				if err == nil {
 					printStatus(data)
