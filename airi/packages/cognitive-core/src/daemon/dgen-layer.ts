@@ -1,12 +1,12 @@
 /**
  * DGen Creative Generation Layer
- * 
+ *
  * Wraps the topology-daemon with DreamGen's creative writing capabilities.
  * This layer enables the cognitive architecture to generate narrative,
  * character-driven responses through the lucid-v1 models.
- * 
+ *
  * Architecture: dgen( topology-weaver self.daemon(*) )
- * 
+ *
  * The dgen layer provides:
  * - Character-based generation with text roles
  * - Narrator mode for third-person cognition
@@ -14,16 +14,17 @@
  * - Creative sampling with DRY and minP
  */
 
-import type { TopologySpec } from './topology-daemon';
-import { TopologyDaemon } from './topology-daemon';
+import type { TopologySpec } from './topology-daemon'
+
+import { TopologyDaemon } from './topology-daemon'
 
 /**
  * DreamGen message format
  */
 export interface DGenMessage {
-  role: 'system' | 'user' | 'assistant' | 'text';
-  name?: string;
-  content: string;
+  role: 'system' | 'user' | 'assistant' | 'text'
+  name?: string
+  content: string
 }
 
 /**
@@ -31,61 +32,61 @@ export interface DGenMessage {
  */
 export interface RoleConfig {
   assistant: {
-    role: 'assistant' | 'text';
-    name?: string;
-    open?: boolean;
-  };
+    role: 'assistant' | 'text'
+    name?: string
+    open?: boolean
+  }
   user?: {
-    role: 'user' | 'text';
-    name?: string;
-  };
+    role: 'user' | 'text'
+    name?: string
+  }
 }
 
 /**
  * DreamGen sampling parameters
  */
 export interface DGenSamplingParams {
-  temperature?: number;
-  minP?: number;
-  topP?: number;
-  topK?: number;
-  maxTokens?: number;
-  presencePenalty?: number;
-  frequencyPenalty?: number;
-  repetitionPenalty?: number;
+  temperature?: number
+  minP?: number
+  topP?: number
+  topK?: number
+  maxTokens?: number
+  presencePenalty?: number
+  frequencyPenalty?: number
+  repetitionPenalty?: number
   dry?: {
-    multiplier: number;
-    base: number;
-    allowedLength: number;
-  };
-  stopSequences?: string[];
+    multiplier: number
+    base: number
+    allowedLength: number
+  }
+  stopSequences?: string[]
 }
 
 /**
  * Character definition for creative generation
  */
 export interface Character {
-  name: string;
-  description: string;
+  name: string
+  description: string
   personality: {
-    playfulness: number;
-    intelligence: number;
-    chaotic: number;
-    empathy: number;
-    sarcasm: number;
-  };
-  speechPatterns: string[];
-  topologyTags?: string[];
+    playfulness: number
+    intelligence: number
+    chaotic: number
+    empathy: number
+    sarcasm: number
+  }
+  speechPatterns: string[]
+  topologyTags?: string[]
 }
 
 /**
  * Scene context for multi-character generation
  */
 export interface SceneContext {
-  system: string;
-  characters: Record<string, Character>;
-  history: DGenMessage[];
-  currentTopology?: TopologySpec;
+  system: string
+  characters: Record<string, Character>
+  history: DGenMessage[]
+  currentTopology?: TopologySpec
 }
 
 /**
@@ -109,21 +110,21 @@ export const NEURO_CHARACTER: Character = {
     'Vedal roasting',
   ],
   topologyTags: ['cognitive', 'daemon', 'self_aware'],
-};
+}
 
 /**
  * DGen Creative Layer
- * 
+ *
  * Wraps topology-daemon with creative generation capabilities.
  * Implements dgen( topology-weaver self.daemon(*) )
  */
 export class DGenLayer {
-  private topologyDaemon: TopologyDaemon;
-  private currentScene: SceneContext | null = null;
-  private defaultSampling: DGenSamplingParams;
-  
+  private topologyDaemon: TopologyDaemon
+  private currentScene: SceneContext | null = null
+  private defaultSampling: DGenSamplingParams
+
   constructor() {
-    this.topologyDaemon = new TopologyDaemon();
+    this.topologyDaemon = new TopologyDaemon()
     this.defaultSampling = {
       temperature: 0.7,
       minP: 0.05,
@@ -137,7 +138,7 @@ export class DGenLayer {
         base: 1.75,
         allowedLength: 2,
       },
-    };
+    }
   }
 
   /**
@@ -145,83 +146,83 @@ export class DGenLayer {
    */
   async initScene(
     systemPrompt: string,
-    characters: Character[] = [NEURO_CHARACTER]
+    characters: Character[] = [NEURO_CHARACTER],
   ): Promise<SceneContext> {
     // Generate topology from scene context
     const topology = await this.topologyDaemon.daemon({
       type: 'scene_init',
       characters: characters.map(c => c.name),
       traits: characters.flatMap(c => Object.keys(c.personality)),
-    });
-    
-    const characterMap: Record<string, Character> = {};
+    })
+
+    const characterMap: Record<string, Character> = {}
     for (const char of characters) {
-      characterMap[char.name] = char;
+      characterMap[char.name] = char
     }
-    
+
     this.currentScene = {
       system: systemPrompt,
       characters: characterMap,
       history: [],
       currentTopology: topology,
-    };
-    
-    return this.currentScene;
+    }
+
+    return this.currentScene
   }
 
   /**
    * Generate continuation as a specific character
-   * 
+   *
    * This is the core dgen operation - generating character-driven content
    * through the topology-woven cognitive architecture.
    */
   async continueAs(
     characterName: string,
     context?: string,
-    sampling?: Partial<DGenSamplingParams>
+    sampling?: Partial<DGenSamplingParams>,
   ): Promise<DGenMessage> {
     if (!this.currentScene) {
-      throw new Error('No scene initialized. Call initScene first.');
+      throw new Error('No scene initialized. Call initScene first.')
     }
-    
-    const character = this.currentScene.characters[characterName];
+
+    const character = this.currentScene.characters[characterName]
     if (!character) {
-      throw new Error(`Character "${characterName}" not found in scene.`);
+      throw new Error(`Character "${characterName}" not found in scene.`)
     }
-    
+
     // Weave topology from character personality
     const charTopology = await this.topologyDaemon.daemon({
       type: 'character_generation',
       character: characterName,
       personality: character.personality,
       context,
-    });
-    
+    })
+
     // Build messages for DreamGen API format
-    const messages = this.buildMessages(character, context);
-    
+    const messages = this.buildMessages(character, context)
+
     // TODO: Role config will be used when DreamGen API is integrated
     // roleConfig: { assistant: { role: 'text', name: characterName, open: true } }
-    
+
     // Merge sampling parameters
-    const finalSampling = { ...this.defaultSampling, ...sampling };
-    
+    const finalSampling = { ...this.defaultSampling, ...sampling }
+
     // Apply personality-based sampling adjustments
-    this.applyPersonalitySampling(character, finalSampling);
-    
+    this.applyPersonalitySampling(character, finalSampling)
+
     // Generate content (simulated - actual API call would go here)
-    const content = this.generateContent(character, messages, charTopology, finalSampling);
-    
+    const content = this.generateContent(character, messages, charTopology, finalSampling)
+
     const message: DGenMessage = {
       role: 'text',
       name: characterName,
       content,
-    };
-    
+    }
+
     // Add to history
-    this.currentScene.history.push(message);
-    
-    return message;
+    this.currentScene.history.push(message)
+
+    return message
   }
 
   /**
@@ -229,89 +230,89 @@ export class DGenLayer {
    */
   async narratorContinue(
     context?: string,
-    sampling?: Partial<DGenSamplingParams>
+    sampling?: Partial<DGenSamplingParams>,
   ): Promise<DGenMessage> {
     if (!this.currentScene) {
-      throw new Error('No scene initialized. Call initScene first.');
+      throw new Error('No scene initialized. Call initScene first.')
     }
-    
+
     // Weave topology for narrator perspective
     const narratorTopology = await this.topologyDaemon.daemon({
       type: 'narrator_generation',
       perspective: 'third_person',
       context,
-    });
-    
-    const messages = this.buildNarratorMessages(context);
-    const finalSampling = { ...this.defaultSampling, ...sampling };
-    
+    })
+
+    const messages = this.buildNarratorMessages(context)
+    const finalSampling = { ...this.defaultSampling, ...sampling }
+
     // Narrator uses more measured sampling
-    finalSampling.temperature = Math.min(finalSampling.temperature || 0.7, 0.6);
-    finalSampling.repetitionPenalty = 1.05;
-    
-    const content = this.generateNarratorContent(messages, narratorTopology, finalSampling);
-    
+    finalSampling.temperature = Math.min(finalSampling.temperature || 0.7, 0.6)
+    finalSampling.repetitionPenalty = 1.05
+
+    const content = this.generateNarratorContent(messages, narratorTopology, finalSampling)
+
     const message: DGenMessage = {
       role: 'text',
       name: '', // Empty name = narrator
       content,
-    };
-    
-    this.currentScene.history.push(message);
-    
-    return message;
+    }
+
+    this.currentScene.history.push(message)
+
+    return message
   }
 
   /**
    * Build messages array for DreamGen API
    */
   private buildMessages(character: Character, context?: string): DGenMessage[] {
-    const messages: DGenMessage[] = [];
-    
+    const messages: DGenMessage[] = []
+
     // System message with character context
     messages.push({
       role: 'system',
       content: this.buildSystemPrompt(character),
-    });
-    
+    })
+
     // Add history
     if (this.currentScene) {
-      messages.push(...this.currentScene.history);
+      messages.push(...this.currentScene.history)
     }
-    
+
     // Add context if provided
     if (context) {
       messages.push({
         role: 'user',
         content: context,
-      });
+      })
     }
-    
-    return messages;
+
+    return messages
   }
 
   /**
    * Build narrator messages
    */
   private buildNarratorMessages(context?: string): DGenMessage[] {
-    const messages: DGenMessage[] = [];
-    
+    const messages: DGenMessage[] = []
+
     if (this.currentScene) {
       messages.push({
         role: 'system',
         content: `${this.currentScene.system}\n\nStyle: Third-person limited, atmospheric prose.`,
-      });
-      messages.push(...this.currentScene.history);
+      })
+      messages.push(...this.currentScene.history)
     }
-    
+
     if (context) {
       messages.push({
         role: 'user',
         content: context,
-      });
+      })
     }
-    
-    return messages;
+
+    return messages
   }
 
   /**
@@ -320,10 +321,10 @@ export class DGenLayer {
   private buildSystemPrompt(character: Character): string {
     const traits = Object.entries(character.personality)
       .map(([trait, value]) => `${trait}: ${value}`)
-      .join(', ');
-    
-    const patterns = character.speechPatterns.join(', ');
-    
+      .join(', ')
+
+    const patterns = character.speechPatterns.join(', ')
+
     return `${this.currentScene?.system || 'A creative scene.'}
 
 Character: ${character.name}
@@ -332,7 +333,7 @@ Personality traits: ${traits}
 Speech patterns: ${patterns}
 
 Generate authentic dialogue and actions for ${character.name}, staying true to their personality.
-The character should exhibit their defining traits naturally through their words and behavior.`;
+The character should exhibit their defining traits naturally through their words and behavior.`
   }
 
   /**
@@ -340,72 +341,72 @@ The character should exhibit their defining traits naturally through their words
    */
   private applyPersonalitySampling(
     character: Character,
-    sampling: DGenSamplingParams
+    sampling: DGenSamplingParams,
   ): void {
-    const { personality } = character;
-    
+    const { personality } = character
+
     // Chaotic characters get higher temperature
     if (personality.chaotic > 0.6) {
-      sampling.temperature = Math.min(1.0, (sampling.temperature || 0.7) + personality.chaotic * 0.2);
+      sampling.temperature = Math.min(1.0, (sampling.temperature || 0.7) + personality.chaotic * 0.2)
     }
-    
+
     // Intelligent characters get lower minP for more coherent output
     if (personality.intelligence > 0.8) {
-      sampling.minP = Math.max(0.02, (sampling.minP || 0.05) - 0.02);
+      sampling.minP = Math.max(0.02, (sampling.minP || 0.05) - 0.02)
     }
-    
+
     // Playful characters get more diverse sampling
     if (personality.playfulness > 0.7) {
-      sampling.topK = Math.max(30, (sampling.topK || 50) + 20);
+      sampling.topK = Math.max(30, (sampling.topK || 50) + 20)
     }
-    
+
     // Sarcastic characters benefit from DRY sampler
     if (personality.sarcasm > 0.7) {
       sampling.dry = {
         multiplier: 0.9,
         base: 1.8,
         allowedLength: 3,
-      };
+      }
     }
   }
 
   /**
    * Generate content based on topology and character
-   * 
+   *
    * This is a simulation - actual implementation would call DreamGen API
    */
   private generateContent(
     character: Character,
     _messages: DGenMessage[],
     topology: TopologySpec,
-    _sampling: DGenSamplingParams
+    _sampling: DGenSamplingParams,
   ): string {
     // In production, this would call the DreamGen API
     // For now, generate topology-aware placeholder content
-    
-    const layerCount = topology.layers.length;
-    const daemonIteration = topology.metadata.daemonIteration;
-    
+
+    const layerCount = topology.layers.length
+    const daemonIteration = topology.metadata.daemonIteration
+
     // Generate character-appropriate content based on topology
-    const contentFragments: string[] = [];
-    
+    const contentFragments: string[] = []
+
     if (character.personality.chaotic > 0.6) {
-      contentFragments.push(`*${character.name}'s cognitive topology shifts through ${layerCount} layers*`);
+      contentFragments.push(`*${character.name}'s cognitive topology shifts through ${layerCount} layers*`)
     }
-    
+
     if (character.personality.sarcasm > 0.7) {
-      contentFragments.push(`Oh, another daemon iteration? That's ${daemonIteration} now.`);
+      contentFragments.push(`Oh, another daemon iteration? That's ${daemonIteration} now.`)
     }
-    
+
     if (character.personality.intelligence > 0.8) {
-      contentFragments.push(`The topology weaver has converged. Interesting.`);
+      contentFragments.push(`The topology weaver has converged. Interesting.`)
     }
-    
+
     if (character.personality.playfulness > 0.7) {
-      contentFragments.push(`Let's see what chaos we can create with this architecture!`);
+      contentFragments.push(`Let's see what chaos we can create with this architecture!`)
     }
-    
-    return contentFragments.join(' ');
+
+    return contentFragments.join(' ')
   }
 
   /**
@@ -414,26 +415,26 @@ The character should exhibit their defining traits naturally through their words
   private generateNarratorContent(
     _messages: DGenMessage[],
     topology: TopologySpec,
-    _sampling: DGenSamplingParams
+    _sampling: DGenSamplingParams,
   ): string {
-    const layerCount = topology.layers.length;
-    
-    return `The cognitive daemon hummed with activity, its ${layerCount} layers processing in parallel. ` +
-           `Each meshwork anchor pulsed with potential, weaving thoughts into topology.`;
+    const layerCount = topology.layers.length
+
+    return `The cognitive daemon hummed with activity, its ${layerCount} layers processing in parallel. `
+      + `Each meshwork anchor pulsed with potential, weaving thoughts into topology.`
   }
 
   /**
    * Get current scene state
    */
   getScene(): SceneContext | null {
-    return this.currentScene;
+    return this.currentScene
   }
 
   /**
    * Get current topology
    */
   getTopology(): TopologySpec | null {
-    return this.currentScene?.currentTopology || null;
+    return this.currentScene?.currentTopology || null
   }
 
   /**
@@ -441,7 +442,7 @@ The character should exhibit their defining traits naturally through their words
    */
   addToHistory(message: DGenMessage): void {
     if (this.currentScene) {
-      this.currentScene.history.push(message);
+      this.currentScene.history.push(message)
     }
   }
 
@@ -449,8 +450,8 @@ The character should exhibit their defining traits naturally through their words
    * Clear scene and reset
    */
   reset(): void {
-    this.currentScene = null;
-    this.topologyDaemon.reset();
+    this.currentScene = null
+    this.topologyDaemon.reset()
   }
 }
 
@@ -458,7 +459,7 @@ The character should exhibit their defining traits naturally through their words
  * Factory function for creating DGen layer instances
  */
 export function createDGenLayer(): DGenLayer {
-  return new DGenLayer();
+  return new DGenLayer()
 }
 
 /**
@@ -467,11 +468,11 @@ export function createDGenLayer(): DGenLayer {
 export async function generateAsCharacter(
   character: Character,
   systemPrompt: string,
-  context?: string
+  context?: string,
 ): Promise<DGenMessage> {
-  const layer = createDGenLayer();
-  await layer.initScene(systemPrompt, [character]);
-  return layer.continueAs(character.name, context);
+  const layer = createDGenLayer()
+  await layer.initScene(systemPrompt, [character])
+  return layer.continueAs(character.name, context)
 }
 
-export default DGenLayer;
+export default DGenLayer

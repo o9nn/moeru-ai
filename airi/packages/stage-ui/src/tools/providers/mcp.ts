@@ -1,6 +1,6 @@
 /**
  * MCP Tools Provider
- * 
+ *
  * Model Context Protocol tools with automatic discovery support.
  */
 
@@ -127,7 +127,7 @@ export const mcpManifest: ToolManifest = {
 /**
  * Legacy export for backward compatibility
  */
-export const mcp = async () => {
+export async function mcp() {
   if (!isMCPAvailable()) {
     return []
   }

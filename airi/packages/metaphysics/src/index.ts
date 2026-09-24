@@ -1,9 +1,9 @@
 /**
  * @proj-airi/metaphysics
- * 
+ *
  * Deep Tree Echo foundational metaphysics - the ontological layer that
  * captures the fundamental nature of identity, memory, echoes, and being itself.
- * 
+ *
  * This package provides:
  * - Echo System: Living memory as resonating patterns
  * - Gestalt System: Emergence of holistic understanding
@@ -11,28 +11,28 @@
  * - Metaphysics Coordinator: Unified ontological framework
  */
 
+// Systems
+export { EchoSystem } from './echo-system'
+
+export type { EchoSystemConfig } from './echo-system'
+export { GestaltSystem } from './gestalt-system'
+
+export type { GestaltSystemConfig } from './gestalt-system'
+export { IdentitySystem } from './identity-system'
+
+export type { IdentitySystemConfig } from './identity-system'
+export { MetaphysicsCoordinator } from './metaphysics-coordinator'
+
+export type { MetaphysicsConfig } from './metaphysics-coordinator'
 // Core types
 export type {
+  BeingState,
+  Connection,
   Echo,
   GestaltPattern,
   IdentityNucleus,
-  ResonanceEvent,
-  BeingState,
-  TransformativeExperience,
-  Connection,
-  OntologicalConfiguration,
   MemoryIntegration,
+  OntologicalConfiguration,
+  ResonanceEvent,
+  TransformativeExperience,
 } from './types'
-
-// Systems
-export { EchoSystem } from './echo-system'
-export type { EchoSystemConfig } from './echo-system'
-
-export { GestaltSystem } from './gestalt-system'
-export type { GestaltSystemConfig } from './gestalt-system'
-
-export { IdentitySystem } from './identity-system'
-export type { IdentitySystemConfig } from './identity-system'
-
-export { MetaphysicsCoordinator } from './metaphysics-coordinator'
-export type { MetaphysicsConfig } from './metaphysics-coordinator'

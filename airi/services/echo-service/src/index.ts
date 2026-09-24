@@ -2,8 +2,10 @@
  * Echo Service Entry Point
  */
 
-import { env } from 'node:process'
+import { env, exit, on } from 'node:process'
+
 import { useLogg } from '@guiiai/logg'
+
 import { EchoService } from './service'
 
 const log = useLogg('Echo')
@@ -25,21 +27,21 @@ async function main() {
   }
   catch (error) {
     log.withError(error as Error).error('Failed to start Echo service')
-    process.exit(1)
+    exit(1)
   }
 
   // Handle graceful shutdown
   const shutdown = async () => {
     log.log('Shutting down Echo service...')
     await echoService.stop()
-    process.exit(0)
+    exit(0)
   }
 
-  process.on('SIGINT', shutdown)
-  process.on('SIGTERM', shutdown)
+  on('SIGINT', shutdown)
+  on('SIGTERM', shutdown)
 }
 
 main().catch((error) => {
   log.withError(error as Error).error('Fatal error in Echo service')
-  process.exit(1)
+  exit(1)
 })

@@ -1,6 +1,6 @@
 /**
  * Debug Tools Provider
- * 
+ *
  * Development and debugging tools with automatic discovery support.
  */
 
@@ -84,7 +84,7 @@ export const debugManifest: ToolManifest = {
   requirements: {
     platform: 'any',
   },
-  enabledByDefault: process.env.NODE_ENV === 'development',
+  enabledByDefault: import.meta.env.DEV,
   priority: 10,
   icon: '🔧',
   provider: async () => Promise.all(debugTools),

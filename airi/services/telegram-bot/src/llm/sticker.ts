@@ -80,7 +80,7 @@ export async function interpretSticker(bot: Bot, msg: Message, sticker: Sticker)
     }
 
     // Generate embedding for sticker description to enable semantic search
-    const embedRes = await embed({
+    await embed({
       baseURL: env.EMBEDDING_API_BASE_URL!,
       apiKey: env.EMBEDDING_API_KEY!,
       model: env.EMBEDDING_MODEL!,

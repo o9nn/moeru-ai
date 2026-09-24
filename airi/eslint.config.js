@@ -15,6 +15,8 @@ export default defineConfig({
     'cspell.config.yml',
     'crowdin.yaml',
     'crowdin.yml',
+    '**/*.md',
+    '**/examples/**',
     '**/assets/js/**',
     '**/assets/live2d/models/**',
     'apps/stage-tamagotchi/out/**',

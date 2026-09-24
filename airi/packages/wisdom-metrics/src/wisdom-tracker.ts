@@ -1,19 +1,19 @@
 /**
  * Wisdom Tracker
- * 
+ *
  * Core system for tracking and cultivating wisdom
  * Integrates morality, meaning, and mastery
  */
 
 import type {
-  WisdomMetrics,
-  WisdomEvent,
-  WisdomRecommendation,
-  WisdomProgress,
-  MoralityMetrics,
-  MeaningMetrics,
-  MasteryMetrics,
   IntegrationMetrics,
+  MasteryMetrics,
+  MeaningMetrics,
+  MoralityMetrics,
+  WisdomEvent,
+  WisdomMetrics,
+  WisdomProgress,
+  WisdomRecommendation,
 } from './types'
 
 /**
@@ -27,10 +27,10 @@ export interface WisdomConfig {
     mastery: number
     integration: number
   }
-  
+
   /** Time window for calculation (ms) */
   timeWindow: number
-  
+
   /** Enable automatic recommendations */
   enableRecommendations: boolean
 }
@@ -51,24 +51,24 @@ export const defaultWisdomConfig: WisdomConfig = {
 
 /**
  * Wisdom Tracker
- * 
+ *
  * Tracks wisdom cultivation across morality, meaning, and mastery
  */
 export class WisdomTracker {
   private config: WisdomConfig
   private events: WisdomEvent[] = []
-  private history: Array<{ timestamp: number; wisdom: WisdomMetrics }> = []
-  
+  private history: Array<{ timestamp: number, wisdom: WisdomMetrics }> = []
+
   // Skills for mastery tracking
   private skills: Map<string, number> = new Map()
-  
+
   constructor(
     private agentId: string,
-    config: Partial<WisdomConfig> = {}
+    config: Partial<WisdomConfig> = {},
   ) {
     this.config = { ...defaultWisdomConfig, ...config }
   }
-  
+
   /**
    * Record a wisdom-related event
    */
@@ -79,7 +79,7 @@ export class WisdomTracker {
       agentId: this.agentId,
       timestamp: Date.now(),
     })
-    
+
     // Update skills if mastery event
     if (event.type === 'mastery' && event.context?.skill) {
       const skill = event.context.skill as string
@@ -87,28 +87,28 @@ export class WisdomTracker {
       const impact = event.impact.mastery ?? 0
       this.skills.set(skill, Math.max(0, Math.min(1, current + impact)))
     }
-    
+
     this.pruneOldEvents()
   }
-  
+
   /**
    * Calculate current wisdom metrics
    */
   calculateWisdom(): WisdomMetrics {
     this.pruneOldEvents()
-    
+
     const morality = this.calculateMorality()
     const meaning = this.calculateMeaning()
     const mastery = this.calculateMastery()
     const integration = this.calculateIntegration(morality, meaning, mastery)
-    
+
     const overall = (
-      morality.overall + 
-      meaning.overall + 
-      mastery.overall + 
-      integration.threeAspectsBalance
+      morality.overall
+      + meaning.overall
+      + mastery.overall
+      + integration.threeAspectsBalance
     ) / 4
-    
+
     const wisdom: WisdomMetrics = {
       overall,
       morality,
@@ -118,21 +118,21 @@ export class WisdomTracker {
       agentId: this.agentId,
       timestamp: Date.now(),
     }
-    
+
     // Store in history
     this.history.push({
       timestamp: Date.now(),
       wisdom,
     })
-    
+
     // Keep history manageable (last 100 data points)
     if (this.history.length > 100) {
       this.history = this.history.slice(-100)
     }
-    
+
     return wisdom
   }
-  
+
   /**
    * Get wisdom recommendations
    */
@@ -140,10 +140,10 @@ export class WisdomTracker {
     if (!this.config.enableRecommendations) {
       return []
     }
-    
+
     const wisdom = this.calculateWisdom()
     const recommendations: WisdomRecommendation[] = []
-    
+
     // Check each aspect
     const aspects: Array<{
       name: 'morality' | 'meaning' | 'mastery'
@@ -153,11 +153,11 @@ export class WisdomTracker {
       { name: 'meaning', score: wisdom.meaning.overall },
       { name: 'mastery', score: wisdom.mastery.overall },
     ]
-    
+
     for (const aspect of aspects) {
       const target = this.config.targets[aspect.name]
       const gap = target - aspect.score
-      
+
       if (gap > 0.1) { // Significant gap
         recommendations.push({
           aspect: aspect.name,
@@ -171,7 +171,7 @@ export class WisdomTracker {
         })
       }
     }
-    
+
     // Check integration
     if (wisdom.integration.threeAspectsBalance < this.config.targets.integration) {
       const gap = this.config.targets.integration - wisdom.integration.threeAspectsBalance
@@ -189,17 +189,17 @@ export class WisdomTracker {
         priority: gap / this.config.targets.integration,
       })
     }
-    
+
     return recommendations.sort((a, b) => b.priority - a.priority)
   }
-  
+
   /**
    * Get wisdom progress over time
    */
   getProgress(): WisdomProgress {
     const trends = this.analyzeTrends()
     const growthRate = this.calculateGrowthRate()
-    
+
     return {
       agentId: this.agentId,
       history: this.history,
@@ -207,13 +207,13 @@ export class WisdomTracker {
       growthRate,
     }
   }
-  
+
   /**
    * Calculate morality metrics
    */
   private calculateMorality(): MoralityMetrics {
     const moralEvents = this.events.filter(e => e.type === 'moral')
-    
+
     if (moralEvents.length === 0) {
       return {
         overall: 0.5,
@@ -225,18 +225,18 @@ export class WisdomTracker {
         timestamp: Date.now(),
       }
     }
-    
+
     // Calculate component scores
     const empathy = this.calculateAverage(moralEvents, 'empathy')
     const ethicalConsistency = this.calculateAverage(moralEvents, 'ethics')
     const compassionateActions = moralEvents.filter(
-      e => e.description.toLowerCase().includes('compassion')
+      e => e.description.toLowerCase().includes('compassion'),
     ).length
     const harmReduction = this.calculateAverage(moralEvents, 'harm')
     const justice = this.calculateAverage(moralEvents, 'justice')
-    
+
     const overall = (empathy + ethicalConsistency + harmReduction + justice) / 4
-    
+
     return {
       overall,
       empathy,
@@ -247,13 +247,13 @@ export class WisdomTracker {
       timestamp: Date.now(),
     }
   }
-  
+
   /**
    * Calculate meaning metrics
    */
   private calculateMeaning(): MeaningMetrics {
     const meaningEvents = this.events.filter(e => e.type === 'meaningful')
-    
+
     if (meaningEvents.length === 0) {
       return {
         overall: 0.5,
@@ -265,21 +265,21 @@ export class WisdomTracker {
         timestamp: Date.now(),
       }
     }
-    
+
     const narrativeCoherence = this.calculateAverage(meaningEvents, 'narrative')
     const identityStability = this.calculateAverage(meaningEvents, 'identity')
     const existentialEngagement = this.calculateAverage(meaningEvents, 'existential')
     const purposeClarity = this.calculateAverage(meaningEvents, 'purpose')
     const transcendence = this.calculateAverage(meaningEvents, 'transcendence')
-    
+
     const overall = (
-      narrativeCoherence + 
-      identityStability + 
-      existentialEngagement + 
-      purposeClarity + 
-      transcendence
+      narrativeCoherence
+      + identityStability
+      + existentialEngagement
+      + purposeClarity
+      + transcendence
     ) / 5
-    
+
     return {
       overall,
       narrativeCoherence,
@@ -290,25 +290,25 @@ export class WisdomTracker {
       timestamp: Date.now(),
     }
   }
-  
+
   /**
    * Calculate mastery metrics
    */
   private calculateMastery(): MasteryMetrics {
     const masteryEvents = this.events.filter(e => e.type === 'mastery')
-    
+
     const problemSolving = this.calculateAverage(masteryEvents, 'problem')
     const adaptability = this.calculateAverage(masteryEvents, 'adapt')
-    
+
     const skillProgression = new Map(this.skills)
     const averageSkillLevel = this.skills.size > 0
       ? Array.from(this.skills.values()).reduce((a, b) => a + b, 0) / this.skills.size
       : 0.5
-    
+
     const learningVelocity = this.calculateLearningVelocity()
-    
+
     const overall = (problemSolving + adaptability + averageSkillLevel) / 3
-    
+
     return {
       overall,
       problemSolving,
@@ -319,24 +319,24 @@ export class WisdomTracker {
       timestamp: Date.now(),
     }
   }
-  
+
   /**
    * Calculate integration metrics
    */
   private calculateIntegration(
     morality: MoralityMetrics,
     meaning: MeaningMetrics,
-    mastery: MasteryMetrics
+    mastery: MasteryMetrics,
   ): IntegrationMetrics {
     // Three aspects balance (how well balanced are they?)
     const scores = [morality.overall, meaning.overall, mastery.overall]
     const mean = scores.reduce((a, b) => a + b, 0) / 3
-    const variance = scores.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) / 3
+    const variance = scores.reduce((sum, score) => sum + (score - mean) ** 2, 0) / 3
     const threeAspectsBalance = Math.max(0, 1 - variance) // Low variance = high balance
-    
+
     // Placeholder values (would be calculated from actual data)
     const integrationEvents = this.events.filter(e => e.type === 'integration')
-    
+
     return {
       threeAspectsBalance,
       fourWaysBalance: {
@@ -352,27 +352,27 @@ export class WisdomTracker {
       timestamp: Date.now(),
     }
   }
-  
+
   /**
    * Calculate average score for events mentioning a keyword
    */
   private calculateAverage(events: WisdomEvent[], keyword: string): number {
-    const relevant = events.filter(e => 
-      e.description.toLowerCase().includes(keyword)
+    const relevant = events.filter(e =>
+      e.description.toLowerCase().includes(keyword),
     )
-    
+
     if (relevant.length === 0) {
       return 0.5 // Neutral default
     }
-    
+
     const sum = relevant.reduce((total, event) => {
       const impact = Object.values(event.impact).reduce((a, b) => (a ?? 0) + (b ?? 0), 0) ?? 0
       return total + Math.abs(impact)
     }, 0)
-    
+
     return Math.min(1, Math.max(0, 0.5 + (sum / relevant.length)))
   }
-  
+
   /**
    * Calculate learning velocity (rate of skill improvement)
    */
@@ -380,27 +380,27 @@ export class WisdomTracker {
     if (this.history.length < 2) {
       return 0
     }
-    
+
     const recent = this.history.slice(-10)
     if (recent.length < 2) {
       return 0
     }
-    
+
     const first = recent[0].wisdom.mastery.averageSkillLevel
     const last = recent[recent.length - 1].wisdom.mastery.averageSkillLevel
     const timeDiff = recent[recent.length - 1].timestamp - recent[0].timestamp
-    
+
     if (timeDiff === 0) {
       return 0
     }
-    
+
     // Velocity in points per day
     const velocityPerMs = (last - first) / timeDiff
     const velocityPerDay = velocityPerMs * (24 * 60 * 60 * 1000)
-    
+
     return velocityPerDay
   }
-  
+
   /**
    * Analyze trends over time
    */
@@ -413,18 +413,20 @@ export class WisdomTracker {
         overall: 'stable',
       }
     }
-    
+
     const recent = this.history.slice(-5)
-    
+
     const analyzeTrend = (getValue: (w: WisdomMetrics) => number) => {
       const values = recent.map(h => getValue(h.wisdom))
       const slope = this.calculateSlope(values)
-      
-      if (slope > 0.02) return 'improving'
-      if (slope < -0.02) return 'declining'
+
+      if (slope > 0.02)
+        return 'improving'
+      if (slope < -0.02)
+        return 'declining'
       return 'stable'
     }
-    
+
     return {
       morality: analyzeTrend(w => w.morality.overall),
       meaning: analyzeTrend(w => w.meaning.overall),
@@ -432,23 +434,24 @@ export class WisdomTracker {
       overall: analyzeTrend(w => w.overall),
     }
   }
-  
+
   /**
    * Calculate simple linear slope
    */
   private calculateSlope(values: number[]): number {
-    if (values.length < 2) return 0
-    
+    if (values.length < 2)
+      return 0
+
     const n = values.length
     const sumX = (n * (n - 1)) / 2 // Sum of indices
     const sumY = values.reduce((a, b) => a + b, 0)
     const sumXY = values.reduce((sum, y, x) => sum + x * y, 0)
     const sumX2 = (n * (n - 1) * (2 * n - 1)) / 6
-    
+
     const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX)
     return slope
   }
-  
+
   /**
    * Calculate growth rate
    */
@@ -461,11 +464,11 @@ export class WisdomTracker {
         overall: 0,
       }
     }
-    
+
     const first = this.history[0].wisdom
     const last = this.history[this.history.length - 1].wisdom
     const timeDiff = last.timestamp - first.timestamp
-    
+
     if (timeDiff === 0) {
       return {
         morality: 0,
@@ -474,9 +477,9 @@ export class WisdomTracker {
         overall: 0,
       }
     }
-    
+
     const daysDiff = timeDiff / (24 * 60 * 60 * 1000)
-    
+
     return {
       morality: ((last.morality.overall - first.morality.overall) / daysDiff) * 100,
       meaning: ((last.meaning.overall - first.meaning.overall) / daysDiff) * 100,
@@ -484,13 +487,13 @@ export class WisdomTracker {
       overall: ((last.overall - first.overall) / daysDiff) * 100,
     }
   }
-  
+
   /**
    * Generate recommendation text
    */
   private generateRecommendation(
     aspect: 'morality' | 'meaning' | 'mastery',
-    gap: number
+    gap: number,
   ): string {
     const recommendations = {
       morality: {
@@ -506,11 +509,11 @@ export class WisdomTracker {
         large: 'Focus on deliberate practice and learning new domains',
       },
     }
-    
+
     const severity = gap > 0.3 ? 'large' : 'small'
     return recommendations[aspect][severity]
   }
-  
+
   /**
    * Suggest practices for aspect
    */
@@ -535,20 +538,23 @@ export class WisdomTracker {
         'Develop expertise through sustained effort',
       ],
     }
-    
+
     return practices[aspect]
   }
-  
+
   /**
    * Estimate time to close gap
    */
   private estimateTime(gap: number): string {
-    if (gap < 0.1) return '1-2 weeks'
-    if (gap < 0.2) return '1 month'
-    if (gap < 0.3) return '2-3 months'
+    if (gap < 0.1)
+      return '1-2 weeks'
+    if (gap < 0.2)
+      return '1 month'
+    if (gap < 0.3)
+      return '2-3 months'
     return '3-6 months'
   }
-  
+
   /**
    * Remove events outside time window
    */

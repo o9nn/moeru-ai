@@ -1,24 +1,28 @@
-import type { Model, ModelIdsByProvider, ProviderNames } from '@moeru-ai/jem'
+import type { Model } from './issue-parser.ts'
 import * as fs from 'node:fs'
 import { createRequire } from 'node:module'
 import path from 'node:path'
-import { cwd, env, exit } from 'node:process'
 
+import { cwd, env, exit } from 'node:process'
 import { models } from '@moeru-ai/jem'
 import { execa } from 'execa'
 import git from 'isomorphic-git'
 import { Octokit } from 'octokit'
+
 import { parseModelIssue } from './issue-parser.ts'
+import { parseGitHubRepository, repositoryUrl } from './repository.ts'
 
 const http = createRequire(import.meta.url)('isomorphic-git/http/node')
-const gitUrl = new URL('https://github.com/moeru-ai/inventory.git')
+const sourceRepository = parseGitHubRepository(env.SOURCE_REPOSITORY ?? env.GITHUB_REPOSITORY, 'moeru-ai/inventory')
+const targetRepository = parseGitHubRepository(env.TARGET_REPOSITORY ?? env.GITHUB_REPOSITORY, 'moeru-ai/inventory')
+const gitUrl = repositoryUrl(targetRepository)
 gitUrl.password = env.GITHUB_TOKEN!
 gitUrl.username = env.GITHUB_USERNAME!
 
 const rootDir = path.join(cwd(), '..', '..')
 const modelsFilePath = path.join(rootDir, 'packages', 'jem', 'src', 'models.ts')
 
-function generateModelsFileContent(models: Model<ProviderNames, ModelIdsByProvider<ProviderNames>>[]) {
+function generateModelsFileContent(models: Model[]) {
   return `// Auto-generated file. Do not edit.
 
   import type { Model } from './types.ts'
@@ -39,8 +43,8 @@ async function main() {
 
   const issue = await client.rest.issues.get({
     issue_number: Number(issueId),
-    owner: 'moeru-ai',
-    repo: 'inventory',
+    owner: sourceRepository.owner,
+    repo: sourceRepository.repo,
   })
   if (!issue.data.title.includes('Model Collection')) {
     throw new Error('Not a model collection issue')
@@ -63,8 +67,8 @@ async function main() {
 
   const comments = await client.rest.issues.listComments({
     issue_number: Number(issueId),
-    owner: 'moeru-ai',
-    repo: 'inventory',
+    owner: sourceRepository.owner,
+    repo: sourceRepository.repo,
   })
 
   const prIssueCommentPrefix = 'Thank you for your contribution! Pull request created: #'
@@ -76,8 +80,8 @@ async function main() {
   if (pullRequestComment?.body) {
     prNumber = Number(pullRequestComment.body.slice(prIssueCommentPrefix.length).trim())
     const existingPr = await client.rest.pulls.get({
-      owner: 'moeru-ai',
-      repo: 'inventory',
+      owner: targetRepository.owner,
+      repo: targetRepository.repo,
       pull_number: prNumber,
     })
     console.log(`Pull request found: #${prNumber}`)
@@ -106,10 +110,16 @@ async function main() {
     console.log(`Checked out the branch: ${branchName}`)
   }
 
-  const existingModels = models.filter(
-    it => it.provider !== modelInfo.provider || it.modelId !== modelInfo.modelId,
-  )
-  existingModels.push(modelInfo as Model<ProviderNames, ModelIdsByProvider<ProviderNames>>)
+  const existingModels: Model[] = models
+    .filter(it => it.provider !== modelInfo.provider || it.modelId !== modelInfo.modelId)
+    .map(model => ({
+      ...model,
+      capabilities: [...model.capabilities],
+      endpoints: [...model.endpoints],
+      inputModalities: [...model.inputModalities],
+      outputModalities: [...model.outputModalities],
+    }))
+  existingModels.push(modelInfo)
 
   const newModelsFileContent = generateModelsFileContent(existingModels)
   await fs.promises.writeFile(modelsFilePath, newModelsFileContent)
@@ -138,8 +148,8 @@ async function main() {
 
   if (!pr) {
     const pr = await client.rest.pulls.create({
-      owner: 'moeru-ai',
-      repo: 'inventory',
+      owner: targetRepository.owner,
+      repo: targetRepository.repo,
       head: branchName,
       base: 'main',
       title: prTitle,
@@ -150,8 +160,8 @@ async function main() {
 
     await client.rest.issues.createComment({
       issue_number: Number(issueId),
-      owner: 'moeru-ai',
-      repo: 'inventory',
+      owner: sourceRepository.owner,
+      repo: sourceRepository.repo,
       body: `${prIssueCommentPrefix}${prNumber}`,
     })
 

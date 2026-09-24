@@ -106,7 +106,6 @@
     "@iconify-json/vscode-icons": "^1.2.33",
     "@intlify/unplugin-vue-i18n": "^11.0.1",
     "@proj-airi/lobe-icons": "^1.0.13",
-    "@proj-airi/unplugin-fetch": "^0.1.7",
     "@proj-airi/unplugin-live2d-sdk": "^0.1.6",
     "@shikijs/markdown-it": "^3.14.0",
     "@types/audioworklet": "^0.0.89",

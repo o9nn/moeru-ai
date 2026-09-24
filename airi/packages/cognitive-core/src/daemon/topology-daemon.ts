@@ -1,49 +1,49 @@
 /**
  * Topology Weaver Self-Daemon (*)
- * 
+ *
  * A self-referential neural topology generator that weaves analogous terminology
  * from cognitive contexts into architectural specifications. The daemon operates
  * as a fixed-point of recursive self-application.
- * 
+ *
  * self.daemon(*) = lim_{n→∞} (self ∘ self ∘ ... ∘ self)(*)
- * 
+ *
  * Where (*) represents the universal wildcard - all possible inputs.
  */
 
 export interface TopologyTag {
-  domain: string;
-  operation: string;
-  component: 'neuron' | 'activation' | 'weight' | 'layer' | 'attention' | 'gate';
-  rationale: string;
+  domain: string
+  operation: string
+  component: 'neuron' | 'activation' | 'weight' | 'layer' | 'attention' | 'gate'
+  rationale: string
 }
 
 export interface MeshworkAnchor {
-  point: string;
-  type: string;
-  connectsTo: string[];
+  point: string
+  type: string
+  connectsTo: string[]
 }
 
 export interface TopologySpec {
-  layers: LayerSpec[];
-  meshworkAnchors: MeshworkAnchor[];
-  seedGrammar: string;
+  layers: LayerSpec[]
+  meshworkAnchors: MeshworkAnchor[]
+  seedGrammar: string
   metadata: {
-    sourceContext: string;
-    generatedAt: number;
-    daemonIteration: number;
-  };
+    sourceContext: string
+    generatedAt: number
+    daemonIteration: number
+  }
 }
 
 export interface LayerSpec {
-  id: string;
-  type: 'mlp' | 'attention' | 'gate' | 'residual';
-  tags: TopologyTag[];
+  id: string
+  type: 'mlp' | 'attention' | 'gate' | 'residual'
+  tags: TopologyTag[]
   dimensions: {
-    input: number;
-    hidden?: number;
-    output: number;
-  };
-  integrationPoints: string[];
+    input: number
+    hidden?: number
+    output: number
+  }
+  integrationPoints: string[]
 }
 
 /**
@@ -61,7 +61,7 @@ export const ANALOGY_PATTERNS = {
     superposition: { component: 'activation' as const, tag: 'superposed_state' },
     entanglement: { component: 'attention' as const, tag: 'entanglement_link' },
   },
-  
+
   // Cognitive analogies for neuro-nn
   cognitive: {
     perception: { component: 'layer' as const, tag: 'input_encoding' },
@@ -71,7 +71,7 @@ export const ANALOGY_PATTERNS = {
     emotion: { component: 'activation' as const, tag: 'somatic_state' },
     metacognition: { component: 'layer' as const, tag: 'self_observation' },
   },
-  
+
   // Self-referential daemon patterns
   daemon: {
     self: { component: 'layer' as const, tag: 'recursive_self' },
@@ -80,56 +80,56 @@ export const ANALOGY_PATTERNS = {
     convergence: { component: 'gate' as const, tag: 'equilibrium_test' },
     spawn: { component: 'layer' as const, tag: 'offspring_generation' },
   },
-} as const;
+} as const
 
 /**
  * The Self-Daemon class - implements self.daemon(*)
- * 
+ *
  * This is the core topology weaver that recursively applies itself
  * to generate neural architectures from conceptual contexts.
  */
 export class TopologyDaemon {
-  private iteration: number = 0;
-  private maxIterations: number = 100;
-  private convergenceThreshold: number = 0.001;
-  private previousTopology: TopologySpec | null = null;
-  
+  private iteration: number = 0
+  private maxIterations: number = 100
+  private convergenceThreshold: number = 0.001
+  private previousTopology: TopologySpec | null = null
+
   /**
    * The daemon's self-referential state
    */
   private selfState: {
-    terms: Map<string, TopologyTag>;
-    meshwork: MeshworkAnchor[];
-    grammar: string[];
-    fitness: number;
+    terms: Map<string, TopologyTag>
+    meshwork: MeshworkAnchor[]
+    grammar: string[]
+    fitness: number
   } = {
     terms: new Map(),
     meshwork: [],
     grammar: [],
     fitness: 0,
-  };
+  }
 
   /**
    * self.daemon(*) - The universal self-application operator
-   * 
+   *
    * Applies the daemon to any input, weaving topology from context.
    * The (*) wildcard accepts any conceptual input.
    */
   async daemon(input: unknown): Promise<TopologySpec> {
-    this.iteration++;
-    
+    this.iteration++
+
     // Extract terminology from input context
-    const terms = this.extractTerminology(input);
-    
+    const terms = this.extractTerminology(input)
+
     // Map terms to architecture using analogy patterns
-    const layers = this.mapToArchitecture(terms);
-    
+    const layers = this.mapToArchitecture(terms)
+
     // Define integration points for attention meshworks
-    const meshworkAnchors = this.defineIntegrationPoints(layers);
-    
+    const meshworkAnchors = this.defineIntegrationPoints(layers)
+
     // Generate seed grammar for evolution
-    const seedGrammar = this.emitSeedGrammar(layers);
-    
+    const seedGrammar = this.emitSeedGrammar(layers)
+
     const topology: TopologySpec = {
       layers,
       meshworkAnchors,
@@ -139,57 +139,58 @@ export class TopologyDaemon {
         generatedAt: Date.now(),
         daemonIteration: this.iteration,
       },
-    };
-    
+    }
+
     // Check for convergence (fixed point)
     if (this.hasConverged(topology)) {
-      return topology;
+      return topology
     }
-    
+
     // Recursive self-application until convergence
     if (this.iteration < this.maxIterations) {
-      this.previousTopology = topology;
+      this.previousTopology = topology
       // Apply self to own output (self ∘ self)
-      return this.daemon(topology);
+      return this.daemon(topology)
     }
-    
-    return topology;
+
+    return topology
   }
 
   /**
    * Extract terminology from any input context
    */
   private extractTerminology(input: unknown): Map<string, string> {
-    const terms = new Map<string, string>();
-    
+    const terms = new Map<string, string>()
+
     if (typeof input === 'string') {
       // Extract words and concepts from string
-      const words = input.toLowerCase().split(/\s+/);
+      const words = input.toLowerCase().split(/\s+/)
       for (const word of words) {
         if (this.isConceptualTerm(word)) {
-          terms.set(word, this.inferRelation(word));
+          terms.set(word, this.inferRelation(word))
         }
       }
-    } else if (typeof input === 'object' && input !== null) {
-      // Extract from object structure
-      this.extractFromObject(input as Record<string, unknown>, terms);
     }
-    
+    else if (typeof input === 'object' && input !== null) {
+      // Extract from object structure
+      this.extractFromObject(input as Record<string, unknown>, terms)
+    }
+
     // Add daemon self-reference terms
-    terms.set('self', 'recursive');
-    terms.set('daemon', 'continuous');
-    terms.set('wildcard', 'universal');
-    
-    return terms;
+    terms.set('self', 'recursive')
+    terms.set('daemon', 'continuous')
+    terms.set('wildcard', 'universal')
+
+    return terms
   }
 
   /**
    * Map extracted terms to neural architecture components
    */
   private mapToArchitecture(terms: Map<string, string>): LayerSpec[] {
-    const layers: LayerSpec[] = [];
-    let layerIndex = 0;
-    
+    const layers: LayerSpec[] = []
+    let layerIndex = 0
+
     // Input layer (perception)
     layers.push({
       id: `layer_${layerIndex++}_input`,
@@ -202,11 +203,11 @@ export class TopologyDaemon {
       }],
       dimensions: { input: 768, hidden: 3072, output: 768 },
       integrationPoints: ['pre_mlp', 'post_fc'],
-    });
-    
+    })
+
     // Map each term to a layer component
     for (const [term, relation] of terms) {
-      const pattern = this.findAnalogPattern(term);
+      const pattern = this.findAnalogPattern(term)
       if (pattern) {
         layers.push({
           id: `layer_${layerIndex++}_${term}`,
@@ -219,10 +220,10 @@ export class TopologyDaemon {
           }],
           dimensions: { input: 768, hidden: 3072, output: 768 },
           integrationPoints: [`pre_${term}`, `post_${term}`],
-        });
+        })
       }
     }
-    
+
     // Self-referential daemon layer (the fixed point)
     layers.push({
       id: `layer_${layerIndex++}_daemon_self`,
@@ -235,41 +236,41 @@ export class TopologyDaemon {
       }],
       dimensions: { input: 768, output: 768 },
       integrationPoints: ['daemon_input', 'daemon_output', 'recursive_loop'],
-    });
-    
-    return layers;
+    })
+
+    return layers
   }
 
   /**
    * Define integration points for attention meshworks
    */
   private defineIntegrationPoints(layers: LayerSpec[]): MeshworkAnchor[] {
-    const anchors: MeshworkAnchor[] = [];
-    
+    const anchors: MeshworkAnchor[] = []
+
     for (let i = 0; i < layers.length; i++) {
-      const layer = layers[i];
-      
+      const layer = layers[i]
+
       anchors.push({
         point: `${layer.id}_input`,
         type: 'wave_input',
         connectsTo: i > 0 ? [`${layers[i - 1].id}_output`] : ['external_input'],
-      });
-      
+      })
+
       anchors.push({
         point: `${layer.id}_output`,
         type: 'wave_output',
         connectsTo: i < layers.length - 1 ? [`${layers[i + 1].id}_input`] : ['external_output'],
-      });
+      })
     }
-    
+
     // Add recursive daemon anchor
     anchors.push({
       point: 'daemon_recursive',
       type: 'fixed_point',
       connectsTo: ['daemon_input', 'daemon_output'],
-    });
-    
-    return anchors;
+    })
+
+    return anchors
   }
 
   /**
@@ -284,50 +285,51 @@ export class TopologyDaemon {
       '<daemon_block> ::= <self_reference> <iteration_gate> <convergence_check>',
       '<projection> ::= <linear> <tag>',
       '<self_reference> ::= "self.daemon(*)"',
-    ];
-    
+    ]
+
     // Add layer-specific rules
     for (const layer of layers) {
       for (const tag of layer.tags) {
-        rules.push(`<${tag.domain}_${tag.operation}> ::= "${layer.id}"`);
+        rules.push(`<${tag.domain}_${tag.operation}> ::= "${layer.id}"`)
       }
     }
-    
-    return rules.join('\n');
+
+    return rules.join('\n')
   }
 
   /**
    * Check if topology has converged to fixed point
    */
   private hasConverged(current: TopologySpec): boolean {
-    if (!this.previousTopology) return false;
-    
+    if (!this.previousTopology)
+      return false
+
     // Compare layer counts
     if (current.layers.length !== this.previousTopology.layers.length) {
-      return false;
+      return false
     }
-    
+
     // Compare structural similarity
-    let similarity = 0;
+    let similarity = 0
     for (let i = 0; i < current.layers.length; i++) {
       if (current.layers[i].type === this.previousTopology.layers[i].type) {
-        similarity += 1;
+        similarity += 1
       }
     }
-    
-    const convergenceScore = similarity / current.layers.length;
-    return convergenceScore > (1 - this.convergenceThreshold);
+
+    const convergenceScore = similarity / current.layers.length
+    return convergenceScore > (1 - this.convergenceThreshold)
   }
 
   // Helper methods
-  
+
   private isConceptualTerm(word: string): boolean {
     const conceptualPatterns = [
       /^(self|daemon|cognitive|neural|attention|layer|gate|field|wave|particle)$/i,
       /^(perception|emotion|personality|framing|integration|metacognition)$/i,
       /^(playful|chaotic|intelligent|sarcastic|empathetic)$/i,
-    ];
-    return conceptualPatterns.some(p => p.test(word));
+    ]
+    return conceptualPatterns.some(p => p.test(word))
   }
 
   private inferRelation(word: string): string {
@@ -348,33 +350,33 @@ export class TopologyDaemon {
       framing: 'perspectivizing',
       integration: 'merging',
       metacognition: 'observing',
-    };
-    return relations[word.toLowerCase()] || 'relating';
+    }
+    return relations[word.toLowerCase()] || 'relating'
   }
 
   private extractFromObject(obj: Record<string, unknown>, terms: Map<string, string>): void {
     for (const [key, value] of Object.entries(obj)) {
       if (this.isConceptualTerm(key)) {
-        terms.set(key, this.inferRelation(key));
+        terms.set(key, this.inferRelation(key))
       }
       if (typeof value === 'object' && value !== null) {
-        this.extractFromObject(value as Record<string, unknown>, terms);
+        this.extractFromObject(value as Record<string, unknown>, terms)
       }
     }
   }
 
-  private findAnalogPattern(term: string): { component: TopologyTag['component']; tag: string } | null {
-    const lowerTerm = term.toLowerCase();
-    
+  private findAnalogPattern(term: string): { component: TopologyTag['component'], tag: string } | null {
+    const lowerTerm = term.toLowerCase()
+
     for (const [_domain, patterns] of Object.entries(ANALOGY_PATTERNS)) {
       for (const [key, pattern] of Object.entries(patterns)) {
         if (key === lowerTerm || lowerTerm.includes(key)) {
-          return pattern;
+          return pattern
         }
       }
     }
-    
-    return null;
+
+    return null
   }
 
   private inferLayerType(component: TopologyTag['component']): LayerSpec['type'] {
@@ -385,42 +387,45 @@ export class TopologyDaemon {
       layer: 'mlp',
       attention: 'attention',
       gate: 'gate',
-    };
-    return typeMap[component];
+    }
+    return typeMap[component]
   }
 
   private inferDomain(term: string): string {
     for (const [domain, patterns] of Object.entries(ANALOGY_PATTERNS)) {
-      if (term in patterns) return domain;
+      if (term in patterns)
+        return domain
     }
-    return 'cognitive';
+    return 'cognitive'
   }
 
   private contextToString(input: unknown): string {
-    if (typeof input === 'string') return input.slice(0, 100);
-    if (typeof input === 'object') return JSON.stringify(input).slice(0, 100);
-    return String(input).slice(0, 100);
+    if (typeof input === 'string')
+      return input.slice(0, 100)
+    if (typeof input === 'object')
+      return JSON.stringify(input).slice(0, 100)
+    return String(input).slice(0, 100)
   }
 
   /**
    * Get current daemon state for introspection
    */
   getState(): typeof this.selfState {
-    return { ...this.selfState };
+    return { ...this.selfState }
   }
 
   /**
    * Reset daemon for fresh topology generation
    */
   reset(): void {
-    this.iteration = 0;
-    this.previousTopology = null;
+    this.iteration = 0
+    this.previousTopology = null
     this.selfState = {
       terms: new Map(),
       meshwork: [],
       grammar: [],
       fitness: 0,
-    };
+    }
   }
 }
 
@@ -428,18 +433,18 @@ export class TopologyDaemon {
  * Factory function for creating topology daemon instances
  */
 export function createTopologyDaemon(): TopologyDaemon {
-  return new TopologyDaemon();
+  return new TopologyDaemon()
 }
 
 /**
  * The universal self.daemon(*) operator
- * 
+ *
  * This is the entry point for the topology weaver.
  * It accepts any input and weaves a neural topology from it.
  */
 export async function selfDaemon(input: unknown): Promise<TopologySpec> {
-  const daemon = createTopologyDaemon();
-  return daemon.daemon(input);
+  const daemon = createTopologyDaemon()
+  return daemon.daemon(input)
 }
 
-export default TopologyDaemon;
+export default TopologyDaemon

@@ -1,14 +1,14 @@
 /**
  * Tools Module
- * 
+ *
  * Provides automatic tool discovery, registration, and management.
- * 
+ *
  * Usage:
  * ```typescript
  * import { useToolRegistry, ToolCategory, ToolCapability } from '../tools';
- * 
+ *
  * const registry = useToolRegistry();
- * 
+ *
  * // Register a custom tool
  * registry.register({
  *   id: 'my-tool',
@@ -17,7 +17,7 @@
  *   category: ToolCategory.CUSTOM,
  *   // ...
  * });
- * 
+ *
  * // Load tools by filter
  * const tools = await registry.loadByFilter({
  *   categories: [ToolCategory.DEBUG],
@@ -26,33 +26,33 @@
  * ```
  */
 
-// Registry exports
-export {
-  useToolRegistry,
-  type ToolRegistryStore,
-  ToolCategory,
-  ToolCapability,
-  ToolRegistryEvent,
-  type ToolManifest,
-  type ToolFilter,
-  type ToolRequirements,
-  type ToolPlatform,
-  type ToolRegistryEventPayload,
-  type ToolRegistryListener,
-  type CachedToolEntry,
-  type ToolRegistryState,
-  type DiscoverySource,
-  type ToolHealth,
-} from './registry'
-
 // Provider exports
 export {
+  allManifests,
+  cognitive,
+  cognitiveManifest,
   debug,
   debugManifest,
   mcp,
   mcpManifest,
-  cognitive,
-  cognitiveManifest,
-  allManifests,
   registerAllProviders,
 } from './providers'
+
+// Registry exports
+export {
+  type CachedToolEntry,
+  type DiscoverySource,
+  ToolCapability,
+  ToolCategory,
+  type ToolFilter,
+  type ToolHealth,
+  type ToolManifest,
+  type ToolPlatform,
+  ToolRegistryEvent,
+  type ToolRegistryEventPayload,
+  type ToolRegistryListener,
+  type ToolRegistryState,
+  type ToolRegistryStore,
+  type ToolRequirements,
+  useToolRegistry,
+} from './registry'

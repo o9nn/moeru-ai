@@ -1,3 +1,23 @@
 # Temporary files from workflow development
 actionlint*
 *.tar.gz
+
+# Monorepo dependencies and generated build artifacts
+**/node_modules/
+**/.cache/
+**/.eslintcache
+**/.turbo/
+**/.vite/
+**/coverage/
+**/dist/
+**/out/
+**/typed-router.d.ts
+*.tsbuildinfo
+
+# Assets materialized by Vite download plugins
+**/public/assets/js/CubismSdkForWeb-*/
+**/public/assets/live2d/models/*.zip
+**/public/assets/vrm/models/**/*.vrm
+
+# Local analysis artifacts
+.analysis/

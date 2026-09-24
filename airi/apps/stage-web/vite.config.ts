@@ -11,12 +11,13 @@ import Yaml from 'unplugin-yaml/vite'
 import VueDevTools from 'vite-plugin-vue-devtools'
 import Layouts from 'vite-plugin-vue-layouts'
 
-import { Download } from '@proj-airi/unplugin-fetch/vite'
 import { DownloadLive2DSDK } from '@proj-airi/unplugin-live2d-sdk/vite'
 import { templateCompilerOptions } from '@tresjs/core'
 import { LFS, SpaceCard } from 'hfup/vite'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
+
+import { DownloadAssetsWithRetry } from '../../build/download-with-retry'
 
 export default defineConfig({
   optimizeDeps: {
@@ -153,10 +154,12 @@ export default defineConfig({
     VueDevTools(),
 
     DownloadLive2DSDK(),
-    Download('https://dist.ayaka.moe/live2d-models/hiyori_free_zh.zip', 'hiyori_free_zh.zip', 'assets/live2d/models'),
-    Download('https://dist.ayaka.moe/live2d-models/hiyori_pro_zh.zip', 'hiyori_pro_zh.zip', 'assets/live2d/models'),
-    Download('https://dist.ayaka.moe/vrm-models/VRoid-Hub/AvatarSample-A/AvatarSample_A.vrm', 'AvatarSample_A.vrm', 'assets/vrm/models/AvatarSample-A'),
-    Download('https://dist.ayaka.moe/vrm-models/VRoid-Hub/AvatarSample-B/AvatarSample_B.vrm', 'AvatarSample_B.vrm', 'assets/vrm/models/AvatarSample-B'),
+    DownloadAssetsWithRetry([
+      { url: 'https://dist.ayaka.moe/live2d-models/hiyori_free_zh.zip', filename: 'hiyori_free_zh.zip', destination: 'assets/live2d/models' },
+      { url: 'https://dist.ayaka.moe/live2d-models/hiyori_pro_zh.zip', filename: 'hiyori_pro_zh.zip', destination: 'assets/live2d/models' },
+      { url: 'https://dist.ayaka.moe/vrm-models/VRoid-Hub/AvatarSample-A/AvatarSample_A.vrm', filename: 'AvatarSample_A.vrm', destination: 'assets/vrm/models/AvatarSample-A' },
+      { url: 'https://dist.ayaka.moe/vrm-models/VRoid-Hub/AvatarSample-B/AvatarSample_B.vrm', filename: 'AvatarSample_B.vrm', destination: 'assets/vrm/models/AvatarSample-B' },
+    ]),
 
     // HuggingFace Spaces
     LFS({ root: cwd(), extraGlobs: ['*.vrm', '*.vrma', '*.hdr', '*.cmo3', '*.png', '*.jpg', '*.jpeg', '*.gif', '*.webp', '*.bmp', '*.ttf'] }),

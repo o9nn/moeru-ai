@@ -1,16 +1,16 @@
 /**
  * Transcription Session Manager
- * 
+ *
  * Manages realtime transcription sessions with VAD-driven silence detection.
  * Handles session lifecycle, audio buffering, and automatic pause/resume.
  */
 
-import type { SilenceDetector, SilenceDetectorConfig } from './silence-detector'
 import type { EnergyVAD, EnergyVADConfig } from './energy-vad'
+import type { SilenceDetector, SilenceDetectorConfig } from './silence-detector'
 import type { BaseVAD } from './vad'
 
-import { createSilenceDetector } from './silence-detector'
 import { createEnergyVAD } from './energy-vad'
+import { createSilenceDetector } from './silence-detector'
 
 /**
  * Session state
@@ -59,23 +59,23 @@ export interface SessionConfig {
  */
 export interface SessionEvents {
   /** Session state changed */
-  'state-change': { from: SessionState; to: SessionState; timestamp: number }
+  'state-change': { from: SessionState, to: SessionState, timestamp: number }
   /** Session started */
-  'session-start': { sessionId: string; timestamp: number }
+  'session-start': { sessionId: string, timestamp: number }
   /** Session paused */
-  'session-pause': { sessionId: string; reason: string; timestamp: number }
+  'session-pause': { sessionId: string, reason: string, timestamp: number }
   /** Session resumed */
-  'session-resume': { sessionId: string; timestamp: number }
+  'session-resume': { sessionId: string, timestamp: number }
   /** Session stopped */
-  'session-stop': { sessionId: string; reason: string; timestamp: number }
+  'session-stop': { sessionId: string, reason: string, timestamp: number }
   /** Audio chunk ready for transcription */
-  'audio-ready': { buffer: Float32Array; duration: number; timestamp: number }
+  'audio-ready': { buffer: Float32Array, duration: number, timestamp: number }
   /** Buffered audio flushed on resume */
-  'buffer-flush': { buffer: Float32Array; duration: number; timestamp: number }
+  'buffer-flush': { buffer: Float32Array, duration: number, timestamp: number }
   /** Error occurred */
-  'error': { error: Error; timestamp: number }
+  'error': { error: Error, timestamp: number }
   /** Debug information */
-  'debug': { message: string; data?: unknown }
+  'debug': { message: string, data?: unknown }
 }
 
 export type SessionEventCallback<K extends keyof SessionEvents> = (event: SessionEvents[K]) => void
@@ -119,27 +119,27 @@ export class TranscriptionSessionManager {
   private state: SessionState = SessionState.IDLE
   private sessionId: string
   private eventListeners: Partial<Record<keyof SessionEvents, SessionEventCallback<any>[]>> = {}
-  
+
   // Components
   private silenceDetector: SilenceDetector
   private energyVAD: EnergyVAD | null = null
   private connectedVAD: BaseVAD | null = null
   private vadDisconnect: (() => void) | null = null
-  
+
   // Timing
   private sessionStartTime: number | null = null
   private pauseStartTime: number | null = null
   private totalPausedDuration: number = 0
   private pauseCount: number = 0
-  
+
   // Audio buffering
   private pauseBuffer: Float32Array[] = []
   private pauseBufferSize: number = 0
   private totalAudioSamples: number = 0
-  
+
   // Session timeout
   private sessionTimeoutTimer: ReturnType<typeof setTimeout> | null = null
-  
+
   constructor(userConfig: Partial<SessionConfig> = {}) {
     const defaultConfig: Required<SessionConfig> = {
       sessionId: generateSessionId(),
@@ -151,20 +151,20 @@ export class TranscriptionSessionManager {
       autoRestartOnSpeech: true,
       useEnergyVADFallback: true,
     }
-    
+
     this.config = { ...defaultConfig, ...userConfig } as Required<SessionConfig>
     this.sessionId = this.config.sessionId
-    
+
     // Create silence detector
     this.silenceDetector = createSilenceDetector(this.config.silenceConfig)
     this.setupSilenceDetectorEvents()
-    
+
     // Create energy VAD if fallback enabled
     if (this.config.useEnergyVADFallback) {
       this.energyVAD = createEnergyVAD(this.config.energyVADConfig)
     }
   }
-  
+
   /**
    * Setup silence detector event handlers
    */
@@ -172,15 +172,15 @@ export class TranscriptionSessionManager {
     this.silenceDetector.on('session-pause', (event) => {
       this.handlePause(event.reason)
     })
-    
+
     this.silenceDetector.on('session-resume', (event) => {
       this.handleResume(event.reason)
     })
-    
+
     this.silenceDetector.on('session-stop', (event) => {
       this.handleStop(event.reason)
     })
-    
+
     this.silenceDetector.on('state-change', (event) => {
       this.emit('debug', {
         message: `Silence detector state: ${event.from} -> ${event.to}`,
@@ -188,38 +188,40 @@ export class TranscriptionSessionManager {
       })
     })
   }
-  
+
   /**
    * Add event listener
    */
   public on<K extends keyof SessionEvents>(
-    event: K, 
-    callback: SessionEventCallback<K>
+    event: K,
+    callback: SessionEventCallback<K>,
   ): () => void {
     if (!this.eventListeners[event]) {
       this.eventListeners[event] = []
     }
     this.eventListeners[event]!.push(callback as any)
-    
+
     return () => this.off(event, callback)
   }
-  
+
   /**
    * Remove event listener
    */
   public off<K extends keyof SessionEvents>(
-    event: K, 
-    callback: SessionEventCallback<K>
+    event: K,
+    callback: SessionEventCallback<K>,
   ): void {
-    if (!this.eventListeners[event]) return
+    if (!this.eventListeners[event])
+      return
     this.eventListeners[event] = this.eventListeners[event]!.filter(cb => cb !== callback)
   }
-  
+
   /**
    * Emit event
    */
   private emit<K extends keyof SessionEvents>(event: K, data: SessionEvents[K]): void {
-    if (!this.eventListeners[event]) return
+    if (!this.eventListeners[event])
+      return
     for (const callback of this.eventListeners[event]!) {
       try {
         callback(data)
@@ -229,23 +231,24 @@ export class TranscriptionSessionManager {
       }
     }
   }
-  
+
   /**
    * Transition to a new state
    */
   private transitionTo(newState: SessionState): void {
-    if (this.state === newState) return
-    
+    if (this.state === newState)
+      return
+
     const oldState = this.state
     this.state = newState
-    
+
     this.emit('state-change', {
       from: oldState,
       to: newState,
       timestamp: Date.now(),
     })
   }
-  
+
   /**
    * Connect to a VAD instance
    */
@@ -254,16 +257,16 @@ export class TranscriptionSessionManager {
     if (this.vadDisconnect) {
       this.vadDisconnect()
     }
-    
+
     this.connectedVAD = vad
     this.vadDisconnect = this.silenceDetector.connectVAD(vad)
-    
+
     // Also connect speech-ready for audio processing
     vad.on('speech-ready', ({ buffer, duration }) => {
       this.processAudioChunk(buffer, duration)
     })
   }
-  
+
   /**
    * Start the session
    */
@@ -271,9 +274,9 @@ export class TranscriptionSessionManager {
     if (this.state !== SessionState.IDLE && this.state !== SessionState.STOPPED) {
       throw new Error(`Cannot start session in state: ${this.state}`)
     }
-    
+
     this.transitionTo(SessionState.STARTING)
-    
+
     try {
       this.sessionStartTime = Date.now()
       this.totalPausedDuration = 0
@@ -281,16 +284,16 @@ export class TranscriptionSessionManager {
       this.totalAudioSamples = 0
       this.pauseBuffer = []
       this.pauseBufferSize = 0
-      
+
       // Start session timeout timer
       if (this.config.maxSessionDurationMs > 0) {
         this.sessionTimeoutTimer = setTimeout(() => {
           this.handleStop('max_duration_exceeded')
         }, this.config.maxSessionDurationMs)
       }
-      
+
       this.transitionTo(SessionState.ACTIVE)
-      
+
       this.emit('session-start', {
         sessionId: this.sessionId,
         timestamp: Date.now(),
@@ -305,39 +308,41 @@ export class TranscriptionSessionManager {
       throw err
     }
   }
-  
+
   /**
    * Handle pause event
    */
   private handlePause(reason: string): void {
-    if (this.state !== SessionState.ACTIVE) return
-    
+    if (this.state !== SessionState.ACTIVE)
+      return
+
     this.pauseStartTime = Date.now()
     this.pauseCount++
-    
+
     this.transitionTo(SessionState.PAUSED)
-    
+
     this.emit('session-pause', {
       sessionId: this.sessionId,
       reason,
       timestamp: Date.now(),
     })
   }
-  
+
   /**
    * Handle resume event
    */
   private handleResume(_reason: string): void {
-    if (this.state !== SessionState.PAUSED) return
-    
+    if (this.state !== SessionState.PAUSED)
+      return
+
     // Calculate paused duration
     if (this.pauseStartTime) {
       this.totalPausedDuration += Date.now() - this.pauseStartTime
       this.pauseStartTime = null
     }
-    
+
     this.transitionTo(SessionState.ACTIVE)
-    
+
     // Flush buffered audio
     if (this.pauseBuffer.length > 0) {
       const totalLength = this.pauseBuffer.reduce((sum, buf) => sum + buf.length, 0)
@@ -347,65 +352,66 @@ export class TranscriptionSessionManager {
         flushedBuffer.set(buf, offset)
         offset += buf.length
       }
-      
+
       const duration = (totalLength / 16000) * 1000 // Assuming 16kHz
-      
+
       this.emit('buffer-flush', {
         buffer: flushedBuffer,
         duration,
         timestamp: Date.now(),
       })
-      
+
       this.pauseBuffer = []
       this.pauseBufferSize = 0
     }
-    
+
     this.emit('session-resume', {
       sessionId: this.sessionId,
       timestamp: Date.now(),
     })
   }
-  
+
   /**
    * Handle stop event
    */
   private handleStop(reason: string): void {
-    if (this.state === SessionState.STOPPED || this.state === SessionState.IDLE) return
-    
+    if (this.state === SessionState.STOPPED || this.state === SessionState.IDLE)
+      return
+
     this.transitionTo(SessionState.STOPPING)
-    
+
     // Clear timeout timer
     if (this.sessionTimeoutTimer) {
       clearTimeout(this.sessionTimeoutTimer)
       this.sessionTimeoutTimer = null
     }
-    
+
     // Calculate final paused duration
     if (this.pauseStartTime) {
       this.totalPausedDuration += Date.now() - this.pauseStartTime
       this.pauseStartTime = null
     }
-    
+
     this.transitionTo(SessionState.STOPPED)
-    
+
     this.emit('session-stop', {
       sessionId: this.sessionId,
       reason,
       timestamp: Date.now(),
     })
   }
-  
+
   /**
    * Process an audio chunk
    */
   public processAudioChunk(buffer: Float32Array, duration: number): void {
     this.totalAudioSamples += buffer.length
-    
+
     // If using energy VAD fallback, process through it
     if (this.energyVAD && !this.connectedVAD) {
       this.energyVAD.processBuffer(buffer)
     }
-    
+
     // Handle based on state
     switch (this.state) {
       case SessionState.ACTIVE:
@@ -415,7 +421,7 @@ export class TranscriptionSessionManager {
           timestamp: Date.now(),
         })
         break
-        
+
       case SessionState.PAUSED:
         if (this.config.bufferDuringPause) {
           // Buffer audio during pause
@@ -425,8 +431,8 @@ export class TranscriptionSessionManager {
           }
           else {
             // Buffer full, drop oldest
-            while (this.pauseBufferSize + buffer.length > this.config.maxPauseBufferSize && 
-                   this.pauseBuffer.length > 0) {
+            while (this.pauseBufferSize + buffer.length > this.config.maxPauseBufferSize
+              && this.pauseBuffer.length > 0) {
               const dropped = this.pauseBuffer.shift()!
               this.pauseBufferSize -= dropped.length
             }
@@ -435,12 +441,12 @@ export class TranscriptionSessionManager {
           }
         }
         break
-        
+
       case SessionState.IDLE:
       case SessionState.STOPPED:
         // If auto-restart enabled and speech detected, restart
         if (this.config.autoRestartOnSpeech) {
-          this.start().catch(err => {
+          this.start().catch((err) => {
             this.emit('error', {
               error: err instanceof Error ? err : new Error(String(err)),
               timestamp: Date.now(),
@@ -450,57 +456,57 @@ export class TranscriptionSessionManager {
         break
     }
   }
-  
+
   /**
    * Manually trigger speech start (for external VAD)
    */
   public onSpeechStart(): void {
     this.silenceDetector.onSpeechStart()
   }
-  
+
   /**
    * Manually trigger speech end (for external VAD)
    */
   public onSpeechEnd(): void {
     this.silenceDetector.onSpeechEnd()
   }
-  
+
   /**
    * Stop the session
    */
   public stop(reason: string = 'manual_stop'): void {
     this.handleStop(reason)
   }
-  
+
   /**
    * Pause the session manually
    */
   public pause(): void {
     this.handlePause('manual_pause')
   }
-  
+
   /**
    * Resume the session manually
    */
   public resume(): void {
     this.handleResume('manual_resume')
   }
-  
+
   /**
    * Get session statistics
    */
   public getStatistics(): SessionStatistics {
     const now = Date.now()
     const totalDuration = this.sessionStartTime ? now - this.sessionStartTime : 0
-    
+
     let currentPauseDuration = 0
     if (this.pauseStartTime) {
       currentPauseDuration = now - this.pauseStartTime
     }
-    
+
     const pausedDuration = this.totalPausedDuration + currentPauseDuration
     const activeDuration = totalDuration - pausedDuration
-    
+
     return {
       sessionId: this.sessionId,
       state: this.state,
@@ -513,35 +519,35 @@ export class TranscriptionSessionManager {
       bufferedSamples: this.pauseBufferSize,
     }
   }
-  
+
   /**
    * Get current state
    */
   public getState(): SessionState {
     return this.state
   }
-  
+
   /**
    * Get session ID
    */
   public getSessionId(): string {
     return this.sessionId
   }
-  
+
   /**
    * Get silence detector
    */
   public getSilenceDetector(): SilenceDetector {
     return this.silenceDetector
   }
-  
+
   /**
    * Get energy VAD (if available)
    */
   public getEnergyVAD(): EnergyVAD | null {
     return this.energyVAD
   }
-  
+
   /**
    * Dispose and clean up
    */
@@ -550,12 +556,12 @@ export class TranscriptionSessionManager {
       clearTimeout(this.sessionTimeoutTimer)
       this.sessionTimeoutTimer = null
     }
-    
+
     if (this.vadDisconnect) {
       this.vadDisconnect()
       this.vadDisconnect = null
     }
-    
+
     this.silenceDetector.dispose()
     this.eventListeners = {}
     this.pauseBuffer = []
