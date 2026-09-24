@@ -46,14 +46,11 @@ export class ConsensusEngine {
     personalities: Map<AgentId, PersonalityVector>,
     evaluations: Map<AgentId, number>,
   ): ConsensusResult {
-    // Initialize opinions from agent evaluations (0-1 scale)
-    const opinions = new Map<AgentId, number>(evaluations)
+const opinions = new Map<AgentId, number>()
 
     // Ensure all members have an opinion
     for (const member of group.members) {
-      if (!opinions.has(member)) {
-        opinions.set(member, 0.5) // Neutral default
-      }
+      opinions.set(member, evaluations.get(member) ?? 0.5)
     }
 
     const members = [...group.members]
