@@ -57,6 +57,9 @@ on:
       - 'xsmcp/**'
       - '.github/workflows/ci.yml'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # Detect which projects have changes
   changes:
@@ -160,6 +163,9 @@ jobs:
           - job: build-ui-loading-screens
             turbo: true
             skip-i18n: true
+          - job: test
+            turbo: true
+            skip-i18n: true
           - job: check-provenance
             provenance: true
     name: airi - ${{ matrix.job }}
@@ -176,17 +182,13 @@ jobs:
         if: matrix.turbo
         uses: actions/cache@v4
         with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          path: airi/.turbo
+          key: ${{ runner.os }}-turbo-${{ matrix.job }}-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-turbo-
+            ${{ runner.os }}-turbo-${{ matrix.job }}-
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         if: ${{ !matrix.provenance }}
-        with:
-          package_json_file: airi/package.json
-      - uses: pnpm/action-setup@v3
-        if: matrix.provenance
         with:
           package_json_file: airi/package.json
 
@@ -197,18 +199,12 @@ jobs:
           cache: pnpm
           cache-dependency-path: airi/pnpm-lock.yaml
 
-      - uses: actions/setup-node@v4
-        if: matrix.provenance
-        with:
-          node-version: lts/*
-          cache: pnpm
-          cache-dependency-path: airi/pnpm-lock.yaml
-
       - uses: danielroe/provenance-action@main
         if: matrix.provenance
         id: check
         with:
           fail-on-provenance-change: true
+          lockfile: airi/pnpm-lock.yaml
       - name: Print provenance result
         if: matrix.provenance
         run: "echo 'Downgraded: ${{ steps.check.outputs.downgraded }}'"
@@ -236,6 +232,11 @@ jobs:
       - name: Typecheck
         if: matrix.job == 'typecheck'
         run: pnpm run typecheck
+        working-directory: airi
+
+      - name: Test
+        if: matrix.job == 'test'
+        run: pnpm run test:run
         working-directory: airi
 
       - name: Build stage-web
@@ -285,11 +286,13 @@ jobs:
         job: [lint, build, typecheck]
         exclude:
           - project: airi-minecraft
+            job: build
+          - project: xsai
             job: typecheck
     name: ${{ matrix.project }} - ${{ matrix.job }}
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           package_json_file: ${{ matrix.project }}/package.json
       - uses: actions/setup-node@v6
@@ -366,7 +369,7 @@ jobs:
     name: ${{ matrix.project }} - check
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           package_json_file: ${{ matrix.project }}/package.json
       - uses: actions/setup-node@v6
@@ -434,7 +437,7 @@ jobs:
     name: ${{ matrix.project }} - ${{ matrix.job }}
     steps:
       - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           package_json_file: ${{ matrix.project }}/package.json
       - uses: actions/setup-node@v6
@@ -580,18 +583,18 @@ jobs:
         job: [lint, build, typecheck, test, jem-validator]
     name: inventory - ${{ matrix.job }}-ts
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v5
         with:
           package_json_file: inventory/package.json
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 24.x
           cache: pnpm
           cache-dependency-path: inventory/pnpm-lock.yaml
 
       - name: Install
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
         working-directory: inventory
 
       - name: Lint
@@ -616,7 +619,12 @@ jobs:
 
       - name: JEM Validator
         if: matrix.job == 'jem-validator'
-        run: pnpm run jem-validator
+        run: |
+          if [ -z "$OPENAI_API_KEY" ] || [ -z "$MINIMAX_API_KEY" ] || [ -z "$MINIMAXI_API_KEY" ] || [ -z "$GOOGLE_API_KEY" ]; then
+            echo "Skipping JEM validator because one or more provider secrets are unavailable."
+            exit 0
+          fi
+          pnpm run jem-validator
         working-directory: inventory
         env:
           OPENAI_API_KEY: ${{ secrets.JEM_OPENAI_API_KEY }}
