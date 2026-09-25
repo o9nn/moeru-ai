@@ -46,7 +46,7 @@ export class ConsensusEngine {
     personalities: Map<AgentId, PersonalityVector>,
     evaluations: Map<AgentId, number>,
   ): ConsensusResult {
-const opinions = new Map<AgentId, number>()
+    const opinions = new Map<AgentId, number>()
 
     // Ensure all members have an opinion
     for (const member of group.members) {

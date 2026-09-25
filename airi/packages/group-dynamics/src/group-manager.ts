@@ -424,7 +424,7 @@ export class GroupManager {
 
       for (let i = 0; i < members.length; i++) {
         for (let j = i + 1; j < members.length; j++) {
-const rel = this.network.hasRelationship(members[i], members[j])
+          const rel = this.network.hasRelationship(members[i], members[j])
             ? this.network.getRelationship(members[i], members[j])
             : undefined
           totalAffinity += rel ? (rel.trust + 1) / 2 * rel.familiarity : 0

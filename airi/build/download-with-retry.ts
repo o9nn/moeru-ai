@@ -128,7 +128,7 @@ export async function downloadFileWithRetry(
       }
 
       const finalSize = (await stat(partialFile)).size
-      if (Number.isFinite(expectedTotal) && finalSize !== expectedTotal || finalSize !== offset + bytesWritten) {
+      if ((Number.isFinite(expectedTotal) && finalSize !== expectedTotal) || finalSize !== offset + bytesWritten) {
         throw new Error(`Unexpected file size after downloading ${filename}`)
       }
       return
